@@ -617,8 +617,8 @@
     const currentMonthName = ALL_MONTHS[currentMonthIdx];
     const salaryKey = 'mft_salary_' + currentMonthName.toLowerCase() + '_' + currentYear;
 
-    // Seed historical data once — skipped on subsequent loads
-    if (!localStorage.getItem('mft_seeded_v1')) {
+    // Seed historical data — re-runs if any month is missing (v2 forces re-check)
+    if (!localStorage.getItem('mft_seeded_v2')) {
       const _seed = {
         'mft_salary_august_2025':    '1089.42',
         'mft_salary_september_2025': '1986.35',
@@ -631,8 +631,11 @@
         'mft_salary_april_2026':     '2530.62',
         'mft_salary_may_2026':       '3593.91',
       };
-      Object.entries(_seed).forEach(([k, v]) => localStorage.setItem(k, v));
-      localStorage.setItem('mft_seeded_v1', '1');
+      // Only write entries that aren't already set (preserve manual edits)
+      Object.entries(_seed).forEach(([k, v]) => {
+        if (!localStorage.getItem(k)) localStorage.setItem(k, v);
+      });
+      localStorage.setItem('mft_seeded_v2', '1');
     }
 
     // Date badge
