@@ -1552,7 +1552,13 @@ async function applySyncKey() {
   if (keyEl) keyEl.textContent = key;
   if (inp) inp.value = '';
   await pullFromCloud();
-  if (activeProfileId) { renderPanelA(); renderPanelB(); renderBudget(); }
+  if (activeProfileId) {
+    renderPanelA(); renderPanelB(); renderBudget();
+  } else {
+    // Not logged in yet — show synced profiles in the picker then reload
+    closeSyncModal();
+    renderPickerCards();
+  }
 }
 
 async function pushAllToCloud() {
@@ -3509,7 +3515,52 @@ function renderPickerCards() {
         + '</div></div>';
   document.getElementById('profScreenBody').innerHTML = html;
   document.getElementById('profManageArea').innerHTML =
-    '<div class="prof-manage-link" onclick="showManagePrompt()"><span style="opacity:0.6;">⚙</span> Manage Profiles</div>';
+    '<div class="prof-manage-link" onclick="showManagePrompt()"><span style="opacity:0.6;">⚙</span> Manage Profiles</div>'
+  + (_fbConfigured() ? '<div class="prof-manage-link" onclick="showPickerSyncPrompt()" style="margin-top:0.4rem;"><span style="opacity:0.6;">☁</span> Sync from another device</div>' : '');
+}
+
+function showPickerSyncPrompt() {
+  document.getElementById('profScreenTitle').textContent = 'Sync from Cloud';
+  document.getElementById('profScreenSub').textContent   = 'Enter the sync key from your other device';
+  document.getElementById('profManageArea').innerHTML    = '';
+  document.getElementById('profScreenBody').innerHTML    =
+    '<div class="prof-setup-wrap">'
+  + '<div class="sync-label" style="margin-bottom:0.5rem;">Sync Key</div>'
+  + '<input class="prof-setup-input" id="pickerSyncInput" placeholder="mft-xxxxxxxx-xxxx-…" style="font-family:monospace;font-size:0.8rem;" />'
+  + '<div id="pickerSyncStatus" style="font-size:0.72rem;color:#64748b;min-height:1.1rem;margin-top:0.3rem;"></div>'
+  + '<button class="prof-btn" onclick="pickerSyncApply()">☁ Sync Now</button>'
+  + '<button class="prof-btn secondary" onclick="renderPickerCards()">← Back</button>'
+  + '</div>';
+  setTimeout(function() {
+    var inp = document.getElementById('pickerSyncInput');
+    if (inp) inp.focus();
+  }, 50);
+}
+
+async function pickerSyncApply() {
+  var inp = document.getElementById('pickerSyncInput');
+  var key = inp ? inp.value.trim() : '';
+  var statusEl = document.getElementById('pickerSyncStatus');
+  if (!key) { if (statusEl) statusEl.textContent = 'Please enter a sync key.'; return; }
+  if (!_db)  { if (statusEl) statusEl.textContent = 'Firebase not connected.'; return; }
+  if (statusEl) statusEl.textContent = 'Syncing…';
+  _syncKey = key;
+  _lsSet(SYNC_KEY_STORAGE, key);
+  try {
+    var snap = await _db.ref(_syncKey).once('value');
+    var data = snap.val();
+    if (!data) { if (statusEl) statusEl.textContent = 'No data found for this key. Check the key and try again.'; return; }
+    _cloudSyncing = true;
+    Object.keys(data).forEach(function(k) {
+      if (k.startsWith('mft_') && !k.startsWith('mft_sys_')) _lsSet(k, data[k]);
+    });
+    _cloudSyncing = false;
+    if (statusEl) statusEl.textContent = 'Synced ' + Object.keys(data).length + ' records. Loading profiles…';
+    setTimeout(function() { renderPickerCards(); }, 800);
+  } catch(e) {
+    _cloudSyncing = false;
+    if (statusEl) statusEl.textContent = 'Error: ' + e.message;
+  }
 }
 
 function profCardClick(id) {
@@ -3810,6 +3861,9 @@ _syncKey = getSyncKey();
     renderPanelB();
     renderBudget();
     if (window.innerWidth <= 768) switchMPanel('left');
+  } else {
+    // Re-render picker in case profiles were pulled from cloud on this load
+    renderPickerCards();
   }
   checkIosBridge();
 })();
