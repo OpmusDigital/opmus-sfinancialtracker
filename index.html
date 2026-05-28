@@ -612,8 +612,8 @@
       .modal .cat-grid { grid-template-columns: repeat(4, 1fr); }
       .hist-modal { border-radius: 24px 24px 0 0; max-height: 90vh; width: 100%; max-width: 100%; }
 
-      /* ─ Calendar popup: left-aligned on mobile ─ */
-      .cal-popup { right: auto; left: 0; }
+      /* ─ Calendar popup: centred on mobile ─ */
+      .cal-popup { position: fixed; top: 66px; left: 50%; transform: translateX(-50%); right: auto; z-index: 100; }
 
       /* ─ Profile picker: compact cards ─ */
       .prof-title { font-size: 1.5rem; }
