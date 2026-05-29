@@ -986,10 +986,81 @@
       .resize-handle { display: none !important; }
       .drag-handle { display: none !important; }
       #btnSettings, #btnApps, #layoutDoneBar { display: none !important; }
-      .panel-budget, .panel-commit { height: auto !important; }
       .budget-list { max-height: 180px; }
-      .panel-a { min-height: 420px; }
-      .panel-b { min-height: 380px; }
+      /* ─ Header: hide separators, scale down on mobile ─ */
+      .header-sep { display: none !important; }
+      .logo-wordmark-sub { display: none; }
+
+      /* ─ Fix panels: allow natural height expansion ─ */
+      .panel-a, .panel-b, .panel-commit, .panel-debt, .panel-ot, .panel-budget {
+        overflow: visible !important;
+      }
+
+      /* ─ Expense & received tab content: must expand, not be flex-1 ─ */
+      #expensesTabContent, #receivedTabContent {
+        flex: none !important;
+        overflow: visible !important;
+        height: auto !important;
+      }
+      /* Expense list: scrollable block with max-height */
+      .expense-list {
+        flex: none !important;
+        max-height: 380px;
+        min-height: 80px;
+        overflow-y: auto;
+      }
+      /* Chart wrap on mobile: fixed height so it doesn't collapse */
+      .chart-wrap {
+        height: 230px !important;
+        flex-shrink: 0;
+      }
+      /* Received total: always show */
+      .received-total { flex-shrink: 0; }
+
+      /* ─ Goals scroll ─ */
+      .goals-scroll {
+        flex: none !important;
+        max-height: 340px;
+        overflow-y: auto;
+      }
+
+      /* ─ Commit body: expand naturally ─ */
+      #commitBody {
+        flex: none !important;
+        overflow: visible !important;
+        height: auto !important;
+      }
+      .commit-list {
+        flex: none !important;
+        max-height: 240px;
+        min-height: 40px;
+        overflow-y: auto;
+      }
+
+      /* ─ Debt body & scroll ─ */
+      .debt-body {
+        flex: none !important;
+        overflow: visible !important;
+        height: auto !important;
+      }
+      .debt-scroll {
+        flex: none !important;
+        max-height: 320px;
+        overflow-y: auto;
+      }
+
+      /* ─ OT body & scroll ─ */
+      .ot-body {
+        flex: none !important;
+        overflow: visible !important;
+        height: auto !important;
+      }
+      .ot-scroll {
+        flex: none !important;
+        max-height: 300px;
+        overflow-y: auto;
+      }
+
       /* ─ Touch targets: always visible, min 44px tap area ─ */
       .exp-edit  { opacity: 1 !important; width: 38px; height: 38px; font-size: 14px; }
       .exp-del   { opacity: 1 !important; width: 38px; height: 38px; font-size: 15px; }
@@ -4559,6 +4630,13 @@ function saveCurrentLayout() {
 }
 
 function applyLayout() {
+  if (window.innerWidth <= 768) {
+    // On mobile: clear any desktop inline styles so CSS media queries take full control
+    document.querySelectorAll('[data-panel]').forEach(function(el) {
+      el.style.top = ''; el.style.left = ''; el.style.width = ''; el.style.height = '';
+    });
+    return;
+  }
   var positions = loadLayout() || getDefaultPositions();
   document.querySelectorAll('[data-panel]').forEach(function(el) {
     var pos = positions[el.dataset.panel];
@@ -6783,6 +6861,8 @@ _syncKey = getSyncKey();
   initDrag();
   initResize();
   applyFinVisibility();
+  // Re-apply layout on orientation/resize so mobile ↔ desktop works
+  window.addEventListener('resize', function() { applyLayout(); });
 })();
 </script>
 <!-- ── First-login Onboarding ─────────────────────────── -->
