@@ -1098,15 +1098,6 @@
       .cal-modal-box { min-width: unset; width: calc(100vw - 2rem); max-width: calc(100vw - 2rem); padding: 1.25rem 1rem; }
       .cal-cfg-grid { grid-template-columns: 1fr; }
 
-      /* ─ Profile dropdown: fixed to screen so it can't drift right ─ */
-      .prof-dropdown {
-        position: fixed;
-        top: calc(56px + env(safe-area-inset-top, 0px) + 8px);
-        right: 1rem;
-        left: auto;
-        min-width: 240px;
-        max-width: calc(100vw - 2rem);
-      }
     }
 
     /* ── iPad / Tablet (769 – 1024 px) ───────────────────── */
@@ -1171,8 +1162,6 @@
       /* Calendar popup: fixed centred */
       .cal-popup { position: fixed; top: calc(72px + env(safe-area-inset-top, 0px)); left: 50%; transform: translateX(-50%); right: auto; z-index: 100; }
 
-      /* Profile dropdown: fixed to header edge */
-      .prof-dropdown { position: fixed; top: calc(72px + env(safe-area-inset-top, 0px) + 8px); right: 1.5rem; left: auto; min-width: 260px; }
 
       /* Profile picker: wider cards */
       .prof-cards { gap: 1rem; }
@@ -1387,13 +1376,14 @@
       position: relative; box-shadow: 0 2px 10px rgba(0,0,0,0.4);
     }
     .header-profile-btn:hover { border-color: rgba(255,255,255,0.5); transform: scale(1.08); box-shadow: 0 4px 16px rgba(0,0,0,0.5); }
-    /* Header profile dropdown */
+    /* Header profile dropdown — portalled to body so Safari backdrop-filter can't trap it */
     .prof-dropdown {
-      display: none; position: absolute; top: calc(100% + 10px); right: 0;
+      display: none; position: fixed; top: 0; right: 1rem;
       background: rgba(8,10,18,0.97); border: 1px solid rgba(255,255,255,0.1);
       border-radius: 18px; padding: 0; min-width: 248px; overflow: hidden;
-      box-shadow: 0 24px 70px rgba(0,0,0,0.9), 0 0 0 1px rgba(255,255,255,0.04); z-index: 200;
-      backdrop-filter: blur(24px);
+      box-shadow: 0 24px 70px rgba(0,0,0,0.9), 0 0 0 1px rgba(255,255,255,0.04); z-index: 9999;
+      backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+      max-width: calc(100vw - 2rem);
     }
     .prof-dropdown.open { display: block; animation: profFadeUp 0.2s cubic-bezier(0.22,1,0.36,1) both; }
     .prof-drop-header {
@@ -1728,47 +1718,49 @@
     </div>
     <div class="header-sep"></div>
     <button class="btn-hide-vals" id="dashHideBtn" onclick="toggleFinVisibility()" title="Hide / show amounts"><i class="ph-fill ph-eye" id="dashHideIcon"></i></button>
-    <div style="position:relative;" id="profileBtnWrap">
+    <div id="profileBtnWrap">
       <div class="header-profile-btn" id="headerProfileBtn" onclick="toggleProfileDropdown()" title="Profile">?</div>
-      <div class="prof-dropdown" id="profileDropdown">
-        <div class="prof-drop-header" id="profDropHeader">
-          <div class="prof-drop-avatar" id="profDropAvatar">?</div>
-          <div>
-            <div class="prof-drop-name" id="profDropName">—</div>
-            <div class="prof-drop-role">Personal Account</div>
-          </div>
-        </div>
-        <div class="prof-drop-body">
-          <div class="prof-drop-section">Account</div>
-          <div class="prof-drop-item" onclick="switchProfile()">
-            <span class="prof-drop-icon">⇄</span>
-            <span>Switch Profile</span>
-          </div>
-
-          <div class="prof-drop-section" style="margin-top:0.45rem;">Preferences</div>
-          <div class="prof-drop-item" onclick="openThemeModal()">
-            <span class="prof-drop-icon">🎨</span>
-            <span>Appearance</span>
-          </div>
-          <div class="prof-drop-item" onclick="openManageProfiles()">
-            <span class="prof-drop-icon">⚙</span>
-            <span>Manage Profiles</span>
-          </div>
-          <div class="prof-drop-item" onclick="openSyncModal()">
-            <span class="prof-drop-icon">☁</span>
-            <span>Cloud Sync</span>
-          </div>
-        </div>
-        <div class="prof-drop-footer">
-          <div class="prof-drop-item danger" onclick="switchProfile()">
-            <span class="prof-drop-icon">↪</span>
-            <span>Sign Out</span>
-          </div>
-        </div>
-      </div>
     </div>
   </div>
 </header>
+
+<!-- Profile dropdown: at body level to escape header's backdrop-filter stacking context -->
+<div class="prof-dropdown" id="profileDropdown">
+  <div class="prof-drop-header" id="profDropHeader">
+    <div class="prof-drop-avatar" id="profDropAvatar">?</div>
+    <div>
+      <div class="prof-drop-name" id="profDropName">—</div>
+      <div class="prof-drop-role">Personal Account</div>
+    </div>
+  </div>
+  <div class="prof-drop-body">
+    <div class="prof-drop-section">Account</div>
+    <div class="prof-drop-item" onclick="switchProfile()">
+      <span class="prof-drop-icon">⇄</span>
+      <span>Switch Profile</span>
+    </div>
+
+    <div class="prof-drop-section" style="margin-top:0.45rem;">Preferences</div>
+    <div class="prof-drop-item" onclick="openThemeModal()">
+      <span class="prof-drop-icon">🎨</span>
+      <span>Appearance</span>
+    </div>
+    <div class="prof-drop-item" onclick="openManageProfiles()">
+      <span class="prof-drop-icon">⚙</span>
+      <span>Manage Profiles</span>
+    </div>
+    <div class="prof-drop-item" onclick="openSyncModal()">
+      <span class="prof-drop-icon">☁</span>
+      <span>Cloud Sync</span>
+    </div>
+  </div>
+  <div class="prof-drop-footer">
+    <div class="prof-drop-item danger" onclick="switchProfile()">
+      <span class="prof-drop-icon">↪</span>
+      <span>Sign Out</span>
+    </div>
+  </div>
+</div>
 
 <!-- Floating Done Bar (custom mode only) -->
 <button id="layoutDoneBar" onclick="toggleLayoutEdit()">✓ Done Customizing</button>
@@ -6345,16 +6337,27 @@ function renderThemeModal(activeKey) {
 
 function toggleProfileDropdown() {
   var dd = document.getElementById('profileDropdown');
-  if (dd) dd.classList.toggle('open');
+  if (!dd) return;
+  var isOpen = dd.classList.contains('open');
+  if (isOpen) { dd.classList.remove('open'); return; }
+  // Position relative to the profile button using viewport coords
+  var btn = document.getElementById('headerProfileBtn');
+  if (btn) {
+    var r = btn.getBoundingClientRect();
+    dd.style.top  = (r.bottom + 8) + 'px';
+    dd.style.right = Math.max(8, window.innerWidth - r.right) + 'px';
+    dd.style.left  = 'auto';
+  }
+  dd.classList.add('open');
 }
 
-// Close profile dropdown when clicking outside
+// Close profile dropdown when clicking outside (button or dropdown)
 document.addEventListener('click', function(e) {
-  var wrap = document.getElementById('profileBtnWrap');
-  if (wrap && !wrap.contains(e.target)) {
-    var dd = document.getElementById('profileDropdown');
-    if (dd) dd.classList.remove('open');
-  }
+  var btn = document.getElementById('headerProfileBtn');
+  var dd  = document.getElementById('profileDropdown');
+  if (!dd || !dd.classList.contains('open')) return;
+  if ((btn && btn.contains(e.target)) || dd.contains(e.target)) return;
+  dd.classList.remove('open');
 });
 
 function switchProfile() {
