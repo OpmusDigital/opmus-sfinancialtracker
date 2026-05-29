@@ -1097,6 +1097,86 @@
       /* ─ Cal modal ─ */
       .cal-modal-box { min-width: unset; width: calc(100vw - 2rem); max-width: calc(100vw - 2rem); padding: 1.25rem 1rem; }
       .cal-cfg-grid { grid-template-columns: 1fr; }
+
+      /* ─ Profile dropdown: fixed to screen so it can't drift right ─ */
+      .prof-dropdown {
+        position: fixed;
+        top: calc(56px + env(safe-area-inset-top, 0px) + 8px);
+        right: 1rem;
+        left: auto;
+        min-width: 240px;
+        max-width: calc(100vw - 2rem);
+      }
+    }
+
+    /* ── iPad / Tablet (769 – 1024 px) ───────────────────── */
+    @media (min-width: 769px) and (max-width: 1024px) {
+      /* Body: scrollable column like mobile */
+      .app-body { overflow-y: auto; overflow-x: hidden; flex-direction: column; }
+
+      /* Panel tabs: hidden — all panels stack and are always visible */
+      .mpanel-tabs { display: none !important; }
+
+      /* Panels: stacked full-width */
+      .panels-row { position: static; display: flex; flex-direction: column; overflow: visible; padding: 0 1.5rem 2rem; gap: 0.8rem; }
+      [data-panel] { position: static !important; width: 100% !important; height: auto !important; min-height: unset !important; }
+      .resize-handle { display: none !important; }
+      .drag-handle  { display: none !important; }
+      #layoutDoneBar { display: none !important; }
+
+      /* Dashboard: 3-column grid on tablet */
+      .dashboard { padding: 1rem 1.5rem 0.75rem; flex-wrap: wrap; gap: 0.6rem; }
+      .dash-card  { min-width: calc(33.33% - 0.4rem); flex: none; }
+
+      /* ─ Fix panels: allow natural height expansion ─ */
+      .panel-a, .panel-b, .panel-commit, .panel-debt, .panel-ot, .panel-budget {
+        overflow: visible !important;
+      }
+
+      /* ─ Expense & received tab content ─ */
+      #expensesTabContent, #receivedTabContent {
+        flex: none !important; overflow: visible !important; height: auto !important;
+      }
+      .expense-list { flex: none !important; max-height: 420px; min-height: 80px; overflow-y: auto; }
+      .chart-wrap   { height: 260px !important; flex-shrink: 0; }
+      .received-total { flex-shrink: 0; }
+
+      /* ─ Goals ─ */
+      .goals-scroll { flex: none !important; max-height: 380px; overflow-y: auto; }
+
+      /* ─ Commitments ─ */
+      #commitBody   { flex: none !important; overflow: visible !important; height: auto !important; }
+      .commit-list  { flex: none !important; max-height: 280px; min-height: 40px; overflow-y: auto; }
+
+      /* ─ Debt ─ */
+      .debt-body  { flex: none !important; overflow: visible !important; height: auto !important; }
+      .debt-scroll { flex: none !important; max-height: 360px; overflow-y: auto; }
+
+      /* ─ OT ─ */
+      .ot-body  { flex: none !important; overflow: visible !important; height: auto !important; }
+      .ot-scroll { flex: none !important; max-height: 340px; overflow-y: auto; }
+
+      /* Budget list */
+      .budget-list { max-height: 220px; }
+
+      /* Touch targets always visible */
+      .exp-edit, .exp-del, .rec-edit, .rec-del { opacity: 1 !important; }
+      .icon-btn { min-width: 38px; min-height: 38px; }
+
+      /* Modals: centered (not bottom-sheet) */
+      .modal-overlay { align-items: center; }
+      .modal { border-radius: 20px; max-width: 520px; width: auto !important; padding: 2rem 1.75rem; }
+      .hist-modal { border-radius: 20px; max-height: 85vh; max-width: 680px; width: 92vw; }
+
+      /* Calendar popup: fixed centred */
+      .cal-popup { position: fixed; top: calc(72px + env(safe-area-inset-top, 0px)); left: 50%; transform: translateX(-50%); right: auto; z-index: 100; }
+
+      /* Profile dropdown: fixed to header edge */
+      .prof-dropdown { position: fixed; top: calc(72px + env(safe-area-inset-top, 0px) + 8px); right: 1.5rem; left: auto; min-width: 260px; }
+
+      /* Profile picker: wider cards */
+      .prof-cards { gap: 1rem; }
+      .prof-card  { min-width: 110px; }
     }
 
     /* ── Floating Action Button (mobile only) ─────────────── */
@@ -4630,7 +4710,7 @@ function saveCurrentLayout() {
 }
 
 function applyLayout() {
-  if (window.innerWidth <= 768) {
+  if (window.innerWidth <= 1024) {
     // On mobile: clear any desktop inline styles so CSS media queries take full control
     document.querySelectorAll('[data-panel]').forEach(function(el) {
       el.style.top = ''; el.style.left = ''; el.style.width = ''; el.style.height = '';
