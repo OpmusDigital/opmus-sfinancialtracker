@@ -1105,6 +1105,15 @@
       /* Body: scrollable column like mobile */
       .app-body { overflow-y: auto; overflow-x: hidden; flex-direction: column; }
 
+      /* ─ Header: strip down to essential controls only ─ */
+      header { padding: env(safe-area-inset-top, 0px) 1.25rem 0; }
+      .header-sep   { display: none !important; }
+      .btn-history  { display: none !important; }
+      #btnSettings, #btnApps { display: none !important; }
+      #headerShiftChip, #headerSalChip { display: none !important; }
+      .logo-wordmark-sub { display: none; }
+      .header-right { gap: 0.6rem; }
+
       /* Panel tabs: hidden — all panels stack and are always visible */
       .mpanel-tabs { display: none !important; }
 
