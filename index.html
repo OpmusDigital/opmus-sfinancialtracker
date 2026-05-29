@@ -1100,19 +1100,20 @@
 
     }
 
-    /* ── iPad / Tablet (769 – 1024 px) ───────────────────── */
-    @media (min-width: 769px) and (max-width: 1024px) {
+    /* ── iPad / Tablet (769 – 1366 px covers all iPad portrait + landscape) ─ */
+    @media (min-width: 769px) and (max-width: 1366px) {
       /* Body: scrollable column like mobile */
       .app-body { overflow-y: auto; overflow-x: hidden; flex-direction: column; }
 
-      /* ─ Header: strip down to essential controls only ─ */
+      /* ─ Header: strip to essentials so profile btn is always reachable ─ */
       header { padding: env(safe-area-inset-top, 0px) 1.25rem 0; }
-      .header-sep   { display: none !important; }
-      .btn-history  { display: none !important; }
+      .header-center { display: none !important; }
+      .header-sep    { display: none !important; }
+      .btn-history   { display: none !important; }
       #btnSettings, #btnApps { display: none !important; }
       #headerShiftChip, #headerSalChip { display: none !important; }
       .logo-wordmark-sub { display: none; }
-      .header-right { gap: 0.6rem; }
+      .header-right  { gap: 0.75rem; }
 
       /* Panel tabs: hidden — all panels stack and are always visible */
       .mpanel-tabs { display: none !important; }
@@ -4711,7 +4712,7 @@ function saveCurrentLayout() {
 }
 
 function applyLayout() {
-  if (window.innerWidth <= 1024) {
+  if (window.innerWidth <= 1366) {
     // On mobile: clear any desktop inline styles so CSS media queries take full control
     document.querySelectorAll('[data-panel]').forEach(function(el) {
       el.style.top = ''; el.style.left = ''; el.style.width = ''; el.style.height = '';
