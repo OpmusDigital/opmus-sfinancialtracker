@@ -934,6 +934,18 @@
     .mg-period-label { font-size: 0.58rem; color: #334155; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 0.12rem; }
     .mg-period-val { font-size: 0.8rem; font-weight: 600; color: #94a3b8; }
     .mg-range { font-size: 0.68rem; color: #475569; font-weight: 500; text-align: right; }
+    .mg-tablet-row {
+      display: none; align-items: center; gap: 0.6rem; flex-wrap: wrap;
+      margin-top: 0.65rem; padding-top: 0.55rem;
+      border-top: 1px solid rgba(255,255,255,0.07);
+    }
+    .mg-action-btn {
+      font-size: 0.72rem; font-weight: 600; color: #94a3b8;
+      background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 8px; padding: 5px 11px; cursor: pointer;
+      transition: all 0.15s;
+    }
+    .mg-action-btn:hover { background: rgba(255,255,255,0.1); color: #e2e8f0; }
 
     /* ── Mobile panel tab bar (hidden on desktop) ─── */
     .mpanel-tabs {
@@ -1114,6 +1126,10 @@
       #headerShiftChip, #headerSalChip { display: none !important; }
       .logo-wordmark-sub { display: none; }
       .header-right  { gap: 0.75rem; }
+
+      /* ─ Show greeting card + tablet action row ─ */
+      .mobile-greeting { display: flex; flex-direction: column; margin: 0.75rem 1.5rem 0; }
+      .mg-tablet-row   { display: flex; }
 
       /* Panel tabs: hidden — all panels stack and are always visible */
       .mpanel-tabs { display: none !important; }
@@ -1888,6 +1904,14 @@
         <div class="mg-period-val" id="mgPeriod">—</div>
       </div>
       <div class="mg-range" id="mgRange">—</div>
+    </div>
+    <!-- Tablet-only row: chips + quick-action buttons -->
+    <div class="mg-tablet-row">
+      <span id="tbShiftChip" class="header-chip" style="display:none;"></span>
+      <span id="tbSalChip"   class="header-chip"></span>
+      <div style="flex:1;"></div>
+      <button class="mg-action-btn" onclick="openHistory()">📊 View History</button>
+      <button class="mg-action-btn" onclick="openSettings()">⚙ Settings</button>
     </div>
   </div>
 
@@ -3609,49 +3633,39 @@ function renderHeaderChips() {
   var yr = now.getFullYear(), mo = now.getMonth(), d = now.getDate();
 
   // — Shift status chip —
-  var shiftEl = document.getElementById('headerShiftChip');
-  if (shiftEl) {
-    var rt = getRosterType(yr, mo, d);
+  var shiftEl   = document.getElementById('headerShiftChip');
+  var tbShiftEl = document.getElementById('tbShiftChip');
+  var rt = getRosterType(yr, mo, d);
+  [shiftEl, tbShiftEl].forEach(function(el) {
+    if (!el) return;
     if (rt === 'offday') {
-      shiftEl.innerHTML = '☀️ Off Day';
-      shiftEl.className = 'header-chip header-chip-off';
-      shiftEl.style.display = '';
+      el.innerHTML = '☀️ Off Day'; el.className = 'header-chip header-chip-off'; el.style.display = '';
     } else if (rt === 'restday') {
-      shiftEl.innerHTML = '😴 Rest Day';
-      shiftEl.className = 'header-chip header-chip-rest';
-      shiftEl.style.display = '';
-    } else if (rt === 'work') {
-      shiftEl.style.display = 'none';
+      el.innerHTML = '😴 Rest Day'; el.className = 'header-chip header-chip-rest'; el.style.display = '';
     } else {
-      shiftEl.style.display = 'none';
+      el.style.display = 'none';
     }
-  }
+  });
 
   // — Salary countdown chip —
-  var salEl = document.getElementById('headerSalChip');
-  if (salEl) {
-    var salDay = getSalaryDate(yr, mo);
-    var daysLeft;
-    if (d <= salDay) {
-      daysLeft = salDay - d;
-    } else {
-      var nMo = mo + 1, nYr = yr;
-      if (nMo > 11) { nMo = 0; nYr++; }
-      var nextSal = new Date(nYr, nMo, getSalaryDate(nYr, nMo));
-      daysLeft = Math.round((nextSal - new Date(yr, mo, d)) / 86400000);
-    }
-    if (daysLeft === 0) {
-      salEl.innerHTML = '💰 Salary Day!';
-      salEl.className = 'header-chip header-chip-sal-today';
-    } else if (daysLeft <= 3) {
-      salEl.innerHTML = '💰 ' + daysLeft + 'd to salary';
-      salEl.className = 'header-chip header-chip-sal-today';
-    } else {
-      salEl.innerHTML = '💰 ' + daysLeft + 'd to salary';
-      salEl.className = 'header-chip header-chip-sal';
-    }
-    salEl.style.display = '';
+  var salEl   = document.getElementById('headerSalChip');
+  var tbSalEl = document.getElementById('tbSalChip');
+  var salDay  = getSalaryDate(yr, mo);
+  var daysLeft;
+  if (d <= salDay) {
+    daysLeft = salDay - d;
+  } else {
+    var nMo = mo + 1, nYr = yr;
+    if (nMo > 11) { nMo = 0; nYr++; }
+    var nextSal = new Date(nYr, nMo, getSalaryDate(nYr, nMo));
+    daysLeft = Math.round((nextSal - new Date(yr, mo, d)) / 86400000);
   }
+  var salHtml = daysLeft === 0 ? '💰 Salary Day!' : '💰 ' + daysLeft + 'd to salary';
+  var salCls  = daysLeft <= 3 ? 'header-chip header-chip-sal-today' : 'header-chip header-chip-sal';
+  [salEl, tbSalEl].forEach(function(el) {
+    if (!el) return;
+    el.innerHTML = salHtml; el.className = salCls; el.style.display = '';
+  });
 }
 
 function renderDashboard() {
