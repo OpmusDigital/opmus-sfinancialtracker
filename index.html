@@ -593,6 +593,24 @@
     }
     .btn-scan:hover { background: rgba(255,255,255,0.1); color: #e2e8f0; }
 
+    /* Next Month Forecast */
+    .forecast-box { margin:0.6rem 0.75rem 0; background:rgba(99,102,241,0.07); border:1px solid rgba(99,102,241,0.2); border-radius:14px; overflow:hidden; }
+    .forecast-header { display:flex; align-items:center; justify-content:space-between; padding:0.6rem 0.85rem; border-bottom:1px solid rgba(99,102,241,0.12); cursor:pointer; }
+    .forecast-title { font-size:0.78rem; font-weight:700; color:#a5b4fc; display:flex; align-items:center; gap:0.4rem; }
+    .forecast-toggle { font-size:0.7rem; color:#475569; }
+    .forecast-body { padding:0.65rem 0.85rem 0.75rem; display:flex; flex-direction:column; gap:0.3rem; }
+    .forecast-row { display:flex; align-items:center; justify-content:space-between; font-size:0.78rem; }
+    .forecast-row-label { color:#64748b; }
+    .forecast-row-val { font-weight:700; color:#f1f5f9; }
+    .forecast-row-val.green { color:#4ade80; }
+    .forecast-row-val.red   { color:#f87171; }
+    .forecast-row-val.pink  { color:#f9a8d4; }
+    .forecast-row-val.amber { color:#fcd34d; }
+    .forecast-divider { border:none; border-top:1px solid rgba(99,102,241,0.15); margin:0.3rem 0; }
+    .forecast-result { display:flex; align-items:center; justify-content:space-between; padding:0.5rem 0.6rem; background:rgba(99,102,241,0.1); border-radius:9px; margin-top:0.2rem; }
+    .forecast-result-label { font-size:0.75rem; color:#a5b4fc; font-weight:600; }
+    .forecast-result-val { font-size:1.1rem; font-weight:800; }
+    .forecast-tip { font-size:0.68rem; color:#475569; margin-top:0.4rem; font-style:italic; line-height:1.45; }
     /* Variable debt bill history */
     .debt-bill-row { display:flex; align-items:center; gap:0.5rem; padding:0.3rem 0.5rem; border-radius:7px; font-size:0.75rem; transition:background 0.15s; }
     .debt-bill-row:hover { background:rgba(255,255,255,0.04); }
@@ -3508,6 +3526,120 @@ function syncDebtCommitments() {
 
 function setDebtView(v) { _debtView = v; renderDebtPanel(); }
 
+var _forecastOpen = true;
+function toggleForecast() { _forecastOpen = !_forecastOpen; renderDebtPanel(); }
+
+function buildForecastHtml() {
+  var now   = new Date();
+  var yr    = now.getFullYear();
+  var mo    = now.getMonth();   // current month index
+
+  // Next month label
+  var nextMo  = (mo + 1) > 11 ? 0  : mo + 1;
+  var nextYr  = (mo + 1) > 11 ? yr + 1 : yr;
+  var nextLabel = ALL_MONTHS[nextMo] + ' ' + nextYr;
+
+  // Salary (nett, already configured by user)
+  var salary = parseFloat(localStorage.getItem(salaryKey)) || 0;
+  if (salary <= 0) {
+    return '<div class="forecast-box">'
+      + '<div class="forecast-header" onclick="toggleForecast()">'
+      + '<div class="forecast-title">📅 Next Month Forecast</div>'
+      + '</div>'
+      + '<div class="forecast-body"><div style="font-size:0.75rem;color:#475569;">Set your salary first to see the forecast.</div></div>'
+      + '</div>';
+  }
+
+  // Salary day for current month (this is when the money lands)
+  var salDay = getSalaryDate(yr, mo);
+
+  // Fixed commitments total
+  var commitAmt = commitTotal();
+
+  // Variable BNPL debts — sum of unpaid bills (these are due next month)
+  var debts = loadDebts();
+  var bnplDebts = debts.filter(function(d) { return d.variable; });
+  var bnplRows  = [];
+  var bnplTotal = 0;
+  bnplDebts.forEach(function(d) {
+    var unpaid = (d.bills || []).filter(function(b) { return !b.paid; });
+    var amt    = unpaid.reduce(function(s,b){ return s+(parseFloat(b.amount)||0); }, 0);
+    if (amt > 0) {
+      bnplRows.push({ name: d.name, amount: amt, dueDay: d.dueDay || null, color: d.color || '#f9a8d4' });
+      bnplTotal += amt;
+    }
+  });
+
+  // Fixed debt min payments that are NOT already in commitments (commitments sync handles this)
+  // commitTotal() already includes synced debt payments, so we don't double-count
+
+  var leftover = salary - commitAmt - bnplTotal;
+
+  var html = '<div class="forecast-box">';
+  html += '<div class="forecast-header" onclick="toggleForecast()">';
+  html += '<div class="forecast-title">📅 ' + nextLabel + ' Forecast</div>';
+  html += '<div class="forecast-toggle">' + (_forecastOpen ? '▲ hide' : '▼ show') + '</div>';
+  html += '</div>';
+
+  if (!_forecastOpen) { html += '</div>'; return html; }
+
+  html += '<div class="forecast-body">';
+
+  // Salary line
+  html += '<div class="forecast-row">';
+  html += '<span class="forecast-row-label">💰 Salary (arrives ' + salDay + ordSuffix(salDay) + ' ' + ALL_MONTHS[mo] + ')</span>';
+  html += '<span class="forecast-row-val green">+ ' + fmt(salary) + '</span>';
+  html += '</div>';
+
+  html += '<hr class="forecast-divider">';
+
+  // Commitments block
+  if (commitAmt > 0) {
+    var commits = loadCommitments();
+    commits.forEach(function(c) {
+      if (parseFloat(c.amount) <= 0) return;
+      html += '<div class="forecast-row">';
+      var dueStr = c.dueDay ? ' (due ' + c.dueDay + ordSuffix(c.dueDay) + ')' : '';
+      html += '<span class="forecast-row-label">📌 ' + escHtml(c.name) + dueStr + '</span>';
+      html += '<span class="forecast-row-val red">− ' + fmt(parseFloat(c.amount)) + '</span>';
+      html += '</div>';
+    });
+  } else {
+    html += '<div class="forecast-row"><span class="forecast-row-label" style="font-style:italic;">No fixed commitments</span><span class="forecast-row-val">—</span></div>';
+  }
+
+  html += '<hr class="forecast-divider">';
+
+  // BNPL bills block
+  if (bnplRows.length > 0) {
+    bnplRows.forEach(function(b) {
+      var dueStr = b.dueDay ? ' (due ' + b.dueDay + ordSuffix(b.dueDay) + ' ' + nextLabel + ')' : '';
+      html += '<div class="forecast-row">';
+      html += '<span class="forecast-row-label">🧾 ' + escHtml(b.name) + dueStr + '</span>';
+      html += '<span class="forecast-row-val pink">− ' + fmt(b.amount) + '</span>';
+      html += '</div>';
+    });
+  } else {
+    html += '<div class="forecast-row"><span class="forecast-row-label" style="font-style:italic;">No unpaid BNPL bills</span><span class="forecast-row-val">—</span></div>';
+  }
+
+  html += '<div class="forecast-result">';
+  html += '<span class="forecast-result-label">Estimated balance left</span>';
+  html += '<span class="forecast-result-val ' + (leftover >= 0 ? 'green' : 'red') + '">' + (leftover >= 0 ? '' : '−') + fmt(Math.abs(leftover)) + '</span>';
+  html += '</div>';
+
+  if (leftover < 0) {
+    html += '<div class="forecast-tip">⚠ Your bills exceed your salary next month. Consider paying some BNPL bills early or reducing spending.</div>';
+  } else if (leftover < salary * 0.1) {
+    html += '<div class="forecast-tip">⚠ Less than 10% of salary left after bills — very tight month ahead.</div>';
+  } else {
+    html += '<div class="forecast-tip">Salary arrives on the ' + salDay + ordSuffix(salDay) + '. After all commitments and BNPL bills, this is your estimated free cash for ' + nextLabel + '.</div>';
+  }
+
+  html += '</div></div>';
+  return html;
+}
+
 // ── Variable debt type toggle ─────────────────────────────────────────────
 var _debtType = 'fixed'; // 'fixed' | 'variable'
 function setDebtType(type) {
@@ -3690,6 +3822,9 @@ function renderDebtPanel() {
   html += '<div class="debt-sum-card"><div class="debt-sum-label">Monthly Min.</div><div class="debt-sum-val">' + (totalMinPay > 0 ? fmt(totalMinPay) : '—') + '</div></div>';
   html += '<div class="debt-sum-card"><div class="debt-sum-label">Accounts</div><div class="debt-sum-val">' + list.length + '</div></div>';
   html += '</div>';
+
+  // ── Next Month Forecast ──────────────────────────
+  html += buildForecastHtml();
 
   // ── View tabs ─────────────────────────────────────
   html += '<div style="display:flex;gap:0.35rem;padding:0.5rem 0.85rem;border-bottom:1px solid rgba(255,255,255,0.06);flex-shrink:0;">';
