@@ -952,12 +952,14 @@
       display: none; margin: 0 1rem 0.5rem; border-radius: 12px;
       background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.07);
       padding: 3px; gap: 3px; flex-shrink: 0;
+      overflow-x: auto; -webkit-overflow-scrolling: touch;
     }
+    .mpanel-tabs::-webkit-scrollbar { display: none; }
     .mpanel-tab {
-      flex: 1; padding: 9px 0; border-radius: 9px; border: none; background: none;
-      color: #475569; font-size: 0.8rem; font-weight: 600; cursor: pointer;
+      flex: 0 0 auto; padding: 9px 14px; border-radius: 9px; border: none; background: none;
+      color: #475569; font-size: 0.75rem; font-weight: 600; cursor: pointer;
       font-family: 'Inter', system-ui; transition: all 0.2s; display: flex;
-      align-items: center; justify-content: center; gap: 0.4rem;
+      align-items: center; justify-content: center; gap: 0.35rem; white-space: nowrap;
     }
     .mpanel-tab.active { background: rgba(239,68,68,0.18); color: #fca5a5; }
 
@@ -2119,8 +2121,11 @@
 
 <!-- Mobile panel tabs -->
 <div class="mpanel-tabs" id="mpanelTabs">
-  <button class="mpanel-tab active" id="mtabLeft" onclick="switchMPanel('left')">💸 Expenses</button>
-  <button class="mpanel-tab" id="mtabRight" onclick="switchMPanel('right')">🎯 Goals</button>
+  <button class="mpanel-tab active" id="mtabExpenses" onclick="switchMPanel('expenses')">💸 Expenses</button>
+  <button class="mpanel-tab" id="mtabGoals"    onclick="switchMPanel('goals')">🎯 Goals</button>
+  <button class="mpanel-tab" id="mtabDebt"     onclick="switchMPanel('debt')">💳 Debt</button>
+  <button class="mpanel-tab" id="mtabOt"       onclick="switchMPanel('ot')">⏱ OT</button>
+  <button class="mpanel-tab" id="mtabCommit"   onclick="switchMPanel('commit')">📌 Bills</button>
 </div>
 
 <!-- ══════════════════════════════════════════════════════
@@ -4726,10 +4731,31 @@ function saveCurrentLayout() {
 }
 
 function applyLayout() {
-  if (window.innerWidth <= 1366) {
-    // On mobile: clear any desktop inline styles so CSS media queries take full control
+  if (window.innerWidth <= 768) {
+    // On mobile: clear position/size styles and enforce single-panel view
     document.querySelectorAll('[data-panel]').forEach(function(el) {
       el.style.top = ''; el.style.left = ''; el.style.width = ''; el.style.height = '';
+    });
+    // Find which tab is active and show only that panel
+    var activePanels = ['expenses','goals','debt','ot','commit','budget'];
+    var activeTab = null;
+    activePanels.forEach(function(key) {
+      var tabId = { expenses:'mtabExpenses', goals:'mtabGoals', debt:'mtabDebt', ot:'mtabOt', commit:'mtabCommit' }[key];
+      var tab = tabId ? document.getElementById(tabId) : null;
+      if (tab && tab.classList.contains('active')) activeTab = key;
+    });
+    if (!activeTab) activeTab = 'expenses';
+    activePanels.forEach(function(key) {
+      var el = document.querySelector('[data-panel="' + key + '"]');
+      if (el) el.style.display = (key === activeTab) ? '' : 'none';
+    });
+    return;
+  }
+  if (window.innerWidth <= 1366) {
+    // On tablet: clear any desktop inline styles so CSS media queries take full control
+    document.querySelectorAll('[data-panel]').forEach(function(el) {
+      el.style.top = ''; el.style.left = ''; el.style.width = ''; el.style.height = '';
+      el.style.display = '';  // Show all panels on tablet
     });
     return;
   }
@@ -5422,20 +5448,32 @@ function deleteContrib(goalId, contribId) {
 
 // ── Mobile panel switching ──
 function switchMPanel(panel) {
-  var expEl  = document.querySelector('[data-panel="expenses"]');
-  var goalEl = document.getElementById('panelB');
-  var tabL   = document.getElementById('mtabLeft');
-  var tabR   = document.getElementById('mtabRight');
-  if (panel === 'left') {
-    if (expEl)  expEl.style.display  = '';
-    if (goalEl) goalEl.style.display = 'none';
-    if (tabL) tabL.classList.add('active');
-    if (tabR) tabR.classList.remove('active');
-  } else {
-    if (expEl)  expEl.style.display  = 'none';
-    if (goalEl) goalEl.style.display = '';
-    if (tabL) tabL.classList.remove('active');
-    if (tabR) tabR.classList.add('active');
+  // Only apply show/hide logic on mobile (<=768px)
+  if (window.innerWidth > 768) return;
+
+  // Map of panel key -> { selector, tabId }
+  var panels = [
+    { key: 'expenses', selector: '[data-panel="expenses"]', tabId: 'mtabExpenses' },
+    { key: 'goals',    selector: '[data-panel="goals"]',    tabId: 'mtabGoals'    },
+    { key: 'debt',     selector: '[data-panel="debt"]',     tabId: 'mtabDebt'     },
+    { key: 'ot',       selector: '[data-panel="ot"]',       tabId: 'mtabOt'       },
+    { key: 'commit',   selector: '[data-panel="commit"]',   tabId: 'mtabCommit'   },
+    { key: 'budget',   selector: '[data-panel="budget"]',   tabId: null           },
+  ];
+
+  panels.forEach(function(p) {
+    var el  = document.querySelector(p.selector);
+    var tab = p.tabId ? document.getElementById(p.tabId) : null;
+    var isActive = (p.key === panel);
+    if (el)  el.style.display  = isActive ? '' : 'none';
+    if (tab) tab.classList.toggle('active', isActive);
+  });
+
+  // Update FAB title to hint at what it will do
+  var fab = document.getElementById('mobileFab');
+  if (fab) {
+    var labels = { expenses:'Add expense', goals:'Add goal', debt:'Add debt', ot:'Log OT', commit:'Add bill' };
+    fab.title = labels[panel] || 'Add';
   }
 }
 
@@ -6182,9 +6220,15 @@ function applyFinVisibility() {
 // MOBILE FAB
 // ═══════════════════════════════════════════════════
 function mobileFabClick() {
-  var tabR = document.getElementById('mtabRight');
-  if (tabR && tabR.classList.contains('active')) {
-    openAddGoal();
+  // Find which tab is active and open the matching add modal
+  if (document.getElementById('mtabGoals')  && document.getElementById('mtabGoals').classList.contains('active'))  { openAddGoal();        return; }
+  if (document.getElementById('mtabDebt')   && document.getElementById('mtabDebt').classList.contains('active'))   { openAddDebt();        return; }
+  if (document.getElementById('mtabOt')     && document.getElementById('mtabOt').classList.contains('active'))     { openAddOT();          return; }
+  if (document.getElementById('mtabCommit') && document.getElementById('mtabCommit').classList.contains('active')) { openAddCommitment();  return; }
+  // Default — expenses tab (also handles active sub-tab: received vs expense)
+  var subtabRec = document.getElementById('subtabRec');
+  if (subtabRec && subtabRec.classList.contains('active')) {
+    openAddReceived();
   } else {
     openAddExpense();
   }
