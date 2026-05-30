@@ -4509,6 +4509,50 @@ function applyModuleVisibility() {
     var on = _activeModules.indexOf(id) >= 0;
     el.style.display = on ? '' : 'none';
   });
+  // On mobile, re-enforce single-panel view after setting module visibility
+  if (window.innerWidth <= 768) {
+    _applyMobileSinglePanel();
+  }
+}
+
+// Show only the currently active mobile panel, hide the rest
+function _applyMobileSinglePanel() {
+  var panelKeys = ['expenses','goals','debt','ot','commit','budget'];
+  var tabMap    = { expenses:'mtabExpenses', goals:'mtabGoals', debt:'mtabDebt', ot:'mtabOt', commit:'mtabCommit' };
+  // Find active tab
+  var activeKey = 'expenses';
+  panelKeys.forEach(function(key) {
+    var tid = tabMap[key];
+    var tab = tid ? document.getElementById(tid) : null;
+    if (tab && tab.classList.contains('active')) activeKey = key;
+  });
+  // Make sure the active module is actually enabled; if not, fall back to first enabled one
+  if (_activeModules.indexOf(activeKey) < 0) {
+    activeKey = _activeModules[0] || 'expenses';
+    // Update tab highlights
+    panelKeys.forEach(function(key) {
+      var tid = tabMap[key];
+      var tab = tid ? document.getElementById(tid) : null;
+      if (tab) tab.classList.toggle('active', key === activeKey);
+    });
+  }
+  // Show/hide panels
+  panelKeys.forEach(function(key) {
+    var el = document.querySelector('[data-panel="' + key + '"]');
+    if (!el) return;
+    if (_activeModules.indexOf(key) < 0) {
+      el.style.display = 'none'; // disabled module always hidden
+    } else {
+      el.style.display = (key === activeKey) ? '' : 'none';
+    }
+  });
+  // Also hide tabs for disabled modules
+  panelKeys.forEach(function(key) {
+    var tid = tabMap[key];
+    var tab = tid ? document.getElementById(tid) : null;
+    if (!tab) return;
+    tab.style.display = (_activeModules.indexOf(key) >= 0) ? '' : 'none';
+  });
 }
 
 function addModule(id) {
@@ -4517,23 +4561,28 @@ function addModule(id) {
   saveActiveModules();
   var el = document.querySelector('[data-panel="' + id + '"]');
   if (el) {
-    el.style.display = '';
-    var positions = loadLayout();
-    var saved = positions && positions[id];
-    if (!saved || saved.width === 0 || saved.height === 0) {
-      var canvas = getCanvas();
-      var cW = canvas.offsetWidth, cH = canvas.offsetHeight;
-      el.style.top    = '20px';
-      el.style.left   = '20px';
-      el.style.width  = Math.min(420, cW - 40) + 'px';
-      el.style.height = Math.min(320, cH - 40) + 'px';
+    if (window.innerWidth > 768) {
+      el.style.display = '';
+      var positions = loadLayout();
+      var saved = positions && positions[id];
+      if (!saved || saved.width === 0 || saved.height === 0) {
+        var canvas = getCanvas();
+        var cW = canvas.offsetWidth, cH = canvas.offsetHeight;
+        el.style.top    = '20px';
+        el.style.left   = '20px';
+        el.style.width  = Math.min(420, cW - 40) + 'px';
+        el.style.height = Math.min(320, cH - 40) + 'px';
+      } else {
+        el.style.top    = saved.top    + 'px';
+        el.style.left   = saved.left   + 'px';
+        el.style.width  = saved.width  + 'px';
+        el.style.height = saved.height + 'px';
+      }
+      el.style.zIndex = ++_panelZTop;
     } else {
-      el.style.top    = saved.top    + 'px';
-      el.style.left   = saved.left   + 'px';
-      el.style.width  = saved.width  + 'px';
-      el.style.height = saved.height + 'px';
+      // On mobile: re-apply single panel view (keeps current active tab visible)
+      _applyMobileSinglePanel();
     }
-    el.style.zIndex = ++_panelZTop;
   }
 }
 
@@ -4544,6 +4593,8 @@ function removeModule(id) {
   saveActiveModules();
   var el = document.querySelector('[data-panel="' + id + '"]');
   if (el) el.style.display = 'none';
+  // On mobile: if we removed the currently active panel, switch to first available
+  if (window.innerWidth <= 768) _applyMobileSinglePanel();
 }
 
 function toggleModule(id) {
@@ -4736,19 +4787,7 @@ function applyLayout() {
     document.querySelectorAll('[data-panel]').forEach(function(el) {
       el.style.top = ''; el.style.left = ''; el.style.width = ''; el.style.height = '';
     });
-    // Find which tab is active and show only that panel
-    var activePanels = ['expenses','goals','debt','ot','commit','budget'];
-    var activeTab = null;
-    activePanels.forEach(function(key) {
-      var tabId = { expenses:'mtabExpenses', goals:'mtabGoals', debt:'mtabDebt', ot:'mtabOt', commit:'mtabCommit' }[key];
-      var tab = tabId ? document.getElementById(tabId) : null;
-      if (tab && tab.classList.contains('active')) activeTab = key;
-    });
-    if (!activeTab) activeTab = 'expenses';
-    activePanels.forEach(function(key) {
-      var el = document.querySelector('[data-panel="' + key + '"]');
-      if (el) el.style.display = (key === activeTab) ? '' : 'none';
-    });
+    _applyMobileSinglePanel();
     return;
   }
   if (window.innerWidth <= 1366) {
@@ -5451,25 +5490,17 @@ function switchMPanel(panel) {
   // Only apply show/hide logic on mobile (<=768px)
   if (window.innerWidth > 768) return;
 
-  // Map of panel key -> { selector, tabId }
-  var panels = [
-    { key: 'expenses', selector: '[data-panel="expenses"]', tabId: 'mtabExpenses' },
-    { key: 'goals',    selector: '[data-panel="goals"]',    tabId: 'mtabGoals'    },
-    { key: 'debt',     selector: '[data-panel="debt"]',     tabId: 'mtabDebt'     },
-    { key: 'ot',       selector: '[data-panel="ot"]',       tabId: 'mtabOt'       },
-    { key: 'commit',   selector: '[data-panel="commit"]',   tabId: 'mtabCommit'   },
-    { key: 'budget',   selector: '[data-panel="budget"]',   tabId: null           },
-  ];
-
-  panels.forEach(function(p) {
-    var el  = document.querySelector(p.selector);
-    var tab = p.tabId ? document.getElementById(p.tabId) : null;
-    var isActive = (p.key === panel);
-    if (el)  el.style.display  = isActive ? '' : 'none';
-    if (tab) tab.classList.toggle('active', isActive);
+  // Set the requested tab as active first
+  var tabMap = { expenses:'mtabExpenses', goals:'mtabGoals', debt:'mtabDebt', ot:'mtabOt', commit:'mtabCommit' };
+  Object.keys(tabMap).forEach(function(key) {
+    var tab = document.getElementById(tabMap[key]);
+    if (tab) tab.classList.toggle('active', key === panel);
   });
 
-  // Update FAB title to hint at what it will do
+  // Then enforce single-panel view (respects enabled/disabled modules)
+  _applyMobileSinglePanel();
+
+  // Update FAB title
   var fab = document.getElementById('mobileFab');
   if (fab) {
     var labels = { expenses:'Add expense', goals:'Add goal', debt:'Add debt', ot:'Log OT', commit:'Add bill' };
