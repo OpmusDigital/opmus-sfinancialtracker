@@ -952,14 +952,12 @@
       display: none; margin: 0 1rem 0.5rem; border-radius: 12px;
       background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.07);
       padding: 3px; gap: 3px; flex-shrink: 0;
-      overflow-x: auto; -webkit-overflow-scrolling: touch;
     }
-    .mpanel-tabs::-webkit-scrollbar { display: none; }
     .mpanel-tab {
-      flex: 0 0 auto; padding: 9px 14px; border-radius: 9px; border: none; background: none;
-      color: #475569; font-size: 0.75rem; font-weight: 600; cursor: pointer;
+      flex: 1; padding: 9px 0; border-radius: 9px; border: none; background: none;
+      color: #475569; font-size: 0.8rem; font-weight: 600; cursor: pointer;
       font-family: 'Inter', system-ui; transition: all 0.2s; display: flex;
-      align-items: center; justify-content: center; gap: 0.35rem; white-space: nowrap;
+      align-items: center; justify-content: center; gap: 0.4rem;
     }
     .mpanel-tab.active { background: rgba(239,68,68,0.18); color: #fca5a5; }
 
@@ -1080,8 +1078,11 @@
       .exp-del   { opacity: 1 !important; width: 38px; height: 38px; font-size: 15px; }
       .rec-edit  { opacity: 1 !important; width: 38px; height: 38px; font-size: 14px; }
       .rec-del   { opacity: 1 !important; width: 38px; height: 38px; font-size: 15px; }
-      /* Bigger tap area for icon buttons */
+      .debt-card-actions { opacity: 1 !important; }
+      .ot-entry-actions  { opacity: 1 !important; }
+      /* Bigger tap area for icon buttons — including the red + add buttons */
       .icon-btn { width: 40px; height: 40px; font-size: 16px; }
+      .icon-btn.red { width: 40px; height: 40px; font-size: 20px; font-weight: 700; }
 
       /* ─ Modals: bottom sheet on mobile ─ */
       .modal-overlay { align-items: flex-end; }
@@ -1211,10 +1212,8 @@
     .mobile-fab:active { transform: scale(0.91); box-shadow: 0 2px 12px rgba(239,68,68,0.4); }
 
     @media (max-width: 768px) {
-      .mobile-fab { display: flex; }
-      /* Hide the small + buttons and scan btn from panel headers — FAB replaces them */
+      .mobile-fab { display: none; }
       .btn-scan { display: none; }
-      .panel-actions .icon-btn.red { display: none; }
     }
 
     @media (max-width: 400px) {
@@ -2121,11 +2120,8 @@
 
 <!-- Mobile panel tabs -->
 <div class="mpanel-tabs" id="mpanelTabs">
-  <button class="mpanel-tab active" id="mtabExpenses" onclick="switchMPanel('expenses')">💸 Expenses</button>
-  <button class="mpanel-tab" id="mtabGoals"           onclick="switchMPanel('goals')">🎯 Goals</button>
-  <button class="mpanel-tab" id="mtabDebt"            onclick="switchMPanel('debt')">💳 Debt</button>
-  <button class="mpanel-tab" id="mtabOt"              onclick="switchMPanel('ot')">⏱ OT</button>
-  <button class="mpanel-tab" id="mtabCommit"          onclick="switchMPanel('commit')">📌 Bills</button>
+  <button class="mpanel-tab active" id="mtabLeft" onclick="switchMPanel('left')">💸 Expenses</button>
+  <button class="mpanel-tab" id="mtabRight" onclick="switchMPanel('right')">🎯 Goals</button>
 </div>
 
 <!-- ══════════════════════════════════════════════════════
@@ -4490,7 +4486,7 @@ var UPCOMING_MODULES = [
   { id:'networth', name:'Net Worth',       icon:'ph-trend-up',       desc:'Assets minus liabilities — your financial snapshot', color:'#34d399' }
 ];
 var ACTIVE_MODULES_KEY = (activeProfileId ? activeProfileId + '__' : '') + 'mft_active_modules';
-var DEFAULT_MODULES = ['budget','commit','expenses','goals','debt','ot'];
+var DEFAULT_MODULES = ['budget','commit','expenses','goals'];
 var _activeModules  = DEFAULT_MODULES.slice();
 
 function loadActiveModules() {
@@ -4502,33 +4498,6 @@ function saveActiveModules() {
   localStorage.setItem(ACTIVE_MODULES_KEY, JSON.stringify(_activeModules));
 }
 
-// Mobile helpers ─────────────────────────────────────────────
-function _mobileActivatePanel(activeKey) {
-  var allKeys = ['expenses','goals','debt','ot','commit','budget'];
-  var tabMap  = { expenses:'mtabExpenses', goals:'mtabGoals', debt:'mtabDebt', ot:'mtabOt', commit:'mtabCommit' };
-  allKeys.forEach(function(key) {
-    var el  = document.querySelector('[data-panel="' + key + '"]');
-    var tab = tabMap[key] ? document.getElementById(tabMap[key]) : null;
-    var enabled = _activeModules.indexOf(key) >= 0;
-    if (el)  el.style.display = (enabled && key === activeKey) ? '' : 'none';
-    if (tab) {
-      tab.style.display = enabled ? '' : 'none';
-      tab.classList.toggle('active', key === activeKey && enabled);
-    }
-  });
-}
-
-function _getMobileActiveKey() {
-  var keys   = ['expenses','goals','debt','ot','commit'];
-  var tabMap = { expenses:'mtabExpenses', goals:'mtabGoals', debt:'mtabDebt', ot:'mtabOt', commit:'mtabCommit' };
-  for (var i = 0; i < keys.length; i++) {
-    var tab = document.getElementById(tabMap[keys[i]]);
-    if (tab && tab.classList.contains('active') && _activeModules.indexOf(keys[i]) >= 0) return keys[i];
-  }
-  return _activeModules[0] || 'expenses';
-}
-// ─────────────────────────────────────────────────────────────
-
 function applyModuleVisibility() {
   Object.keys(MODULES).forEach(function(id) {
     var el = document.querySelector('[data-panel="' + id + '"]');
@@ -4536,10 +4505,6 @@ function applyModuleVisibility() {
     var on = _activeModules.indexOf(id) >= 0;
     el.style.display = on ? '' : 'none';
   });
-  // On mobile re-enforce single-panel view AFTER showing all modules
-  if (window.innerWidth <= 768) {
-    _mobileActivatePanel(_getMobileActiveKey());
-  }
 }
 
 function addModule(id) {
@@ -4762,17 +4727,10 @@ function saveCurrentLayout() {
 }
 
 function applyLayout() {
-  if (window.innerWidth <= 768) {
-    document.querySelectorAll('[data-panel]').forEach(function(el) {
-      el.style.top = ''; el.style.left = ''; el.style.width = ''; el.style.height = '';
-    });
-    _mobileActivatePanel(_getMobileActiveKey());
-    return;
-  }
   if (window.innerWidth <= 1366) {
+    // On mobile: clear any desktop inline styles so CSS media queries take full control
     document.querySelectorAll('[data-panel]').forEach(function(el) {
       el.style.top = ''; el.style.left = ''; el.style.width = ''; el.style.height = '';
-      el.style.display = '';
     });
     return;
   }
@@ -5465,8 +5423,21 @@ function deleteContrib(goalId, contribId) {
 
 // ── Mobile panel switching ──
 function switchMPanel(panel) {
-  if (window.innerWidth > 768) return;
-  _mobileActivatePanel(panel);
+  var expEl  = document.querySelector('[data-panel="expenses"]');
+  var goalEl = document.getElementById('panelB');
+  var tabL   = document.getElementById('mtabLeft');
+  var tabR   = document.getElementById('mtabRight');
+  if (panel === 'left') {
+    if (expEl)  expEl.style.display  = '';
+    if (goalEl) goalEl.style.display = 'none';
+    if (tabL) tabL.classList.add('active');
+    if (tabR) tabR.classList.remove('active');
+  } else {
+    if (expEl)  expEl.style.display  = 'none';
+    if (goalEl) goalEl.style.display = '';
+    if (tabL) tabL.classList.remove('active');
+    if (tabR) tabR.classList.add('active');
+  }
 }
 
 // ═══════════════════════════════════════════════════
@@ -6212,14 +6183,12 @@ function applyFinVisibility() {
 // MOBILE FAB
 // ═══════════════════════════════════════════════════
 function mobileFabClick() {
-  var key = _getMobileActiveKey();
-  if (key === 'goals')  { openAddGoal();       return; }
-  if (key === 'debt')   { openAddDebt();        return; }
-  if (key === 'ot')     { openAddOT();          return; }
-  if (key === 'commit') { openAddCommitment();  return; }
-  var subtabRec = document.getElementById('subtabRec');
-  if (subtabRec && subtabRec.classList.contains('active')) { openAddReceived(); return; }
-  openAddExpense();
+  var tabR = document.getElementById('mtabRight');
+  if (tabR && tabR.classList.contains('active')) {
+    openAddGoal();
+  } else {
+    openAddExpense();
+  }
 }
 
 // Restore panel visibility when returning to desktop from mobile
