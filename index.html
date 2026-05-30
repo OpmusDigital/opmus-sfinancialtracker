@@ -4102,16 +4102,43 @@ function renderDashboard() {
   var estCard = document.getElementById('dashEstIncomeCard');
   if (estCard) estCard.style.display = _showEstIncome ? '' : 'none';
   if (_showEstIncome) {
-    var nettBase   = parseFloat(localStorage.getItem(salaryKey)) || 0;
-    var otPay      = loadOT().reduce(function(s, e) { return s + (parseFloat(e.pay) || 0); }, 0);
-    var projected  = nettBase + otPay;
-    var nextName   = ALL_MONTHS[_pEndMonthIdx];
-    var labelEl    = document.getElementById('dashProjectedLabel');
+    // Use the proper salary config (gross - deductions) for nett
+    var salCfg2  = loadSalaryConfig();
+    var gross2   = salCfg2.gross || 0;
+    var nettBase = gross2 > 0 ? _calcNett(salCfg2) : (parseFloat(localStorage.getItem(salaryKey)) || 0);
+
+    // OT is paid ONE month later: June salary includes May OT, July includes June OT, etc.
+    // So load OT from the PREVIOUS month relative to the current period
+    var prevOtMonthIdx = periodMonthIdx === 0 ? 11 : periodMonthIdx - 1;
+    var prevOtYear     = periodMonthIdx === 0 ? periodYear - 1 : periodYear;
+    var prevOtMonthName = ALL_MONTHS[prevOtMonthIdx].toLowerCase();
+    var prevOtKey      = profilePrefix + 'mft_ot_' + prevOtMonthName + '_' + prevOtYear;
+    var prevOtList     = [];
+    try { prevOtList = JSON.parse(localStorage.getItem(prevOtKey)) || []; } catch(e) { prevOtList = []; }
+    var otPay    = prevOtList.reduce(function(s, e) { return s + (parseFloat(e.pay) || 0); }, 0);
+
+    var projected = nettBase + otPay;
+    var nextName  = ALL_MONTHS[_pEndMonthIdx];
+    var prevOtMonthLabel = ALL_MONTHS[prevOtMonthIdx];
+
+    var labelEl   = document.getElementById('dashProjectedLabel');
     if (labelEl) labelEl.innerHTML = 'Est. <span style="color:#eab308;font-weight:700;">' + nextName + '</span> Income';
     var valEl = document.getElementById('dashProjected');
     if (valEl) valEl.textContent = nettBase > 0 ? fmt(projected) : '—';
     var subEl = document.getElementById('dashProjectedSub');
-    if (subEl) subEl.textContent = nettBase > 0 ? fmt(nettBase) + ' nett + ' + fmt(otPay) + ' OT' : 'configure income first';
+    if (subEl) {
+      if (nettBase <= 0) {
+        subEl.textContent = 'configure salary first';
+      } else {
+        var dedTotal2 = gross2 > 0
+          ? salCfg2.deductions.reduce(function(s,d){ return s+(d.type==='pct'?gross2*d.value/100:d.value); },0)
+          : 0;
+        var base = gross2 > 0 ? fmt(gross2) + ' − ' + fmt(dedTotal2) + ' ded' : fmt(nettBase) + ' nett';
+        subEl.textContent = otPay > 0
+          ? base + ' + ' + fmt(otPay) + ' OT (' + prevOtMonthLabel + ')'
+          : base + ' · no ' + prevOtMonthLabel + ' OT yet';
+      }
+    }
   }
 
 }
