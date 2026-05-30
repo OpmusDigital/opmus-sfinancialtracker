@@ -330,6 +330,7 @@
     .dash-card.green { border-color: rgba(34,197,94,0.25); background: rgba(34,197,94,0.06); }
     .dash-card.blue { border-color: rgba(59,130,246,0.25); background: rgba(59,130,246,0.06); }
     .dash-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.08em; color: #64748b; }
+    .dash-month-hl { color: #22c55e; font-weight: 700; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.08em; }
     .dash-val { font-size: 1.4rem; font-weight: 700; color: #f1f5f9; }
     .dash-val.red { color: #ef4444; }
     .dash-val.green { color: #22c55e; }
@@ -509,6 +510,12 @@
     .commit-name { flex: 1; font-size: 0.78rem; color: #cbd5e1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .commit-amt { font-size: 0.78rem; font-weight: 700; color: #f87171; flex-shrink: 0; }
     .commit-empty { padding: 0.6rem 1rem; font-size: 0.75rem; color: #334155; }
+    .pay-tracker-row { display:flex; align-items:center; gap:0.45rem; padding:0.3rem 0; border-bottom:1px solid rgba(255,255,255,0.04); }
+    .pay-tracker-row:last-child { border-bottom:none; }
+    .pay-tracker-name { flex:1; font-size:0.77rem; color:#e2e8f0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .pay-tracker-amt { font-size:0.73rem; font-weight:600; color:#f87171; flex-shrink:0; }
+    .pay-mark-btn { flex-shrink:0; padding:0.2rem 0.55rem; border-radius:5px; border:1px solid rgba(34,197,94,0.3); background:rgba(34,197,94,0.08); color:#4ade80; font-size:0.67rem; font-weight:700; cursor:pointer; white-space:nowrap; }
+    .pay-undo-btn { flex-shrink:0; padding:0.2rem 0.45rem; border-radius:5px; border:1px solid rgba(255,255,255,0.08); background:transparent; color:#475569; font-size:0.65rem; font-weight:600; cursor:pointer; }
     .budget-list::-webkit-scrollbar { width: 4px; }
     .budget-list::-webkit-scrollbar-track { background: transparent; }
     .budget-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
@@ -647,6 +654,11 @@
     /* OT Estimator Panel */
     .panel-ot { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.07); border-radius: 16px; display: flex; flex-direction: column; overflow: hidden; }
     .ot-body { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+    .ot-month-nav { display: flex; align-items: center; justify-content: space-between; padding: 0.4rem 0.75rem 0; }
+    .ot-nav-btn { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: 7px; color: #94a3b8; font-size: 1.1rem; line-height: 1; padding: 1px 10px; cursor: pointer; transition: all 0.15s; }
+    .ot-nav-btn:hover:not([disabled]) { background: rgba(255,255,255,0.12); color: #e2e8f0; }
+    .ot-nav-label { font-size: 0.78rem; font-weight: 600; color: #e2e8f0; display: flex; align-items: center; gap: 6px; }
+    .ot-past-badge { font-size: 0.62rem; color: #f59e0b; background: rgba(245,158,11,0.12); border: 1px solid rgba(245,158,11,0.25); border-radius: 5px; padding: 1px 6px; }
     .ot-scroll { flex: 1; overflow-y: auto; padding: 0.75rem 1rem; }
     .ot-scroll::-webkit-scrollbar { width: 4px; }
     .ot-scroll::-webkit-scrollbar-track { background: transparent; }
@@ -1245,8 +1257,9 @@
     .mobile-fab:active { transform: scale(0.91); box-shadow: 0 2px 12px rgba(239,68,68,0.4); }
 
     @media (max-width: 768px) {
-      .mobile-fab { display: none; }
+      .mobile-fab { display: flex; }
       .btn-scan { display: none; }
+      .panel-actions .icon-btn.red { display: none; }
     }
 
     @media (max-width: 400px) {
@@ -1962,7 +1975,7 @@
       <div class="dash-sub" id="dashExpensesSub">0 entries</div>
     </div>
     <div class="dash-card green">
-      <div class="dash-label">Remaining</div>
+      <div class="dash-label" id="dashRemainLabel"><span id="dashRemainMonth" class="dash-month-hl"></span>'s Income Remaining</div>
       <div class="dash-val green" id="dashRemain">—</div>
       <div class="dash-sub" id="dashRemainSub">—</div>
     </div>
@@ -2230,14 +2243,26 @@
     <button class="modal-close" onclick="closeAddCommitment()">✕</button>
     <div class="modal-icon"><i class="ph-fill ph-calendar-check" style="font-size:1.4rem;color:var(--th-accent);"></i></div>
     <div class="modal-title" id="commitModalTitle">Add Commitment</div>
-    <div class="modal-sub">Fixed amount deducted every cycle</div>
+    <div class="modal-sub" id="commitModalSub">Fixed amount deducted every cycle</div>
     <div class="form-group">
       <label class="form-label">Name</label>
       <input class="form-input" id="commitNameInp" placeholder="e.g. Rent, Phone Bill, Insurance…" maxlength="50" />
     </div>
     <div class="form-group">
-      <label class="form-label">Amount (RM)</label>
+      <label class="form-label" id="commitAmtLabel">Amount (RM)</label>
       <input class="form-input" id="commitAmtInp" type="number" min="0" step="0.01" placeholder="0.00" />
+    </div>
+    <div style="display:flex;align-items:flex-start;gap:0.65rem;margin:-0.25rem 0 0.85rem;">
+      <input type="checkbox" id="commitVarInp" style="width:16px;height:16px;margin-top:2px;accent-color:#ef4444;cursor:pointer;flex-shrink:0;" onchange="_toggleCommitVarMode()" />
+      <div>
+        <label for="commitVarInp" style="font-size:0.78rem;font-weight:600;color:#e2e8f0;cursor:pointer;">Variable amount</label>
+        <div style="font-size:0.67rem;color:#475569;margin-top:0.15rem;">Amount changes monthly. Enter known upcoming amounts below, or leave blank to enter when marking paid.</div>
+      </div>
+    </div>
+    <!-- Monthly schedule — shown only when Variable is checked -->
+    <div id="commitScheduleSection" style="display:none;margin-bottom:0.85rem;">
+      <div style="font-size:0.7rem;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.07em;margin-bottom:0.45rem;">Monthly Schedule <span style="font-weight:400;color:#334155;">(optional)</span></div>
+      <div id="commitScheduleRows" style="display:flex;flex-direction:column;gap:0.3rem;"></div>
     </div>
     <div class="form-group">
       <label class="form-label">Due Day of Month <span style="font-weight:400;color:#475569;">(optional)</span></label>
@@ -2246,6 +2271,24 @@
     <div class="modal-actions">
       <button class="modal-btn secondary" onclick="closeAddCommitment()">Cancel</button>
       <button class="modal-btn primary" onclick="saveCommitment()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- Variable Bill Actual Amount Modal -->
+<div class="modal-overlay" id="varAmtModal" onclick="if(event.target===this)closeVarAmtModal()">
+  <div class="modal" style="max-width:320px;">
+    <button class="modal-close" onclick="closeVarAmtModal()">✕</button>
+    <div class="modal-icon">💡</div>
+    <div class="modal-title" id="varAmtModalTitle">Bill Amount</div>
+    <div class="modal-sub">How much was the bill this month? <span id="varAmtModalEst" style="color:#f97316;"></span></div>
+    <div class="form-group">
+      <label class="form-label">Actual Amount (RM)</label>
+      <input class="form-input" id="varAmtInp" type="number" min="0" step="0.01" placeholder="0.00" onkeydown="if(event.key==='Enter')saveVarAmt()" />
+    </div>
+    <div class="modal-actions">
+      <button class="modal-btn secondary" onclick="closeVarAmtModal()">Cancel</button>
+      <button class="modal-btn primary" onclick="saveVarAmt()">Mark Paid</button>
     </div>
   </div>
 </div>
@@ -2446,6 +2489,43 @@
 
     <!-- Fixed payment fields -->
     <div id="debtFixedFields">
+      <!-- Loan calculator -->
+      <div style="background:rgba(99,102,241,0.06);border:1px solid rgba(99,102,241,0.18);border-radius:10px;padding:0.7rem 0.85rem;margin-bottom:0.75rem;">
+        <div style="font-size:0.75rem;color:#a5b4fc;font-weight:700;margin-bottom:0.55rem;">🧮 Loan Calculator <span style="font-weight:400;color:#475569;font-size:0.68rem;">(optional)</span></div>
+        <div style="display:flex;gap:0.4rem;margin-bottom:0.45rem;">
+          <div style="flex:1;">
+            <div style="font-size:0.67rem;color:#64748b;margin-bottom:0.18rem;">Principal (RM)</div>
+            <input type="number" id="debtPrincipal" inputmode="decimal" placeholder="37500" min="0" step="0.01" oninput="calcDebtLoan()"
+              style="width:100%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:7px;padding:0.3rem 0.5rem;color:#e2e8f0;font-size:0.8rem;" />
+          </div>
+          <div style="flex:1;">
+            <div style="font-size:0.67rem;color:#64748b;margin-bottom:0.18rem;">Rate (%/yr)</div>
+            <input type="number" id="debtRate" inputmode="decimal" placeholder="3.53" min="0" step="0.01" oninput="calcDebtLoan()"
+              style="width:100%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:7px;padding:0.3rem 0.5rem;color:#e2e8f0;font-size:0.8rem;" />
+          </div>
+          <div style="flex:1;">
+            <div style="font-size:0.67rem;color:#64748b;margin-bottom:0.18rem;">Tenure (mths)</div>
+            <input type="number" id="debtTenure" inputmode="numeric" placeholder="108" min="1" oninput="calcDebtLoan()"
+              style="width:100%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:7px;padding:0.3rem 0.5rem;color:#e2e8f0;font-size:0.8rem;" />
+          </div>
+        </div>
+        <div id="debtCalcResult" style="display:none;background:rgba(99,102,241,0.08);border-radius:7px;padding:0.45rem 0.6rem;margin-bottom:0.4rem;">
+          <div style="display:flex;justify-content:space-between;font-size:0.72rem;margin-bottom:0.15rem;">
+            <span style="color:#64748b;">Total to repay</span>
+            <span id="debtCalcTotal" style="color:#e2e8f0;font-weight:700;">—</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-size:0.72rem;margin-bottom:0.15rem;">
+            <span style="color:#64748b;">Total interest</span>
+            <span id="debtCalcInterest" style="color:#f87171;font-weight:600;">—</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-size:0.72rem;">
+            <span style="color:#64748b;">Monthly installment</span>
+            <span id="debtCalcMonthly" style="color:#4ade80;font-weight:700;">—</span>
+          </div>
+        </div>
+        <button id="debtCalcApplyBtn" onclick="applyDebtCalc()" style="display:none;width:100%;padding:0.3rem;border-radius:7px;border:1px solid rgba(99,102,241,0.4);background:rgba(99,102,241,0.12);color:#a5b4fc;font-size:0.72rem;font-weight:700;cursor:pointer;">↑ Apply to fields above</button>
+      </div>
+
       <div class="field-label">Monthly Minimum Payment <span style="color:#475569;">(optional)</span></div>
       <input type="number" id="debtMinPay" inputmode="decimal" placeholder="e.g. 500" min="0" step="0.01" />
 
@@ -2455,12 +2535,14 @@
 
     <!-- Variable payment fields -->
     <div id="debtVariableFields" style="display:none;">
-      <div style="background:rgba(244,114,182,0.06);border:1px solid rgba(244,114,182,0.15);border-radius:10px;padding:0.7rem 0.85rem;margin-bottom:0.5rem;">
+      <div style="background:rgba(244,114,182,0.06);border:1px solid rgba(244,114,182,0.15);border-radius:10px;padding:0.7rem 0.85rem;margin-bottom:0.75rem;">
         <div style="font-size:0.75rem;color:#f9a8d4;font-weight:600;margin-bottom:0.2rem;">🔀 Variable billing mode</div>
-        <div style="font-size:0.72rem;color:#64748b;line-height:1.5;">Your bill changes every month (like ShopeePay Later). After saving, log each month's bill from the debt card — the tracker will update your balance and remind you when it's due.</div>
+        <div style="font-size:0.72rem;color:#64748b;line-height:1.5;">Bill changes every month. Enter known upcoming amounts below — they'll be pre-logged as bills automatically.</div>
       </div>
       <div class="field-label">Due Day of Month <span style="color:#475569;">(optional, 1–31)</span></div>
       <input type="number" id="debtDueDayVar" inputmode="numeric" placeholder="e.g. 15" min="1" max="31" />
+      <div class="field-label" style="margin-top:0.75rem;">Monthly Bill Schedule <span style="color:#475569;">(optional)</span></div>
+      <div id="debtScheduleRows" style="display:flex;flex-direction:column;gap:0.3rem;margin-bottom:0.5rem;"></div>
     </div>
 
     <button class="modal-btn blue" id="debtSaveBtn" onclick="saveDebtEntry()">Add Debt</button>
@@ -2505,14 +2587,10 @@
     <button class="modal-close" onclick="closeEstIncomeModal()">✕</button>
     <div class="modal-icon"><span style="font-size:1.6rem;">💰</span></div>
     <div class="modal-title">Est. Income Setup</div>
-    <div class="modal-sub">Your projected take-home = basic − deductions + OT</div>
+    <div class="modal-sub">Deductions are taken from your Monthly Nett Income settings</div>
     <div class="form-group" style="margin-top:1rem;">
       <label class="form-label">Basic Pay <span style="font-weight:400;color:#475569;">(gross monthly salary)</span></label>
       <input class="form-input" id="estBasicPayInp" type="number" min="0" step="0.01" placeholder="e.g. 3000.00" oninput="_updateEstPreview()" />
-    </div>
-    <div class="form-group">
-      <label class="form-label">Deductions <span style="font-weight:400;color:#475569;">(EPF, SOCSO, tax, etc.)</span></label>
-      <input class="form-input" id="estDeductionsInp" type="number" min="0" step="0.01" placeholder="e.g. 350.00" oninput="_updateEstPreview()" />
     </div>
     <div style="background:rgba(234,179,8,0.07);border:1px solid rgba(234,179,8,0.2);border-radius:10px;padding:0.65rem 0.85rem;margin-bottom:0.75rem;">
       <div style="font-size:0.7rem;color:#64748b;margin-bottom:0.25rem;">OT earnings are added automatically from your logged OT entries.</div>
@@ -2602,10 +2680,11 @@
   <div class="modal hist-modal">
     <button class="modal-close" onclick="closeHistory()">✕</button>
     <div class="modal-icon">📊</div>
-    <div class="modal-title">Income History</div>
+    <div class="modal-title">History</div>
     <div class="hist-tabs">
       <div class="hist-tab active" onclick="switchHistTab('chart', this)">Chart</div>
       <div class="hist-tab" onclick="switchHistTab('table', this)">Table</div>
+      <div class="hist-tab" onclick="switchHistTab('ot', this)">OT</div>
     </div>
     <div class="hist-content" id="histContent"></div>
     <button class="modal-btn secondary" onclick="closeHistory()">Close</button>
@@ -2719,24 +2798,60 @@ function _syncable(k) {
 var _db           = null;
 var _syncKey      = null;
 var _cloudSyncing = false;
+var _pendingSync  = false;
+var _syncTimer    = null;
 
 // Capture native methods before we override them so we can use them internally
 var _lsSet    = Storage.prototype.setItem.bind(localStorage);
 var _lsRemove = Storage.prototype.removeItem.bind(localStorage);
 
-// Patch localStorage — every mft_ write/remove automatically mirrors to Firebase
+// Silent batch push — fallback when individual real-time writes fail (e.g. Safari/iPad)
+function _batchPush() {
+  if (!_db || !_syncKey || _cloudSyncing) return;
+  _pendingSync = false;
+  var batch = {};
+  for (var i = 0; i < localStorage.length; i++) {
+    var k = localStorage.key(i);
+    if (_syncable(k)) batch[k] = localStorage.getItem(k);
+  }
+  _db.ref(_syncKey).update(batch).catch(function(e) {
+    _pendingSync = true;
+    console.warn('Batch sync failed:', e.message);
+  });
+}
+
+// Schedule a batch push 5 s after the last write (debounced)
+function _scheduleBatchPush() {
+  _pendingSync = true;
+  if (_syncTimer) clearTimeout(_syncTimer);
+  _syncTimer = setTimeout(_batchPush, 5000);
+}
+
+// Patch localStorage — every mft_ write/remove mirrors to Firebase,
+// with a debounced batch-push safety net for Safari/iOS write failures
 localStorage.setItem = function(key, value) {
   _lsSet(key, value);
   if (!_cloudSyncing && _db && _syncKey && _syncable(key)) {
-    _db.ref(_syncKey + '/' + key).set(value).catch(function(){});
+    _db.ref(_syncKey + '/' + key).set(value).catch(function() {
+      _scheduleBatchPush();
+    });
+    _scheduleBatchPush();
   }
 };
 localStorage.removeItem = function(key) {
   _lsRemove(key);
   if (!_cloudSyncing && _db && _syncKey && _syncable(key)) {
-    _db.ref(_syncKey + '/' + key).remove().catch(function(){});
+    _db.ref(_syncKey + '/' + key).remove().catch(function() {
+      _scheduleBatchPush();
+    });
+    _scheduleBatchPush();
   }
 };
+
+// When user switches back to the tab, flush any writes that failed in the background
+document.addEventListener('visibilitychange', function() {
+  if (!document.hidden && _pendingSync && _db && _syncKey) _batchPush();
+});
 
 function _fbConfigured() {
   return FIREBASE_CONFIG.apiKey && !FIREBASE_CONFIG.apiKey.startsWith('PASTE');
@@ -2842,7 +2957,7 @@ async function applySyncKey() {
   if (inp) inp.value = '';
   await pullFromCloud();
   if (activeProfileId) {
-    renderPanelA(); renderPanelB(); renderBudget(); renderCommitments(); renderOtPanel(); renderDebtPanel();
+    syncDebtCommitments(); renderPanelA(); renderPanelB(); renderBudget(); renderCommitments(); renderOtPanel(); renderDebtPanel();
   } else {
     // Not logged in yet — show synced profiles in the picker then reload
     closeSyncModal();
@@ -2958,6 +3073,8 @@ const MY_PH = {
 };
 const BASIC_PAY_KEY        = profilePrefix + 'mft_basic_pay';
 const DEDUCTIONS_KEY       = profilePrefix + 'mft_deductions';
+const EST_GROSS_KEY        = profilePrefix + 'mft_est_gross';
+const EST_DEDUCT_KEY       = profilePrefix + 'mft_est_deduct';
 const RECEIVED_KEY         = profilePrefix + 'mft_received_' + periodMonthLower + '_' + periodYear;
 const TEMPLATES_KEY        = profilePrefix + 'mft_templates';
 const GOALS_KEY            = profilePrefix + 'mft_goals';
@@ -3133,12 +3250,30 @@ function calcOtIncentive(type, hours) {
 function loadOT() { try { return JSON.parse(localStorage.getItem(OT_KEY)) || []; } catch(e) { return []; } }
 function saveOT(arr) { localStorage.setItem(OT_KEY, JSON.stringify(arr)); }
 
+var _otViewMonthIdx = periodMonthIdx;
+var _otViewYear     = periodYear;
+function _otViewKey() { return profilePrefix + 'mft_ot_' + ALL_MONTHS[_otViewMonthIdx].toLowerCase() + '_' + _otViewYear; }
+function loadOTView() { try { return JSON.parse(localStorage.getItem(_otViewKey())) || []; } catch(e) { return []; } }
+function saveOTView(arr) { localStorage.setItem(_otViewKey(), JSON.stringify(arr)); }
+function otPrevMonth() {
+  if (_otViewMonthIdx === 0) { _otViewMonthIdx = 11; _otViewYear--; }
+  else { _otViewMonthIdx--; }
+  renderOtPanel();
+}
+function otNextMonth() {
+  if (_otViewMonthIdx === periodMonthIdx && _otViewYear === periodYear) return;
+  if (_otViewMonthIdx === 11) { _otViewMonthIdx = 0; _otViewYear++; }
+  else { _otViewMonthIdx++; }
+  renderOtPanel();
+}
+
 var _editOtTarget = null;
 
 function openAddOT() {
   _editOtTarget = null;
   populateOtTypeSelect('ot1');
-  var d = new Date();
+  var isPastView = _otViewMonthIdx !== periodMonthIdx || _otViewYear !== periodYear;
+  var d = isPastView ? new Date(_otViewYear, _otViewMonthIdx, 1) : new Date();
   document.getElementById('otDay').value   = d.getDate();
   document.getElementById('otMonth').value = d.getMonth() + 1;
   document.getElementById('otYear').value  = d.getFullYear();
@@ -3153,7 +3288,7 @@ function openAddOT() {
 }
 
 function openEditOT(id) {
-  var list  = loadOT();
+  var list  = loadOTView();
   var entry = list.find(function(e) { return e.id === id; });
   if (!entry) { showToast('Entry not found'); return; }
   _editOtTarget = entry;
@@ -3243,22 +3378,22 @@ function saveOtEntry() {
 
   var dateStr = String(day).padStart(2,'0') + '/' + String(month).padStart(2,'0') + '/' + year;
   var desc    = document.getElementById('otDesc').value.trim();
-  var list    = loadOT();
+  var list    = loadOTView();
 
   if (_editOtTarget) {
     var idx = list.findIndex(function(e) { return e.id === _editOtTarget.id; });
     if (idx !== -1) list[idx] = { id: _editOtTarget.id, date: dateStr, type: type, hours: hours, pay: pay, incentive: incentive, description: desc };
-    saveOT(list); closeAddOT(); renderOtPanel(); renderDashboard();
+    saveOTView(list); closeAddOT(); renderOtPanel(); renderDashboard();
     showToast('OT entry updated: ' + fmt(pay));
   } else {
     list.push({ id: uid(), date: dateStr, type: type, hours: hours, pay: pay, incentive: incentive, description: desc });
-    saveOT(list); closeAddOT(); renderOtPanel(); renderDashboard();
+    saveOTView(list); closeAddOT(); renderOtPanel(); renderDashboard();
     showToast(incentive > 0 ? 'OT added: ' + fmt(pay) + ' (incl. ' + fmt(incentive) + ' bonus)' : 'OT entry added: ' + fmt(pay));
   }
 }
 
 function deleteOtEntry(id) {
-  saveOT(loadOT().filter(function(e) { return e.id !== id; }));
+  saveOTView(loadOTView().filter(function(e) { return e.id !== id; }));
   renderOtPanel(); renderDashboard();
 }
 
@@ -3421,6 +3556,70 @@ function saveDebts(arr) { localStorage.setItem(DEBT_KEY, JSON.stringify(arr)); }
 var _DEBT_COLORS = ['#f472b6','#a78bfa','#60a5fa','#34d399','#fb923c','#f87171','#facc15','#2dd4bf'];
 var _editDebtTarget = null;
 
+function _buildDebtScheduleRows(existingBills) {
+  var rows = document.getElementById('debtScheduleRows');
+  if (!rows) return;
+  rows.innerHTML = '';
+  rows.style.cssText = 'display:flex;flex-direction:column;gap:0.3rem;max-height:260px;overflow-y:auto;padding-right:4px;';
+  for (var i = 0; i < 24; i++) {
+    var d      = new Date(periodYear, periodMonthIdx + i, 1);
+    var mIdx   = d.getMonth();
+    var yr     = d.getFullYear();
+    var label  = ALL_MONTHS[mIdx] + ' ' + yr;
+    var bill   = (existingBills || []).find(function(b) { return b.month === label; });
+    var val    = bill ? bill.amount : '';
+    var isPaid = bill && bill.paid;
+    var row    = document.createElement('div');
+    row.style.cssText = 'display:flex;align-items:center;gap:0.5rem;';
+    row.innerHTML =
+      '<span style="font-size:0.75rem;color:' + (isPaid ? '#22c55e' : '#94a3b8') + ';width:80px;flex-shrink:0;">' +
+        ALL_MONTHS[mIdx].slice(0,3) + ' ' + yr + (isPaid ? ' ✓' : '') +
+      '</span>' +
+      '<input type="number" min="0" step="0.01" placeholder="—" data-dmonth="' + label + '" ' +
+        (isPaid ? 'disabled title="Already paid" style="opacity:0.4;" ' : '') +
+        'value="' + val + '" ' +
+        'style="flex:1;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:0.35rem 0.6rem;color:#e2e8f0;font-size:0.8rem;" />';
+    rows.appendChild(row);
+  }
+}
+
+function calcDebtLoan() {
+  var principal = parseFloat(document.getElementById('debtPrincipal').value) || 0;
+  var rate      = parseFloat(document.getElementById('debtRate').value)      || 0;
+  var tenure    = parseInt(document.getElementById('debtTenure').value)      || 0;
+  var resEl     = document.getElementById('debtCalcResult');
+  var applyBtn  = document.getElementById('debtCalcApplyBtn');
+  if (principal > 0 && rate > 0 && tenure > 0) {
+    var years    = tenure / 12;
+    var interest = principal * (rate / 100) * years;
+    var total    = principal + interest;
+    var monthly  = total / tenure;
+    document.getElementById('debtCalcTotal').textContent    = 'RM ' + fmt(total);
+    document.getElementById('debtCalcInterest').textContent = 'RM ' + fmt(interest);
+    document.getElementById('debtCalcMonthly').textContent  = 'RM ' + fmt(monthly);
+    resEl.style.display    = '';
+    applyBtn.style.display = '';
+  } else {
+    resEl.style.display    = 'none';
+    applyBtn.style.display = 'none';
+  }
+}
+function applyDebtCalc() {
+  var principal = parseFloat(document.getElementById('debtPrincipal').value) || 0;
+  var rate      = parseFloat(document.getElementById('debtRate').value)      || 0;
+  var tenure    = parseInt(document.getElementById('debtTenure').value)      || 0;
+  if (!principal || !rate || !tenure) return;
+  var total   = principal + principal * (rate / 100) * (tenure / 12);
+  var monthly = total / tenure;
+  document.getElementById('debtTotal').value   = total.toFixed(2);
+  document.getElementById('debtMinPay').value  = monthly.toFixed(2);
+  // Pre-fill remaining with total if not yet entered
+  if (!document.getElementById('debtRemaining').value) {
+    document.getElementById('debtRemaining').value = total.toFixed(2);
+  }
+  showToast('Fields updated from calculator');
+}
+
 function openAddDebt() {
   _editDebtTarget = null;
   document.getElementById('debtName').value      = '';
@@ -3429,9 +3628,15 @@ function openAddDebt() {
   document.getElementById('debtMinPay').value    = '';
   document.getElementById('debtDueDay').value    = '';
   document.getElementById('debtDueDayVar').value = '';
+  document.getElementById('debtPrincipal').value = '';
+  document.getElementById('debtRate').value      = '';
+  document.getElementById('debtTenure').value    = '';
+  document.getElementById('debtCalcResult').style.display    = 'none';
+  document.getElementById('debtCalcApplyBtn').style.display  = 'none';
   document.getElementById('debtModalTitle').textContent = 'Add Debt';
   document.getElementById('debtSaveBtn').textContent    = 'Add Debt';
   setDebtType('fixed');
+  _buildDebtScheduleRows([]);
   document.getElementById('addDebtModal').classList.add('open');
 }
 
@@ -3447,9 +3652,14 @@ function openEditDebt(id) {
   document.getElementById('debtMinPay').value    = entry.minPay    || '';
   document.getElementById('debtDueDay').value    = (!isVar && entry.dueDay) ? entry.dueDay : '';
   document.getElementById('debtDueDayVar').value = (isVar && entry.dueDay)  ? entry.dueDay : '';
+  document.getElementById('debtPrincipal').value = entry.principal || '';
+  document.getElementById('debtRate').value      = entry.interestRate || '';
+  document.getElementById('debtTenure').value    = entry.tenure || '';
   document.getElementById('debtModalTitle').textContent = 'Edit Debt';
   document.getElementById('debtSaveBtn').textContent    = 'Save Changes';
   setDebtType(isVar ? 'variable' : 'fixed');
+  _buildDebtScheduleRows(entry.bills || []);
+  calcDebtLoan();
   document.getElementById('addDebtModal').classList.add('open');
 }
 
@@ -3464,32 +3674,66 @@ function saveDebtEntry() {
   var remaining = parseFloat(document.getElementById('debtRemaining').value);
   var minPay    = parseFloat(document.getElementById('debtMinPay').value)    || 0;
   var dueDay    = parseInt(document.getElementById('debtDueDay').value, 10)  || 0;
+  var principal    = parseFloat(document.getElementById('debtPrincipal').value) || 0;
+  var interestRate = parseFloat(document.getElementById('debtRate').value)      || 0;
+  var tenure       = parseInt(document.getElementById('debtTenure').value)      || 0;
 
   var isVariable = (_debtType === 'variable');
   var dueDayFinal = isVariable
     ? (parseInt(document.getElementById('debtDueDayVar').value, 10) || 0)
     : dueDay;
 
-  if (!name)               { showToast('Please enter a debt name'); return; }
+  if (!name) { showToast('Please enter a debt name'); return; }
+  if (isVariable && isNaN(remaining)) remaining = 0;
   if (isNaN(remaining) || remaining < 0) { showToast('Please enter the current remaining balance'); return; }
   if (total <= 0) total = remaining;
+
+  // Merge schedule grid into bills array
+  function mergeDebtSchedule(existingBills) {
+    var bills = (existingBills || []).slice();
+    var inputs = document.querySelectorAll('#debtScheduleRows input[data-dmonth]');
+    inputs.forEach(function(inp) {
+      if (inp.disabled) return; // already paid — leave untouched
+      var monthLabel = inp.getAttribute('data-dmonth');
+      var amt = parseFloat(inp.value);
+      var existing = bills.find(function(b) { return b.month === monthLabel; });
+      if (amt > 0) {
+        if (existing) { existing.amount = amt; }
+        else { bills.push({ month: monthLabel, amount: amt, paid: false }); }
+      } else {
+        // blank — remove unpaid entry if it exists
+        bills = bills.filter(function(b) { return b.month !== monthLabel || b.paid; });
+      }
+    });
+    return bills;
+  }
 
   var list = loadDebts();
   if (_editDebtTarget) {
     var idx = list.findIndex(function(e) { return e.id === _editDebtTarget.id; });
     if (idx !== -1) {
       var existing = list[idx];
-      list[idx] = { id: existing.id, color: existing.color, name: name, total: total, remaining: remaining,
+      var mergedBills = isVariable ? mergeDebtSchedule(existing.bills) : (existing.bills || []);
+      var updEntry = { id: existing.id, color: existing.color, name: name, total: total, remaining: remaining,
                     minPay: isVariable ? 0 : minPay, dueDay: dueDayFinal,
-                    variable: isVariable, bills: existing.bills || [] };
+                    variable: isVariable, bills: mergedBills };
+      if (principal)    updEntry.principal    = principal;
+      if (interestRate) updEntry.interestRate = interestRate;
+      if (tenure)       updEntry.tenure       = tenure;
+      list[idx] = updEntry;
     }
     saveDebts(list); closeAddDebt(); renderDebtPanel(); syncDebtCommitments(); renderCommitments(); updateDueAlert(); renderDashboard();
     showToast('Debt updated');
   } else {
     var color = _DEBT_COLORS[list.length % _DEBT_COLORS.length];
-    list.push({ id: uid(), color: color, name: name, total: total, remaining: remaining,
+    var newBills = isVariable ? mergeDebtSchedule([]) : [];
+    var newEntry = { id: uid(), color: color, name: name, total: total, remaining: remaining,
                 minPay: isVariable ? 0 : minPay, dueDay: dueDayFinal,
-                variable: isVariable, bills: [] });
+                variable: isVariable, bills: newBills };
+    if (principal)    newEntry.principal    = principal;
+    if (interestRate) newEntry.interestRate = interestRate;
+    if (tenure)       newEntry.tenure       = tenure;
+    list.push(newEntry);
     saveDebts(list); closeAddDebt(); renderDebtPanel(); syncDebtCommitments(); renderCommitments(); updateDueAlert(); renderDashboard();
     showToast('Debt added: ' + name);
   }
@@ -3510,9 +3754,23 @@ function syncDebtCommitments() {
   var commits = loadCommitments();
   // Remove all previously synced debt entries
   commits = commits.filter(function(c) { return !c.debtId; });
-  // Re-add current debts that have a minPay
   debts.forEach(function(d) {
-    if (parseFloat(d.minPay) > 0) {
+    if (d.variable) {
+      // Variable debt: sync the current period's bill amount (if it exists)
+      var periodLabel = ALL_MONTHS[periodMonthIdx] + ' ' + periodYear;
+      var bill = (d.bills || []).find(function(b) { return b.month === periodLabel; });
+      if (bill && !bill.paid) {
+        commits.push({
+          id:        'debt_' + d.id,
+          name:      d.name,
+          amount:    parseFloat(bill.amount) || 0,
+          debtId:    d.id,
+          debtColor: d.color || '#f472b6',
+          dueDay:    d.dueDay || 0,
+          variable:  true
+        });
+      }
+    } else if (parseFloat(d.minPay) > 0) {
       commits.push({
         id:        'debt_' + d.id,
         name:      d.name,
@@ -3646,22 +3904,27 @@ function buildForecastHtml() {
 var _debtType = 'fixed'; // 'fixed' | 'variable'
 function setDebtType(type) {
   _debtType = type;
-  var fixedFields    = document.getElementById('debtFixedFields');
-  var varFields      = document.getElementById('debtVariableFields');
-  var btnFixed       = document.getElementById('debtTypeFixed');
-  var btnVar         = document.getElementById('debtTypeVariable');
-  var activeStyle    = 'border:1px solid rgba(244,114,182,0.5);background:rgba(244,114,182,0.12);color:#f9a8d4;';
-  var inactiveStyle  = 'border:1px solid rgba(255,255,255,0.08);background:transparent;color:#475569;';
+  var fixedFields = document.getElementById('debtFixedFields');
+  var varFields   = document.getElementById('debtVariableFields');
+  var btnFixed    = document.getElementById('debtTypeFixed');
+  var btnVar      = document.getElementById('debtTypeVariable');
+  function _applyBtn(btn, active) {
+    btn.style.border     = active ? '1px solid rgba(244,114,182,0.5)' : '1px solid rgba(255,255,255,0.08)';
+    btn.style.background = active ? 'rgba(244,114,182,0.12)'          : 'transparent';
+    btn.style.color      = active ? '#f9a8d4'                          : '#475569';
+  }
   if (type === 'variable') {
     fixedFields.style.display = 'none';
     varFields.style.display   = '';
-    btnFixed.style.cssText    += inactiveStyle;
-    btnVar.style.cssText      += activeStyle;
+    _applyBtn(btnFixed, false);
+    _applyBtn(btnVar,   true);
+    var existingBills = _editDebtTarget ? (_editDebtTarget.bills || []) : [];
+    _buildDebtScheduleRows(existingBills);
   } else {
     fixedFields.style.display = '';
     varFields.style.display   = 'none';
-    btnFixed.style.cssText    += activeStyle;
-    btnVar.style.cssText      += inactiveStyle;
+    _applyBtn(btnFixed, true);
+    _applyBtn(btnVar,   false);
   }
 }
 
@@ -3825,8 +4088,7 @@ function renderDebtPanel() {
   html += '<div class="debt-sum-card"><div class="debt-sum-label">Accounts</div><div class="debt-sum-val">' + list.length + '</div></div>';
   html += '</div>';
 
-  // ── Next Month Forecast ──────────────────────────
-  html += buildForecastHtml();
+  // Forecast removed
 
   // ── View tabs ─────────────────────────────────────
   html += '<div style="display:flex;gap:0.35rem;padding:0.5rem 0.85rem;border-bottom:1px solid rgba(255,255,255,0.06);flex-shrink:0;">';
@@ -3973,7 +4235,7 @@ function renderDebtPanel() {
 }
 
 function renderOtPanel() {
-  var otList   = loadOT();
+  var otList   = loadOTView();
   var el       = document.getElementById('otBody');
   if (!el) return;
 
@@ -3981,9 +4243,20 @@ function renderOtPanel() {
   var totals = {};
   Object.keys(allTypes).forEach(function(k) { totals[k] = 0; });
   otList.forEach(function(e) { if (e.type) totals[e.type] = (totals[e.type] || 0) + (parseFloat(e.pay) || 0); });
-  var totalPay = otList.reduce(function(s, e) { return s + (parseFloat(e.pay) || 0); }, 0);
+  var totalPay   = otList.reduce(function(s, e) { return s + (parseFloat(e.pay)   || 0); }, 0);
+  var totalHours = otList.reduce(function(s, e) { return s + (parseFloat(e.hours) || 0); }, 0);
 
-  var html = '<div class="ot-summary-row">';
+  var isPast     = _otViewMonthIdx !== periodMonthIdx || _otViewYear !== periodYear;
+  var viewLabel  = ALL_MONTHS[_otViewMonthIdx] + ' ' + _otViewYear;
+  var nextDisabled = !isPast ? ' disabled style="opacity:0.3;cursor:default;"' : '';
+
+  var html = '<div class="ot-month-nav">' +
+    '<button class="ot-nav-btn" onclick="otPrevMonth()">&#8249;</button>' +
+    '<span class="ot-nav-label">' + viewLabel + (isPast ? ' <span class="ot-past-badge">Past</span>' : '') + '</span>' +
+    '<button class="ot-nav-btn"' + nextDisabled + ' onclick="otNextMonth()">&#8250;</button>' +
+    '</div>';
+
+  html += '<div class="ot-summary-row">';
   Object.keys(allTypes).forEach(function(k) {
     var t = allTypes[k];
     html += '<div class="ot-sum-card"><div class="ot-sum-label">' + escHtml(t.label) + '</div>';
@@ -4015,7 +4288,7 @@ function renderOtPanel() {
     });
   }
   html += '</div>';
-  html += '<div class="ot-total-bar"><span class="ot-total-label">Total OT — ' + periodLabel + '</span><span class="ot-total-val">' + fmt(totalPay) + '</span></div>';
+  html += '<div class="ot-total-bar"><span class="ot-total-label">Total OT — ' + viewLabel + '</span><span class="ot-total-val"><span style="font-size:0.72rem;font-weight:500;opacity:0.7;margin-right:0.4rem;">' + totalHours.toFixed(1) + ' hrs</span>' + fmt(totalPay) + '</span></div>';
   el.innerHTML = html;
 }
 
@@ -4092,6 +4365,8 @@ function renderDashboard() {
 
   const totalCommit = commitTotal();
   const remain = salary + totalReceived - totalExp - totalCommit;
+  var remLabel = document.getElementById('dashRemainLabel');
+  if (remLabel && remLabel.firstChild) remLabel.firstChild.textContent = periodMonthName;
   document.getElementById('dashRemain').textContent = salary > 0 ? fmt(remain) : fmtCurDash();
   document.getElementById('dashRemainSub').textContent =
     salary > 0
@@ -4102,41 +4377,44 @@ function renderDashboard() {
   var estCard = document.getElementById('dashEstIncomeCard');
   if (estCard) estCard.style.display = _showEstIncome ? '' : 'none';
   if (_showEstIncome) {
-    // Use the proper salary config (gross - deductions) for nett
-    var salCfg2  = loadSalaryConfig();
-    var gross2   = salCfg2.gross || 0;
-    var nettBase = gross2 > 0 ? _calcNett(salCfg2) : (parseFloat(localStorage.getItem(salaryKey)) || 0);
+    var gross2    = parseFloat(localStorage.getItem(EST_GROSS_KEY)) || 0;
+    var salCfgEst = loadSalaryConfig();
+    var dedEst    = salCfgEst.gross > 0 ? salCfgEst.gross - _calcNett(salCfgEst) : 0;
+    var nettBase  = gross2 - dedEst;
 
-    // OT is paid ONE month later: June salary includes May OT, July includes June OT, etc.
-    // So load OT from the PREVIOUS month relative to the current period
-    var prevOtMonthIdx = periodMonthIdx === 0 ? 11 : periodMonthIdx - 1;
-    var prevOtYear     = periodMonthIdx === 0 ? periodYear - 1 : periodYear;
-    var prevOtMonthName = ALL_MONTHS[prevOtMonthIdx].toLowerCase();
-    var prevOtKey      = profilePrefix + 'mft_ot_' + prevOtMonthName + '_' + prevOtYear;
-    var prevOtList     = [];
-    try { prevOtList = JSON.parse(localStorage.getItem(prevOtKey)) || []; } catch(e) { prevOtList = []; }
-    var otPay    = prevOtList.reduce(function(s, e) { return s + (parseFloat(e.pay) || 0); }, 0);
+    // ≤25th → show this month's est income; >25th → show next month's
+    var todayDay = now.getDate();
+    var tgtMonthIdx, tgtYear;
+    if (todayDay <= 25) {
+      tgtMonthIdx = currentMonthIdx;
+      tgtYear     = currentYear;
+    } else {
+      tgtMonthIdx = (currentMonthIdx + 1) % 12;
+      tgtYear     = currentMonthIdx === 11 ? currentYear + 1 : currentYear;
+    }
+    var tgtName = ALL_MONTHS[tgtMonthIdx];
+
+    // OT for target month comes from the month before it
+    var otMonthIdx  = tgtMonthIdx === 0 ? 11 : tgtMonthIdx - 1;
+    var otYear      = tgtMonthIdx === 0 ? tgtYear - 1 : tgtYear;
+    var otMonthName = ALL_MONTHS[otMonthIdx].toLowerCase();
+    var otKey       = profilePrefix + 'mft_ot_' + otMonthName + '_' + otYear;
+    var otList      = [];
+    try { otList = JSON.parse(localStorage.getItem(otKey)) || []; } catch(e) { otList = []; }
+    var otPay = otList.reduce(function(s, e) { return s + (parseFloat(e.pay) || 0); }, 0);
 
     var projected = nettBase + otPay;
-    var nextName  = ALL_MONTHS[_pEndMonthIdx];
-    var prevOtMonthLabel = ALL_MONTHS[prevOtMonthIdx];
 
-    var labelEl   = document.getElementById('dashProjectedLabel');
-    if (labelEl) labelEl.innerHTML = 'Est. <span style="color:#eab308;font-weight:700;">' + nextName + '</span> Income';
+    var labelEl = document.getElementById('dashProjectedLabel');
+    if (labelEl) labelEl.innerHTML = 'Est. <span style="color:#eab308;font-weight:700;">' + tgtName + '</span> Income';
     var valEl = document.getElementById('dashProjected');
-    if (valEl) valEl.textContent = nettBase > 0 ? fmt(projected) : '—';
+    if (valEl) valEl.textContent = gross2 > 0 ? fmt(projected) : '—';
     var subEl = document.getElementById('dashProjectedSub');
     if (subEl) {
-      if (nettBase <= 0) {
-        subEl.textContent = 'configure salary first';
+      if (gross2 <= 0) {
+        subEl.textContent = 'tap to set basic pay';
       } else {
-        var dedTotal2 = gross2 > 0
-          ? salCfg2.deductions.reduce(function(s,d){ return s+(d.type==='pct'?gross2*d.value/100:d.value); },0)
-          : 0;
-        var base = gross2 > 0 ? fmt(gross2) + ' − ' + fmt(dedTotal2) + ' ded' : fmt(nettBase) + ' nett';
-        subEl.textContent = otPay > 0
-          ? base + ' + ' + fmt(otPay) + ' OT (' + prevOtMonthLabel + ')'
-          : base + ' · no ' + prevOtMonthLabel + ' OT yet';
+        subEl.textContent = fmt(nettBase) + ' + OT ' + ALL_MONTHS[otMonthIdx] + ' (' + fmt(otPay) + ')';
       }
     }
   }
@@ -4666,9 +4944,6 @@ function saveSalary() {
 
   localStorage.setItem(SALARY_CONFIG_KEY, JSON.stringify(cfg));
   localStorage.setItem(salaryKey, nett.toFixed(2));
-  // keep legacy keys in sync for Est. Income card
-  localStorage.setItem(BASIC_PAY_KEY,  gross);
-  localStorage.setItem(DEDUCTIONS_KEY, (gross - nett).toFixed(2));
 
   closeSalaryModal();
   renderPanelA();
@@ -5037,6 +5312,9 @@ var EST_INCOME_KEY   = profilePrefix + 'mft_show_est_income';
 
 function loadEstIncomePref() {
   _showEstIncome = localStorage.getItem(EST_INCOME_KEY) === '1';
+  var card = document.getElementById('dashEstIncomeCard');
+  if (card) card.style.display = _showEstIncome ? '' : 'none';
+  if (_showEstIncome) renderDashboard();
 }
 function toggleEstIncome() {
   _showEstIncome = !_showEstIncome;
@@ -5317,7 +5595,13 @@ function loadCommitments() { return JSON.parse(localStorage.getItem(COMMITMENTS_
 function saveCommitments(list) { localStorage.setItem(COMMITMENTS_KEY, JSON.stringify(list)); }
 
 function commitTotal() {
-  return loadCommitments().reduce(function(s, c) { return s + (parseFloat(c.amount) || 0); }, 0);
+  var periodKey = periodYear + '_' + periodMonthIdx;
+  return loadCommitments().reduce(function(s, c) {
+    var amt = (c.variable && c.schedule && c.schedule[periodKey])
+      ? c.schedule[periodKey]
+      : (parseFloat(c.amount) || 0);
+    return s + amt;
+  }, 0);
 }
 
 var _commitExpanded = false;
@@ -5329,6 +5613,9 @@ function toggleCommitList() {
   renderCommitments();
 }
 
+var _commitTab = 'list'; // 'list' | 'payments'
+function setCommitTab(t) { _commitTab = t; renderCommitments(); }
+
 function renderCommitments() {
   var list  = loadCommitments();
   var el    = document.getElementById('commitBody');
@@ -5337,67 +5624,171 @@ function renderCommitments() {
   var total = commitTotal();
   var count = list.length;
 
-  // Summary bar — always visible
-  var html = '<div class="commit-summary">';
-  html += '<div class="commit-summary-left">';
-  html += '<div class="commit-summary-label">Monthly Fixed</div>';
-  html += '<div class="commit-summary-total">−' + fmt(total) + '</div>';
-  html += '</div>';
-  html += '<div class="commit-summary-right">';
-  if (count > 0) {
-    html += '<span class="commit-count-badge">' + count + ' item' + (count === 1 ? '' : 's') + '</span>';
-    html += '<button class="commit-toggle-btn" onclick="toggleCommitList()">' + (_commitExpanded ? '▲ Hide' : '▼ Show') + '</button>';
-  }
-  html += '</div>';
-  html += '</div>';
-
   // Collapsible list — regular entries first, debt-linked after
   var regularList = list.filter(function(c) { return !c.debtId; });
   var debtList    = list.filter(function(c) { return  c.debtId; });
   var sortedList  = regularList.concat(debtList);
 
-  if (count === 0) {
-    html += '<div class="commit-empty">No commitments yet — tap + to add one.</div>';
-  } else if (_commitExpanded) {
-    html += '<div class="commit-list">';
-    sortedList.forEach(function(c) {
-      var isDebtLinked = !!c.debtId;
-      var debtColor    = c.debtColor || '#f472b6';
-      html += '<div class="commit-row" style="' + (isDebtLinked ? 'flex-direction:column;align-items:stretch;gap:0;padding:0;' : '') + '">';
-      if (isDebtLinked) {
-        // Top row: badge + name + amount + view button
-        html += '<div style="display:flex;align-items:center;gap:0.4rem;padding:0.3rem 0.5rem;">';
-        html += '<span style="font-size:0.68rem;font-weight:700;color:' + debtColor + ';background:rgba(244,114,182,0.12);border:1px solid rgba(244,114,182,0.25);border-radius:4px;padding:1px 5px;flex-shrink:0;">💳 Debt</span>';
-        html += '<span class="commit-name" style="flex:1;">' + escHtml(c.name) + '</span>';
-        html += '<span class="commit-amt">−' + fmt(parseFloat(c.amount)) + '/mo</span>';
-        html += '<button class="goal-action-btn" onclick="openEditDebt(\'' + c.debtId + '\')" title="View in Debt Tracker" style="color:#f472b6;">↗</button>';
-        html += '</div>';
-        // Bottom row: remaining balance + mini progress
-        var debt = loadDebts().find(function(d) { return d.id === c.debtId; });
-        if (debt) {
-          var dTotal     = parseFloat(debt.total) || parseFloat(debt.remaining) || 1;
-          var dRemaining = parseFloat(debt.remaining) || 0;
-          var dPct       = Math.max(0, Math.min(100, ((dTotal - dRemaining) / dTotal) * 100));
-          if (c.dueDay) {
-            html += '<div style="font-size:0.69rem;color:#475569;padding:0 0.5rem 0.2rem;">';
-            html += 'Due day ' + c.dueDay + ' &nbsp;·&nbsp; ';
-            html += '<span style="color:#94a3b8;">' + fmt(dRemaining) + ' remaining (' + dPct.toFixed(0) + '% cleared)</span>';
-            html += '</div>';
-          } else {
-            html += '<div style="font-size:0.69rem;color:#94a3b8;padding:0 0.5rem 0.2rem;">' + fmt(dRemaining) + ' remaining · ' + dPct.toFixed(0) + '% cleared</div>';
-          }
-          html += '<div style="height:3px;background:rgba(255,255,255,0.06);margin:0 0.5rem 0.4rem;">';
-          html += '<div style="height:100%;width:' + dPct.toFixed(1) + '%;background:' + debtColor + ';border-radius:2px;"></div>';
+  var cleared = _getDueCleared();
+  var paid    = sortedList.filter(function(c) { return cleared.indexOf(c.id) !== -1; });
+
+  // ── Tab bar ───────────────────────────────────────
+  var tabActive   = 'border:1px solid rgba(239,68,68,0.45);background:rgba(239,68,68,0.1);color:#f87171;';
+  var tabInactive = 'border:1px solid rgba(255,255,255,0.08);background:transparent;color:#475569;';
+  var html = '<div style="display:flex;gap:0.35rem;padding:0.45rem 0.75rem;border-bottom:1px solid rgba(255,255,255,0.06);flex-shrink:0;">';
+  html += '<button onclick="setCommitTab(\'list\')" style="flex:1;padding:0.28rem 0;border-radius:7px;font-size:0.72rem;font-weight:700;cursor:pointer;transition:all 0.15s;' + (_commitTab === 'list' ? tabActive : tabInactive) + '">≡ List</button>';
+  html += '<button onclick="setCommitTab(\'payments\')" style="flex:1;padding:0.28rem 0;border-radius:7px;font-size:0.72rem;font-weight:700;cursor:pointer;transition:all 0.15s;' + (_commitTab === 'payments' ? tabActive : tabInactive) + '">✓ Payments' + (paid.length > 0 ? ' <span style="background:#22c55e;color:#000;border-radius:9px;padding:0 5px;font-size:0.65rem;">' + paid.length + '</span>' : '') + '</button>';
+  html += '</div>';
+
+  if (_commitTab === 'list') {
+    // ── Summary bar ─────────────────────────────────
+    html += '<div class="commit-summary">';
+    html += '<div class="commit-summary-left">';
+    html += '<div class="commit-summary-label">Monthly Fixed</div>';
+    html += '<div class="commit-summary-total">−' + fmt(total) + '</div>';
+    html += '</div>';
+    html += '<div class="commit-summary-right">';
+    if (count > 0) {
+      html += '<span class="commit-count-badge">' + count + ' item' + (count === 1 ? '' : 's') + '</span>';
+      html += '<button class="commit-toggle-btn" onclick="toggleCommitList()">' + (_commitExpanded ? '▲ Hide' : '▼ Show') + '</button>';
+    }
+    html += '</div>';
+    html += '</div>';
+
+    if (count === 0) {
+      html += '<div class="commit-empty">No commitments yet — tap + to add one.</div>';
+    } else if (_commitExpanded) {
+      html += '<div class="commit-list">';
+      sortedList.forEach(function(c) {
+        var isDebtLinked = !!c.debtId;
+        var debtColor    = c.debtColor || '#f472b6';
+        html += '<div class="commit-row" style="' + (isDebtLinked ? 'flex-direction:column;align-items:stretch;gap:0;padding:0;' : '') + '">';
+        if (isDebtLinked) {
+          html += '<div style="display:flex;align-items:center;gap:0.4rem;padding:0.3rem 0.5rem;">';
+          html += '<span style="font-size:0.68rem;font-weight:700;color:' + debtColor + ';background:rgba(244,114,182,0.12);border:1px solid rgba(244,114,182,0.25);border-radius:4px;padding:1px 5px;flex-shrink:0;">💳 Debt</span>';
+          html += '<span class="commit-name" style="flex:1;">' + escHtml(c.name) + '</span>';
+          html += '<span class="commit-amt">−' + fmt(parseFloat(c.amount)) + '/mo</span>';
+          html += '<button class="goal-action-btn" onclick="openEditDebt(\'' + c.debtId + '\')" title="View in Debt Tracker" style="color:#f472b6;">↗</button>';
           html += '</div>';
+          var debt = loadDebts().find(function(d) { return d.id === c.debtId; });
+          if (debt) {
+            var dTotal     = parseFloat(debt.total) || parseFloat(debt.remaining) || 1;
+            var dRemaining = parseFloat(debt.remaining) || 0;
+            var dPct       = Math.max(0, Math.min(100, ((dTotal - dRemaining) / dTotal) * 100));
+            if (c.dueDay) {
+              html += '<div style="font-size:0.69rem;color:#475569;padding:0 0.5rem 0.2rem;">';
+              html += 'Due day ' + c.dueDay + ' &nbsp;·&nbsp; ';
+              html += '<span style="color:#94a3b8;">' + fmt(dRemaining) + ' remaining (' + dPct.toFixed(0) + '% cleared)</span>';
+              html += '</div>';
+            } else {
+              html += '<div style="font-size:0.69rem;color:#94a3b8;padding:0 0.5rem 0.2rem;">' + fmt(dRemaining) + ' remaining · ' + dPct.toFixed(0) + '% cleared</div>';
+            }
+            html += '<div style="height:3px;background:rgba(255,255,255,0.06);margin:0 0.5rem 0.4rem;">';
+            html += '<div style="height:100%;width:' + dPct.toFixed(1) + '%;background:' + debtColor + ';border-radius:2px;"></div>';
+            html += '</div>';
+          }
+        } else {
+          var varBadge = c.variable ? '<span style="font-size:0.6rem;font-weight:700;color:#f97316;background:rgba(249,115,22,0.1);border:1px solid rgba(249,115,22,0.25);border-radius:3px;padding:0 4px;margin-left:0.3rem;vertical-align:middle;">~var</span>' : '';
+          html += '<span class="commit-name">' + escHtml(c.name) + varBadge + '</span>';
+          html += '<span class="commit-amt">' + (c.variable ? '~' : '−') + fmt(parseFloat(c.amount)) + '<span style="font-size:0.7rem;font-weight:400;">/mo</span></span>';
+          html += '<button class="goal-action-btn" onclick="openEditCommitment(\'' + c.id + '\')" title="Edit">✏</button>';
+          html += '<button class="goal-action-btn goal-action-del" onclick="deleteCommitment(\'' + c.id + '\')" title="Delete">🗑</button>';
         }
-      } else {
-        html += '<span class="commit-name">' + escHtml(c.name) + '</span>';
-        html += '<span class="commit-amt">−' + fmt(parseFloat(c.amount)) + '<span style="font-size:0.7rem;font-weight:400;">/mo</span></span>';
-        html += '<button class="goal-action-btn" onclick="openEditCommitment(\'' + c.id + '\')" title="Edit">✏</button>';
-        html += '<button class="goal-action-btn goal-action-del" onclick="deleteCommitment(\'' + c.id + '\')" title="Delete">🗑</button>';
-      }
+        html += '</div>';
+      });
       html += '</div>';
-    });
+    }
+
+  } else {
+    // ── Payments tab ─────────────────────────────────
+    var unpaid    = sortedList.filter(function(c) { return cleared.indexOf(c.id) === -1; });
+    var actuals   = _getDueActuals();
+    var periodKey = periodYear + '_' + periodMonthIdx;
+    var paidPct   = count > 0 ? (paid.length / count) * 100 : 0;
+
+    // Amount totals
+    var totalToPay = sortedList.reduce(function(s, c) {
+      var sched = c.variable && c.schedule && c.schedule[periodKey] ? c.schedule[periodKey] : null;
+      return s + (sched !== null ? sched : (parseFloat(c.amount) || 0));
+    }, 0);
+    var paidAmt = paid.reduce(function(s, c) {
+      var actual = actuals[c.id];
+      return s + (actual !== undefined ? actual : (parseFloat(c.amount) || 0));
+    }, 0);
+    var remainAmt = Math.max(0, totalToPay - paidAmt);
+
+    html += '<div class="commit-list" style="padding-top:0.6rem;">';
+
+    // Period + progress
+    html += '<div style="padding:0 0.1rem 0.55rem;">';
+    html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.3rem;">';
+    html += '<span style="font-size:0.68rem;color:#64748b;font-weight:600;">' + periodLabel + ' cycle</span>';
+    html += '<span style="font-size:0.68rem;color:#64748b;">' + paid.length + ' / ' + count + ' paid</span>';
+    html += '</div>';
+    html += '<div style="height:5px;background:rgba(255,255,255,0.07);border-radius:3px;">';
+    html += '<div style="height:100%;width:' + paidPct.toFixed(1) + '%;background:#22c55e;border-radius:3px;transition:width 0.3s;"></div>';
+    html += '</div>';
+    html += '</div>';
+
+    // Amount summary strip
+    html += '<div style="display:flex;gap:0.3rem;margin-bottom:0.6rem;">';
+    html += '<div style="flex:1;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:8px;padding:0.4rem 0.5rem;text-align:center;">';
+    html += '<div style="font-size:0.6rem;color:#475569;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:0.15rem;">Total</div>';
+    html += '<div style="font-size:0.78rem;font-weight:700;color:#94a3b8;">' + fmt(totalToPay) + '</div>';
+    html += '</div>';
+    html += '<div style="flex:1;background:rgba(34,197,94,0.06);border:1px solid rgba(34,197,94,0.18);border-radius:8px;padding:0.4rem 0.5rem;text-align:center;">';
+    html += '<div style="font-size:0.6rem;color:#475569;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:0.15rem;">Paid</div>';
+    html += '<div style="font-size:0.78rem;font-weight:700;color:#4ade80;">' + fmt(paidAmt) + '</div>';
+    html += '</div>';
+    html += '<div style="flex:1;background:rgba(239,68,68,0.06);border:1px solid rgba(239,68,68,0.15);border-radius:8px;padding:0.4rem 0.5rem;text-align:center;">';
+    html += '<div style="font-size:0.6rem;color:#475569;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:0.15rem;">Left</div>';
+    html += '<div style="font-size:0.78rem;font-weight:700;color:' + (remainAmt > 0 ? '#f87171' : '#4ade80') + ';">' + (remainAmt > 0 ? fmt(remainAmt) : 'All clear') + '</div>';
+    html += '</div>';
+    html += '</div>';
+
+    if (count === 0) {
+      html += '<div style="font-size:0.78rem;color:#334155;text-align:center;padding:1rem 0;">No commitments yet.</div>';
+    } else {
+      // Unpaid section
+      if (unpaid.length > 0) {
+        html += '<div style="font-size:0.65rem;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:0.07em;padding:0.2rem 0 0.3rem;">Unpaid</div>';
+        unpaid.forEach(function(c) {
+          var dayLabel  = c.dueDay ? '<span style="font-size:0.65rem;color:#475569;margin-left:0.3rem;">day ' + c.dueDay + '</span>' : '';
+          var scheduled = c.variable && c.schedule && c.schedule[periodKey] ? c.schedule[periodKey] : null;
+          var dispAmt   = c.variable ? (scheduled || parseFloat(c.amount)) : parseFloat(c.amount);
+          var amtLabel  = c.variable ? (scheduled ? '−' : '~') : '−';
+          var varLabel  = c.variable ? (scheduled ? '<span style="font-size:0.6rem;color:#22c55e;margin-left:0.3rem;">scheduled</span>' : '<span style="font-size:0.6rem;color:#f97316;margin-left:0.3rem;">~est.</span>') : '';
+          html += '<div class="pay-tracker-row">';
+          html += '<div style="width:10px;height:10px;border-radius:50%;border:2px solid #334155;flex-shrink:0;"></div>';
+          html += '<span class="pay-tracker-name">' + escHtml(c.name) + dayLabel + varLabel + '</span>';
+          html += '<span class="pay-tracker-amt">' + amtLabel + fmt(dispAmt) + '</span>';
+          if (c.variable && !c.debtId) {
+            html += '<button class="pay-mark-btn" onclick="openVarAmtPrompt(\'' + c.id + '\')">✓ Paid</button>';
+          } else {
+            html += '<button class="pay-mark-btn" onclick="markCommitPaid(\'' + c.id + '\')">✓ Paid</button>';
+          }
+          html += '</div>';
+        });
+      }
+
+      // Paid section
+      if (paid.length > 0) {
+        html += '<div style="font-size:0.65rem;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:0.07em;padding:0.45rem 0 0.3rem;">Paid</div>';
+        paid.forEach(function(c) {
+          var actualAmt = actuals[c.id];
+          var dispAmt   = actualAmt !== undefined ? actualAmt : parseFloat(c.amount);
+          var amtColor  = '#64748b';
+          var amtPrefix = actualAmt !== undefined ? '−' : (c.variable ? '~' : '−');
+          html += '<div class="pay-tracker-row">';
+          html += '<div style="width:10px;height:10px;border-radius:50%;background:#22c55e;flex-shrink:0;"></div>';
+          html += '<span class="pay-tracker-name" style="text-decoration:line-through;color:#334155;">' + escHtml(c.name) + '</span>';
+          html += '<span class="pay-tracker-amt" style="color:' + amtColor + ';">' + amtPrefix + fmt(dispAmt) + '</span>';
+          html += '<button class="pay-undo-btn" onclick="unmarkCommitPaid(\'' + c.id + '\')">Undo</button>';
+          html += '</div>';
+        });
+      }
+    }
+
     html += '</div>';
   }
 
@@ -5408,10 +5799,8 @@ var _editCommitId = null;
 
 // ── Est. Income Modal ─────────────────────────────
 function openEstIncomeModal() {
-  var basicPay   = parseFloat(localStorage.getItem(BASIC_PAY_KEY))  || 0;
-  var deductions = parseFloat(localStorage.getItem(DEDUCTIONS_KEY)) || 0;
-  document.getElementById('estBasicPayInp').value   = basicPay   > 0 ? basicPay   : '';
-  document.getElementById('estDeductionsInp').value = deductions > 0 ? deductions : '';
+  var basicPay = parseFloat(localStorage.getItem(EST_GROSS_KEY)) || 0;
+  document.getElementById('estBasicPayInp').value = basicPay > 0 ? basicPay : '';
   _updateEstPreview();
   document.getElementById('estIncomeModal').classList.add('open');
   setTimeout(function() { document.getElementById('estBasicPayInp').focus(); }, 80);
@@ -5420,30 +5809,77 @@ function closeEstIncomeModal() {
   document.getElementById('estIncomeModal').classList.remove('open');
 }
 function _updateEstPreview() {
-  var basic  = parseFloat(document.getElementById('estBasicPayInp').value)   || 0;
-  var deduct = parseFloat(document.getElementById('estDeductionsInp').value) || 0;
-  var otPay  = loadOT().reduce(function(s, e) { return s + (parseFloat(e.pay) || 0); }, 0);
-  var total  = (basic - deduct) + otPay;
+  var basic   = parseFloat(document.getElementById('estBasicPayInp').value) || 0;
+  var salCfgP = loadSalaryConfig();
+  var dedP    = salCfgP.gross > 0 ? salCfgP.gross - _calcNett(salCfgP) : 0;
+  var nett    = basic - dedP;
+  var tgtIdx  = now.getDate() <= 25 ? currentMonthIdx : (currentMonthIdx + 1) % 12;
+  var tgtYr   = now.getDate() <= 25 ? currentYear : (currentMonthIdx === 11 ? currentYear + 1 : currentYear);
+  var otIdx   = tgtIdx === 0 ? 11 : tgtIdx - 1;
+  var otYr    = tgtIdx === 0 ? tgtYr - 1 : tgtYr;
+  var otKey   = profilePrefix + 'mft_ot_' + ALL_MONTHS[otIdx].toLowerCase() + '_' + otYr;
+  var otList  = []; try { otList = JSON.parse(localStorage.getItem(otKey)) || []; } catch(e) {}
+  var otPay   = otList.reduce(function(s, e) { return s + (parseFloat(e.pay) || 0); }, 0);
   var el = document.getElementById('estIncomePreview');
-  if (el) el.textContent = 'Est. Income = ' + fmt(total) + '  (' + fmt(basic - deduct) + ' base + ' + fmt(otPay) + ' OT)';
+  if (el) el.textContent = 'Est. Income = ' + fmt(nett + otPay) + '  (' + fmt(nett) + ' nett + ' + fmt(otPay) + ' OT ' + ALL_MONTHS[otIdx] + ')';
 }
 function saveEstIncome() {
-  var basic  = parseFloat(document.getElementById('estBasicPayInp').value);
-  var deduct = parseFloat(document.getElementById('estDeductionsInp').value) || 0;
+  var basic = parseFloat(document.getElementById('estBasicPayInp').value);
   if (!basic || basic <= 0) { showToast('Please enter your basic pay'); return; }
-  localStorage.setItem(BASIC_PAY_KEY,  basic);
-  localStorage.setItem(DEDUCTIONS_KEY, deduct);
+  localStorage.setItem(EST_GROSS_KEY, basic);
   closeEstIncomeModal();
   renderDashboard();
   showToast('Est. Income updated');
 }
 
+function _buildScheduleRows(existingSchedule) {
+  var rows = document.getElementById('commitScheduleRows');
+  if (!rows) return;
+  rows.innerHTML = '';
+  rows.style.cssText = 'display:flex;flex-direction:column;gap:0.3rem;max-height:260px;overflow-y:auto;padding-right:4px;';
+  for (var i = 0; i < 24; i++) {
+    var d    = new Date(periodYear, periodMonthIdx + i, 1);
+    var mIdx = d.getMonth();
+    var yr   = d.getFullYear();
+    var key  = yr + '_' + mIdx;
+    var val  = (existingSchedule && existingSchedule[key]) ? existingSchedule[key] : '';
+    var row  = document.createElement('div');
+    row.style.cssText = 'display:flex;align-items:center;gap:0.5rem;';
+    row.innerHTML =
+      '<span style="font-size:0.75rem;color:#94a3b8;width:72px;flex-shrink:0;">' + ALL_MONTHS[mIdx].slice(0,3) + ' ' + yr + '</span>' +
+      '<input type="number" min="0" step="0.01" placeholder="—" data-skey="' + key + '" value="' + val + '" ' +
+      'style="flex:1;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:0.35rem 0.6rem;color:#e2e8f0;font-size:0.8rem;" />';
+    rows.appendChild(row);
+  }
+}
+
+function _toggleCommitVarMode(existingSchedule) {
+  var isVar  = document.getElementById('commitVarInp').checked;
+  var sec    = document.getElementById('commitScheduleSection');
+  document.getElementById('commitAmtLabel').textContent  = isVar ? 'Default Estimate (RM)' : 'Amount (RM)';
+  document.getElementById('commitModalSub').textContent  = isVar ? 'Variable — enter known monthly amounts below' : 'Fixed amount deducted every cycle';
+  if (sec) sec.style.display = isVar ? '' : 'none';
+  if (isVar) _buildScheduleRows(existingSchedule || null);
+}
+
+function _readScheduleFromModal() {
+  var schedule = {};
+  var inputs = document.querySelectorAll('#commitScheduleRows input[data-skey]');
+  inputs.forEach(function(inp) {
+    var v = parseFloat(inp.value);
+    if (v > 0) schedule[inp.getAttribute('data-skey')] = v;
+  });
+  return Object.keys(schedule).length > 0 ? schedule : null;
+}
+
 function openAddCommitment() {
   _editCommitId = null;
   document.getElementById('commitModalTitle').textContent = 'Add Commitment';
-  document.getElementById('commitNameInp').value = '';
-  document.getElementById('commitAmtInp').value  = '';
-  document.getElementById('commitDayInp').value  = '';
+  document.getElementById('commitNameInp').value  = '';
+  document.getElementById('commitAmtInp').value   = '';
+  document.getElementById('commitDayInp').value   = '';
+  document.getElementById('commitVarInp').checked = false;
+  _toggleCommitVarMode();
   document.getElementById('addCommitModal').classList.add('open');
   setTimeout(function() { document.getElementById('commitNameInp').focus(); }, 80);
 }
@@ -5453,9 +5889,11 @@ function openEditCommitment(id) {
   if (!c) return;
   _editCommitId = id;
   document.getElementById('commitModalTitle').textContent = 'Edit Commitment';
-  document.getElementById('commitNameInp').value = c.name;
-  document.getElementById('commitAmtInp').value  = c.amount;
-  document.getElementById('commitDayInp').value  = c.dueDay || '';
+  document.getElementById('commitNameInp').value  = c.name;
+  document.getElementById('commitAmtInp').value   = c.amount;
+  document.getElementById('commitDayInp').value   = c.dueDay || '';
+  document.getElementById('commitVarInp').checked = !!c.variable;
+  _toggleCommitVarMode(c.schedule || null);
   document.getElementById('addCommitModal').classList.add('open');
   setTimeout(function() { document.getElementById('commitNameInp').focus(); }, 80);
 }
@@ -5472,11 +5910,22 @@ function saveCommitment() {
   if (!amt || amt <= 0) { showToast('Please enter a valid amount'); return; }
   if (dueDay < 0 || dueDay > 31) { showToast('Due day must be 1–31'); return; }
 
+  var isVar    = document.getElementById('commitVarInp').checked;
+  var schedule = isVar ? _readScheduleFromModal() : null;
   var list = loadCommitments();
   if (_editCommitId) {
-    list = list.map(function(c) { return c.id === _editCommitId ? { id: c.id, name: name, amount: amt, dueDay: dueDay } : c; });
+    list = list.map(function(c) {
+      if (c.id !== _editCommitId) return c;
+      var updated = { id: c.id, name: name, amount: amt, dueDay: dueDay, variable: isVar };
+      if (schedule)     updated.schedule  = schedule;
+      if (c.debtId)     updated.debtId    = c.debtId;
+      if (c.debtColor)  updated.debtColor = c.debtColor;
+      return updated;
+    });
   } else {
-    list.push({ id: uid(), name: name, amount: amt, dueDay: dueDay });
+    var entry = { id: uid(), name: name, amount: amt, dueDay: dueDay, variable: isVar };
+    if (schedule) entry.schedule = schedule;
+    list.push(entry);
   }
   saveCommitments(list);
   closeAddCommitment();
@@ -5890,6 +6339,21 @@ function switchHistTab(tab, btn) {
   renderHistContent();
 }
 
+function getOtHistoryData() {
+  var months = [];
+  for (var i = 11; i >= 0; i--) {
+    var d    = new Date(periodYear, periodMonthIdx - i, 1);
+    var name = ALL_MONTHS[d.getMonth()];
+    var year = d.getFullYear();
+    var key  = profilePrefix + 'mft_ot_' + name.toLowerCase() + '_' + year;
+    var list = [];
+    try { list = JSON.parse(localStorage.getItem(key)) || []; } catch(e) {}
+    var total = list.reduce(function(s, e) { return s + (parseFloat(e.pay) || 0); }, 0);
+    months.push({ name: name, year: year, total: total, count: list.length });
+  }
+  return months;
+}
+
 function getHistoryData() {
   const months = [];
   for (let i = 11; i >= 0; i--) {
@@ -5934,6 +6398,19 @@ function renderHistContent() {
         }
       }
     });
+  } else if (histTab === 'ot') {
+    var otData = getOtHistoryData();
+    var otRows = otData.map(function(d) {
+      var isCurrent = d.name === periodMonthName && d.year === periodYear;
+      return '<tr' + (isCurrent ? ' class="current-month"' : '') + '>' +
+        '<td>' + d.name + ' ' + d.year + '</td>' +
+        '<td style="color:#3b82f6;font-weight:600;">' + (d.total > 0 ? fmt(d.total) : '—') + '</td>' +
+        '<td>' + (d.count > 0 ? d.count + ' entr' + (d.count === 1 ? 'y' : 'ies') : '—') + '</td>' +
+        '</tr>';
+    }).join('');
+    el.innerHTML = '<table class="salary-table"><thead><tr>' +
+      '<th>Month</th><th>OT Total</th><th>Entries</th>' +
+      '</tr></thead><tbody>' + otRows + '</tbody></table>';
   } else {
     const rows = data.map(function(d) {
       const isCurrent = d.name === periodMonthName && d.year === periodYear;
@@ -6347,19 +6824,86 @@ function saveRosterPattern() {
 }
 
 // ── Due Alert (upcoming payments bell) ───────────
+function _dueClearedKey() {
+  return profilePrefix + 'mft_due_cleared_' + periodYear + '_' + periodMonthIdx;
+}
+function _getDueCleared() {
+  try { return JSON.parse(localStorage.getItem(_dueClearedKey())) || []; } catch(e) { return []; }
+}
+function _dueActualKey() {
+  return profilePrefix + 'mft_due_actuals_' + periodYear + '_' + periodMonthIdx;
+}
+function _getDueActuals() {
+  try { return JSON.parse(localStorage.getItem(_dueActualKey())) || {}; } catch(e) { return {}; }
+}
+function _setDueActual(id, amt) {
+  var actuals = _getDueActuals();
+  actuals[id] = amt;
+  localStorage.setItem(_dueActualKey(), JSON.stringify(actuals));
+}
+function clearDueItem(id) {
+  var cleared = _getDueCleared();
+  if (cleared.indexOf(id) === -1) cleared.push(id);
+  localStorage.setItem(_dueClearedKey(), JSON.stringify(cleared));
+  updateDueAlert();
+  renderCommitments();
+  toggleDueAlert(); toggleDueAlert(); // refresh popup
+}
+function markCommitPaid(id, actualAmt) {
+  var cleared = _getDueCleared();
+  if (cleared.indexOf(id) === -1) cleared.push(id);
+  localStorage.setItem(_dueClearedKey(), JSON.stringify(cleared));
+  if (actualAmt !== undefined) _setDueActual(id, actualAmt);
+  updateDueAlert();
+  renderCommitments();
+}
+function unmarkCommitPaid(id) {
+  var cleared = _getDueCleared().filter(function(x) { return x !== id; });
+  localStorage.setItem(_dueClearedKey(), JSON.stringify(cleared));
+  updateDueAlert();
+  renderCommitments();
+}
+
+var _varAmtTarget = null;
+function openVarAmtPrompt(id) {
+  var c = loadCommitments().find(function(x) { return x.id === id; });
+  if (!c) return;
+  _varAmtTarget = id;
+  var periodKey   = periodYear + '_' + periodMonthIdx;
+  var scheduled   = c.schedule && c.schedule[periodKey] ? c.schedule[periodKey] : null;
+  var displayEst  = scheduled ? fmt(scheduled) + ' (scheduled)' : 'Est. ' + fmt(parseFloat(c.amount));
+  document.getElementById('varAmtModalTitle').textContent = c.name;
+  document.getElementById('varAmtModalEst').textContent   = displayEst;
+  document.getElementById('varAmtInp').value = scheduled ? scheduled : '';
+  document.getElementById('varAmtModal').classList.add('open');
+  setTimeout(function() { document.getElementById('varAmtInp').focus(); }, 80);
+}
+function closeVarAmtModal() {
+  document.getElementById('varAmtModal').classList.remove('open');
+  _varAmtTarget = null;
+}
+function saveVarAmt() {
+  var amt = parseFloat(document.getElementById('varAmtInp').value);
+  if (!amt || amt <= 0) { showToast('Please enter the actual amount'); return; }
+  markCommitPaid(_varAmtTarget, amt);
+  closeVarAmtModal();
+}
+
 function _allDueItems() {
-  var today  = new Date();
-  var todayD = today.getDate();
+  var today   = new Date();
+  var todayD  = today.getDate();
   var daysInMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0).getDate();
-  var items  = [];
+  var cleared = _getDueCleared();
+  var items   = [];
   loadCommitments().forEach(function(c) {
     var day = parseInt(c.dueDay) || 0;
     if (!day) return;
+    if (cleared.indexOf(c.id) !== -1) return;
     var daysLeft = day >= todayD ? (day - todayD) : (daysInMonth - todayD + day);
     items.push({
-      name: c.name, amount: parseFloat(c.amount) || 0,
+      id: c.id, name: c.name, amount: parseFloat(c.amount) || 0,
       dueDay: day, daysLeft: daysLeft,
-      color: c.debtColor || '#f87171', isDebt: !!c.debtId
+      color: c.debtColor || '#f87171', isDebt: !!c.debtId, variable: !!c.variable
     });
   });
   items.sort(function(a, b) { return a.daysLeft - b.daysLeft; });
@@ -6421,7 +6965,11 @@ function toggleDueAlert() {
     r += '<div style="text-align:right;flex-shrink:0;">';
     r += '<div style="font-size:0.78rem;font-weight:700;color:#f87171;">−' + fmt(item.amount) + '</div>';
     r += '<div style="font-size:0.68rem;font-weight:700;color:' + urgencyColor + ';">' + urgency + '</div>';
-    r += '</div></div>';
+    r += '</div>';
+    if (item.id) {
+      r += '<button onclick="clearDueItem(\'' + item.id + '\')" style="flex-shrink:0;margin-left:0.25rem;padding:0.2rem 0.45rem;border-radius:6px;border:1px solid rgba(34,197,94,0.3);background:rgba(34,197,94,0.08);color:#4ade80;font-size:0.65rem;font-weight:700;cursor:pointer;">✓ Done</button>';
+    }
+    r += '</div>';
     return r;
   }
 
@@ -7369,6 +7917,7 @@ _syncKey = getSyncKey();
   loadCurrency();
   loadActiveModules();
   if (activeProfileId) {
+    syncDebtCommitments();
     renderPanelA();
     renderPanelB();
     renderBudget();
