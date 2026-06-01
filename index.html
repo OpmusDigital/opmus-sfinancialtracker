@@ -5330,7 +5330,7 @@ var UPCOMING_MODULES = [
   { id:'networth', name:'Net Worth',       icon:'ph-trend-up',       desc:'Assets minus liabilities — your financial snapshot', color:'#34d399' }
 ];
 var ACTIVE_MODULES_KEY = (activeProfileId ? activeProfileId + '__' : '') + 'mft_active_modules';
-var DEFAULT_MODULES = ['budget','commit','expenses','goals'];
+var DEFAULT_MODULES = ['budget','commit','expenses','goals','debt','ot'];
 var _activeModules  = DEFAULT_MODULES.slice();
 
 function loadActiveModules() {
@@ -6459,13 +6459,7 @@ var _activeMPanel  = "expenses";
 
 function switchMPanel(name) {
   _activeMPanel = name;
-  _MOBILE_PANELS.forEach(function(p) {
-    var el = document.querySelector("[data-panel=\"" + p + "\"]");
-    if (el) el.style.display = (p === name) ? "" : "none";
-  });
-  document.querySelectorAll(".mpanel-tab-grp").forEach(function(grp) {
-    grp.classList.toggle("active", grp.dataset.mpanel === name);
-  });
+  _initMobilePanels();
 }
 
 function _initMobilePanels() {
