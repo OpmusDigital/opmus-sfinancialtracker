@@ -3324,8 +3324,8 @@ function calcOtIncentive(type, hours) {
 function loadOT() { try { return JSON.parse(localStorage.getItem(OT_KEY)) || []; } catch(e) { return []; } }
 function saveOT(arr) { localStorage.setItem(OT_KEY, JSON.stringify(arr)); }
 
-var _otViewMonthIdx = periodMonthIdx;
-var _otViewYear     = periodYear;
+var _otViewMonthIdx = currentMonthIdx;
+var _otViewYear     = currentYear;
 var _otRecoOpen     = false;
 function _otViewKey() { return profilePrefix + 'mft_ot_' + ALL_MONTHS[_otViewMonthIdx].toLowerCase() + '_' + _otViewYear; }
 function loadOTView() { try { return JSON.parse(localStorage.getItem(_otViewKey())) || []; } catch(e) { return []; } }
@@ -3387,7 +3387,7 @@ function otPrevMonth() {
   renderOtPanel();
 }
 function otNextMonth() {
-  if (_otViewMonthIdx === periodMonthIdx && _otViewYear === periodYear) return;
+  if ((_otViewMonthIdx === currentMonthIdx && _otViewYear === currentYear)) return;
   if (_otViewMonthIdx === 11) { _otViewMonthIdx = 0; _otViewYear++; }
   else { _otViewMonthIdx++; }
   renderOtPanel();
