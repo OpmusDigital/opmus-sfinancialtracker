@@ -3507,22 +3507,61 @@ function saveOtEntry() {
 
   var dateStr = String(day).padStart(2,'0') + '/' + String(month).padStart(2,'0') + '/' + year;
   var desc    = document.getElementById('otDesc').value.trim();
-  var list    = loadOTView();
+
+  // Save to the key matching the entry's ACTUAL month, not the current view month
+  var entryMonthName = ALL_MONTHS[month - 1].toLowerCase();
+  var entryKey = profilePrefix + 'mft_ot_' + entryMonthName + '_' + year;
+  var entryList = [];
+  try { entryList = JSON.parse(localStorage.getItem(entryKey)) || []; } catch(e) { entryList = []; }
 
   if (_editOtTarget) {
-    var idx = list.findIndex(function(e) { return e.id === _editOtTarget.id; });
-    if (idx !== -1) list[idx] = { id: _editOtTarget.id, date: dateStr, type: type, hours: hours, pay: pay, incentive: incentive, description: desc };
-    saveOTView(list); closeAddOT(); renderOtPanel(); renderDashboard();
+    // If editing, remove from old key first (date may have changed month)
+    var oldParts = (_editOtTarget.date || '').split('/');
+    var oldMonth = parseInt(oldParts[1], 10);
+    var oldYear  = parseInt(oldParts[2], 10);
+    var oldKey   = profilePrefix + 'mft_ot_' + ALL_MONTHS[oldMonth - 1].toLowerCase() + '_' + oldYear;
+    if (oldKey !== entryKey) {
+      // Date moved to a different month — remove from old key
+      var oldList = [];
+      try { oldList = JSON.parse(localStorage.getItem(oldKey)) || []; } catch(e) { oldList = []; }
+      oldList = oldList.filter(function(e) { return e.id !== _editOtTarget.id; });
+      localStorage.setItem(oldKey, JSON.stringify(oldList));
+      entryList.push({ id: _editOtTarget.id, date: dateStr, type: type, hours: hours, pay: pay, incentive: incentive, description: desc });
+    } else {
+      var idx = entryList.findIndex(function(e) { return e.id === _editOtTarget.id; });
+      if (idx !== -1) entryList[idx] = { id: _editOtTarget.id, date: dateStr, type: type, hours: hours, pay: pay, incentive: incentive, description: desc };
+      else entryList.push({ id: _editOtTarget.id, date: dateStr, type: type, hours: hours, pay: pay, incentive: incentive, description: desc });
+    }
+    localStorage.setItem(entryKey, JSON.stringify(entryList));
+    // Switch view to the entry's month so user sees it immediately
+    _otViewMonthIdx = month - 1;
+    _otViewYear     = year;
+    closeAddOT(); renderOtPanel(); renderDashboard();
     showToast('OT entry updated: ' + fmt(pay));
   } else {
-    list.push({ id: uid(), date: dateStr, type: type, hours: hours, pay: pay, incentive: incentive, description: desc });
-    saveOTView(list); closeAddOT(); renderOtPanel(); renderDashboard();
+    entryList.push({ id: uid(), date: dateStr, type: type, hours: hours, pay: pay, incentive: incentive, description: desc });
+    localStorage.setItem(entryKey, JSON.stringify(entryList));
+    // Switch view to the entry's month so user sees it immediately
+    _otViewMonthIdx = month - 1;
+    _otViewYear     = year;
+    closeAddOT(); renderOtPanel(); renderDashboard();
     showToast(incentive > 0 ? 'OT added: ' + fmt(pay) + ' (incl. ' + fmt(incentive) + ' bonus)' : 'OT entry added: ' + fmt(pay));
   }
 }
 
 function deleteOtEntry(id) {
-  saveOTView(loadOTView().filter(function(e) { return e.id !== id; }));
+  // Find which month key this entry lives in
+  var allKeys = Object.keys(localStorage).filter(function(k) { return k.includes('mft_ot_') && !k.includes('config') && !k.includes('rate'); });
+  for (var i = 0; i < allKeys.length; i++) {
+    try {
+      var list = JSON.parse(localStorage.getItem(allKeys[i])) || [];
+      var filtered = list.filter(function(e) { return e.id !== id; });
+      if (filtered.length !== list.length) {
+        localStorage.setItem(allKeys[i], JSON.stringify(filtered));
+        break;
+      }
+    } catch(e) {}
+  }
   renderOtPanel(); renderDashboard();
 }
 
