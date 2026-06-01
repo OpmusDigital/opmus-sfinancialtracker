@@ -5350,7 +5350,6 @@ function applyModuleVisibility() {
     var el = document.querySelector('[data-panel="' + id + '"]');
     if (!el) return;
     var on = _activeModules.indexOf(id) >= 0;
-    // On mobile let _initMobilePanels handle display; on desktop set explicitly
     if (!isMobile) el.style.display = on ? '' : 'none';
   });
   if (isMobile) _initMobilePanels();
@@ -6464,23 +6463,25 @@ var _activeMPanel  = "expenses";
 function switchMPanel(name) {
   _activeMPanel = name;
   _initMobilePanels();
+  // Scroll the tapped panel into view smoothly
+  var el = document.querySelector('[data-panel="' + name + '"]');
+  if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 function _initMobilePanels() {
   if (window.innerWidth <= 768) {
-    // Explicitly show/hide — use 'flex' not '' so panels actually render
+    // Show ALL enabled panels — user scrolls through them
     document.querySelectorAll('[data-panel]').forEach(function(el) {
       var p = el.dataset.panel;
-      var isActive  = (p === _activeMPanel);
       var isEnabled = (_activeModules.indexOf(p) >= 0);
-      el.style.display = (isActive && isEnabled) ? 'flex' : 'none';
+      el.style.display = isEnabled ? 'flex' : 'none';
     });
-    // Sync tab buttons — hide tabs for disabled modules
+    // Highlight active tab but don't hide any enabled tab
     document.querySelectorAll('.mpanel-tab-grp').forEach(function(grp) {
       var p = grp.dataset.mpanel;
       var enabled = _activeModules.indexOf(p) >= 0;
       grp.style.display = enabled ? '' : 'none';
-      grp.classList.toggle('active', p === _activeMPanel && enabled);
+      grp.classList.toggle('active', p === _activeMPanel);
     });
   }
 }
