@@ -1049,9 +1049,11 @@
       /* ─ Show action row (Settings, History) on mobile ─ */
       .mg-tablet-row { display: flex; }
 
-      /* ─ Dashboard: 2-column grid ─ */
+      /* ─ Dashboard: full-width cards ─ */
       .dashboard { padding: 0.75rem 1rem 0.5rem; flex-wrap: wrap; gap: 0.5rem; }
-      .dash-card { min-width: calc(50% - 0.25rem); flex: none; padding: 0.75rem 1rem; }
+      .dash-card { min-width: calc(50% - 0.25rem); flex: 1 1 calc(50% - 0.25rem); padding: 0.75rem 1rem; }
+      /* If there's an odd card out (e.g. grey card alone in a row), stretch it full width */
+      .dash-card:last-child:nth-child(odd) { min-width: 100%; flex: 1 1 100%; }
       .dash-val { font-size: 1.1rem; }
       .dash-label { font-size: 0.65rem; }
 
@@ -1284,7 +1286,7 @@
     @media (max-width: 768px) {
       .mobile-fab { display: none; }
       .btn-scan { display: none; }
-      /* panel red + buttons stay visible — tab bar handles adding per module */
+      /* panel red + buttons stay visible — tab bar has its own + per module */
     }
 
     @media (max-width: 400px) {
@@ -5347,7 +5349,6 @@ function applyModuleVisibility() {
     var on = _activeModules.indexOf(id) >= 0;
     el.style.display = on ? '' : 'none';
   });
-  // On mobile, re-enforce single-panel view after showing all modules
   if (window.innerWidth <= 768) _initMobilePanels();
 }
 
@@ -5358,7 +5359,6 @@ function addModule(id) {
   var el = document.querySelector('[data-panel="' + id + '"]');
   if (el) {
     if (window.innerWidth <= 768) {
-      // On mobile: keep single-panel view, just update visibility
       _initMobilePanels();
     } else {
       el.style.display = '';
@@ -5389,7 +5389,6 @@ function removeModule(id) {
   saveActiveModules();
   var el = document.querySelector('[data-panel="' + id + '"]');
   if (el) el.style.display = 'none';
-  // On mobile: if we removed the active panel, switch to first available
   if (window.innerWidth <= 768) _initMobilePanels();
 }
 
@@ -5582,7 +5581,6 @@ function saveCurrentLayout() {
 
 function applyLayout() {
   if (window.innerWidth <= 768) {
-    // Mobile: clear position styles then enforce single-panel view
     document.querySelectorAll('[data-panel]').forEach(function(el) {
       el.style.top = ''; el.style.left = ''; el.style.width = ''; el.style.height = '';
     });
@@ -5590,7 +5588,6 @@ function applyLayout() {
     return;
   }
   if (window.innerWidth <= 1366) {
-    // Tablet: clear position styles, show all active panels
     document.querySelectorAll('[data-panel]').forEach(function(el) {
       el.style.top = ''; el.style.left = ''; el.style.width = ''; el.style.height = '';
       if (_activeModules.indexOf(el.dataset.panel) >= 0) el.style.display = '';
@@ -6457,7 +6454,7 @@ function deleteContrib(goalId, contribId) {
 }
 
 // ── Mobile panel switching ──
-var _MOBILE_PANELS = ["expenses", "goals", "commit", "ot", "debt"];
+var _MOBILE_PANELS = ["expenses", "goals", "commit", "ot", "debt", "budget"];
 var _activeMPanel  = "expenses";
 
 function switchMPanel(name) {
@@ -6473,9 +6470,19 @@ function switchMPanel(name) {
 
 function _initMobilePanels() {
   if (window.innerWidth <= 768) {
-    _MOBILE_PANELS.forEach(function(p) {
-      var el = document.querySelector("[data-panel=\"" + p + "\"]");
-      if (el) el.style.display = (p === _activeMPanel) ? "" : "none";
+    // Hide ALL panels except the active enabled one
+    document.querySelectorAll('[data-panel]').forEach(function(el) {
+      var p = el.dataset.panel;
+      var isActive  = (p === _activeMPanel);
+      var isEnabled = (_activeModules.indexOf(p) >= 0);
+      el.style.display = (isActive && isEnabled) ? '' : 'none';
+    });
+    // Sync tab buttons — hide tabs for disabled modules
+    document.querySelectorAll('.mpanel-tab-grp').forEach(function(grp) {
+      var p = grp.dataset.mpanel;
+      var enabled = _activeModules.indexOf(p) >= 0;
+      grp.style.display = enabled ? '' : 'none';
+      grp.classList.toggle('active', p === _activeMPanel && enabled);
     });
   }
 }
