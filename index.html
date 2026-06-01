@@ -3401,7 +3401,7 @@ var _editOtTarget = null;
 function openAddOT() {
   _editOtTarget = null;
   populateOtTypeSelect('ot1');
-  var isPastView = _otViewMonthIdx !== periodMonthIdx || _otViewYear !== periodYear;
+  var isPastView = (_otViewYear < currentYear) || (_otViewYear === currentYear && _otViewMonthIdx < currentMonthIdx);
   var d = isPastView ? new Date(_otViewYear, _otViewMonthIdx, 1) : new Date();
   document.getElementById('otDay').value   = d.getDate();
   document.getElementById('otMonth').value = d.getMonth() + 1;
@@ -4414,9 +4414,10 @@ function renderOtPanel() {
   var totalPay   = otList.reduce(function(s, e) { return s + (parseFloat(e.pay)   || 0); }, 0);
   var totalHours = otList.reduce(function(s, e) { return s + (parseFloat(e.hours) || 0); }, 0);
 
-  var isPast     = _otViewMonthIdx !== periodMonthIdx || _otViewYear !== periodYear;
+  var isPast     = (_otViewYear < currentYear) || (_otViewYear === currentYear && _otViewMonthIdx < currentMonthIdx);
   var viewLabel  = ALL_MONTHS[_otViewMonthIdx] + ' ' + _otViewYear;
-  var nextDisabled = !isPast ? ' disabled style="opacity:0.3;cursor:default;"' : '';
+  var isFutureView = (_otViewYear > currentYear) || (_otViewYear === currentYear && _otViewMonthIdx >= currentMonthIdx);
+  var nextDisabled = isFutureView ? ' disabled style="opacity:0.3;cursor:default;"' : '';
 
   var html = '<div class="ot-month-nav">' +
     '<button class="ot-nav-btn" onclick="otPrevMonth()">&#8249;</button>' +
