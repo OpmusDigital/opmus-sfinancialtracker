@@ -2688,8 +2688,11 @@
     <div class="modal-title" id="otModalTitle">Log Overtime</div>
     <div class="modal-sub"><span id="otModalMonth" style="color:#ef4444;font-weight:600;"></span></div>
 
-    <div class="field-label">OT Type</div>
-    <select id="otType" onchange="updateOtTypeUI()"></select>
+    <div class="field-label">OT Rate</div>
+    <select id="otType" onchange="updateOtPayPreview()"></select>
+
+    <div class="field-label">Hours</div>
+    <input type="number" id="otHours" inputmode="decimal" placeholder="e.g. 3.5" min="0.5" max="24" step="0.5" oninput="updateOtPayPreview()" />
 
     <div class="field-label">Date (DD / MM / YYYY)</div>
     <div class="date-row">
@@ -2698,16 +2701,6 @@
       <input type="number" id="otMonth" inputmode="numeric" placeholder="MM" min="1" max="12" style="width:60px;" oninput="autoAdvanceDate(this,'otYear',2)" />
       <div class="date-sep">/</div>
       <input type="number" id="otYear" inputmode="numeric" placeholder="YYYY" min="2020" max="2099" style="width:80px;" />
-    </div>
-
-    <div id="otEndTimeWrap">
-      <div class="field-label">End Time <span style="color:#475569;">(overtime counted from 6:00 PM)</span></div>
-      <input type="time" id="otEndTime" value="20:00" oninput="updateOtPayPreview()" />
-    </div>
-
-    <div id="otHoursWrap" style="display:none;">
-      <div class="field-label">Total Hours Worked</div>
-      <input type="number" id="otHours" inputmode="decimal" placeholder="e.g. 8" min="0.5" max="24" step="0.5" oninput="updateOtPayPreview()" />
     </div>
 
     <div class="field-label">Description <span style="color:#475569;">(optional)</span></div>
@@ -2720,6 +2713,10 @@
       </div>
       <div class="pay-preview-val" id="otPayAmt">—</div>
     </div>
+
+    <!-- Hidden fields kept for compatibility -->
+    <div id="otEndTimeWrap" style="display:none;"><input type="time" id="otEndTime" value="20:00" /></div>
+    <div id="otHoursWrap"   style="display:none;"></div>
 
     <button class="modal-btn blue" id="otSaveBtn" onclick="saveOtEntry()">Add OT Entry</button>
     <button class="modal-btn secondary" onclick="closeAddOT()">Cancel</button>
@@ -3450,23 +3447,12 @@ function closeAddOT() {
 }
 
 function updateOtTypeUI() {
-  var type = document.getElementById('otType').value;
-  var t    = getAllOtTypes()[type];
-  var useEndTime = t && t.useEndTime;
-  document.getElementById('otEndTimeWrap').style.display = useEndTime ? '' : 'none';
-  document.getElementById('otHoursWrap').style.display   = useEndTime ? 'none' : '';
+  // Simplified modal — just update pay preview when type changes
   updateOtPayPreview();
 }
 
 function calcOtHours() {
-  var type = document.getElementById('otType').value;
-  var t    = getAllOtTypes()[type];
-  if (t && t.useEndTime) {
-    var val = document.getElementById('otEndTime').value;
-    if (!val) return 0;
-    var parts = val.split(':');
-    return Math.round(Math.max(0, parseInt(parts[0],10) + parseInt(parts[1],10) / 60 - 18) * 2) / 2;
-  }
+  // Always use the hours field directly — simplified modal
   return parseFloat(document.getElementById('otHours').value) || 0;
 }
 
@@ -7087,14 +7073,48 @@ function markCommitPaid(id, actualAmt) {
   if (cleared.indexOf(id) === -1) cleared.push(id);
   localStorage.setItem(_dueClearedKey(), JSON.stringify(cleared));
   if (actualAmt !== undefined) _setDueActual(id, actualAmt);
+
+  // If this commitment is linked to a debt, reduce the debt's remaining balance
+  var commits = loadCommitments();
+  var commit  = commits.find(function(c) { return c.id === id; });
+  if (commit && commit.debtId) {
+    var paidAmt = actualAmt !== undefined ? actualAmt : parseFloat(commit.amount) || 0;
+    var debts   = loadDebts();
+    var debt    = debts.find(function(d) { return d.id === commit.debtId; });
+    if (debt && paidAmt > 0) {
+      debt.remaining = Math.max(0, (parseFloat(debt.remaining) || 0) - paidAmt);
+      saveDebts(debts);
+      renderDebtPanel();
+    }
+  }
+
   updateDueAlert();
   renderCommitments();
+  renderDashboard();
 }
 function unmarkCommitPaid(id) {
+  // Restore debt remaining if this was a debt-linked commitment
+  var commits = loadCommitments();
+  var commit  = commits.find(function(c) { return c.id === id; });
+  if (commit && commit.debtId) {
+    var paidAmt = (_getDueActuals()[id]) || parseFloat(commit.amount) || 0;
+    var debts   = loadDebts();
+    var debt    = debts.find(function(d) { return d.id === commit.debtId; });
+    if (debt && paidAmt > 0) {
+      debt.remaining = (parseFloat(debt.remaining) || 0) + paidAmt;
+      // Don't exceed total
+      if (parseFloat(debt.total) > 0 && debt.remaining > parseFloat(debt.total)) {
+        debt.remaining = parseFloat(debt.total);
+      }
+      saveDebts(debts);
+      renderDebtPanel();
+    }
+  }
   var cleared = _getDueCleared().filter(function(x) { return x !== id; });
   localStorage.setItem(_dueClearedKey(), JSON.stringify(cleared));
   updateDueAlert();
   renderCommitments();
+  renderDashboard();
 }
 
 var _varAmtTarget = null;
