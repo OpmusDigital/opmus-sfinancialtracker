@@ -1463,12 +1463,19 @@
     .prof-setup-title { font-size: 1.1rem; font-weight: 700; color: #f1f5f9; letter-spacing: -0.02em; }
     .prof-setup-desc { font-size: 0.78rem; color: #475569; line-height: 1.6; }
     .prof-setup-label { font-size: 0.65rem; color: #475569; text-transform: uppercase; letter-spacing: 0.1em; font-weight: 600; margin-top: 0.25rem; }
+    .prof-setup-hint { font-size: 0.72rem; color: #334155; line-height: 1.45; margin-top: -0.25rem; }
     .prof-setup-input {
       width: 100%; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
       border-radius: 11px; padding: 10px 14px; font-size: 0.95rem; color: #f1f5f9;
       font-family: 'Inter', system-ui; outline: none; transition: all 0.2s;
     }
     .prof-setup-input:focus { border-color: rgba(239,68,68,0.5); background: rgba(255,255,255,0.07); box-shadow: 0 0 0 3px rgba(239,68,68,0.1); }
+    /* First-time setup tab toggle */
+    .ft-tabs { display: flex; gap: 0.3rem; background: rgba(255,255,255,0.04); border-radius: 10px; padding: 4px; margin-bottom: 0.4rem; }
+    .ft-tab { flex: 1; padding: 0.55rem 0.4rem; border: none; border-radius: 7px; background: none; color: #475569; font-size: 0.71rem; font-weight: 600; cursor: pointer; font-family: 'Inter', system-ui; white-space: nowrap; transition: all 0.18s; }
+    .ft-tab.active { background: rgba(239,68,68,0.15); color: #fca5a5; }
+    .ft-divider { border: none; border-top: 1px solid rgba(255,255,255,0.07); margin: 0.2rem 0; }
+    .ft-sync-status { font-size: 0.73rem; color: #94a3b8; min-height: 1.1em; }
     /* Profile avatar in header */
     .header-profile-btn {
       width: 34px; height: 34px; border-radius: 50%; flex-shrink: 0;
@@ -1744,30 +1751,37 @@
 </div>
 
 <!-- Cloud Sync Modal -->
-<div class="sync-overlay hidden" id="syncOverlay">
+<div class="sync-overlay hidden" id="syncOverlay" onclick="if(event.target===this)closeSyncModal()">
   <div class="sync-box">
-    <div class="sync-title">☁ Cloud Sync</div>
-    <div>
-      <div class="sync-label">Your Sync Key</div>
-      <div class="sync-key-row">
-        <span class="sync-key-text" id="syncKeyDisplay">—</span>
-        <button class="sync-copy-btn" onclick="copySyncKey()">Copy</button>
-      </div>
-      <div class="sync-hint">Share this key to sync on another device. Keep it private — anyone with it can read your data.</div>
-    </div>
-    <hr class="sync-divider">
-    <div>
-      <div class="sync-label">Use a Sync Key from another device</div>
-      <input class="sync-input" id="syncKeyInput" type="text" placeholder="Paste sync key here…" />
+    <div style="display:flex;align-items:center;justify-content:space-between;">
+      <div class="sync-title">&#x2601; Cloud Sync</div>
+      <button onclick="closeSyncModal()" style="background:none;border:none;color:#475569;font-size:1.1rem;cursor:pointer;line-height:1;padding:4px;">&#x2715;</button>
     </div>
     <div class="sync-status-row">
       <div class="sync-dot" id="syncStatusDot"></div>
-      <span id="syncStatusText">Not connected</span>
+      <span id="syncStatusText">Checking…</span>
     </div>
-    <div class="sync-btns" style="flex-wrap:wrap;">
+    <hr class="sync-divider">
+    <!-- Your sync code -->
+    <div>
+      <div class="sync-label">Your Sync Code</div>
+      <div class="sync-hint" style="margin-bottom:0.5rem;">Copy this and paste it on any other device to sync everything.</div>
+      <div class="sync-key-row">
+        <span class="sync-key-text" id="syncCodeDisplay">—</span>
+        <button class="sync-copy-btn" id="syncCopyBtn" onclick="copySyncCode()">Copy</button>
+      </div>
+    </div>
+    <hr class="sync-divider">
+    <!-- Connect another device -->
+    <div>
+      <div class="sync-label">Connect another device</div>
+      <div class="sync-hint" style="margin-bottom:0.5rem;">Paste the sync code from your other device here.</div>
+      <input class="sync-input" id="syncCodeInput" type="text" placeholder="mft-xxxxxxxx-xxxx-…" />
+      <button onclick="connectSyncCode()" style="width:100%;margin-top:0.55rem;padding:0.6rem;border-radius:10px;border:none;background:#4f46e5;color:#fff;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;">Connect &amp; Sync Now</button>
+    </div>
+    <div class="sync-btns">
       <button class="sync-btn ghost" onclick="closeSyncModal()">Close</button>
-      <button class="sync-btn ghost" onclick="pushAllToCloud()" style="color:#818cf8;border-color:rgba(99,102,241,0.3);">⬆ Upload my data</button>
-      <button class="sync-btn primary" onclick="applySyncKey()">Apply &amp; Sync Now</button>
+      <button class="sync-btn ghost" onclick="pushAllToCloud()" style="color:#818cf8;border-color:rgba(99,102,241,0.3);">&#x2B06; Push all data</button>
     </div>
   </div>
 </div>
@@ -2859,15 +2873,12 @@ var FIREBASE_CONFIG = {
   measurementId:     "G-MVTY43VW1D"
 };
 
-const SYNC_KEY_STORAGE = 'mft_sys_sync_key';
-// Keys that must NOT sync: security-sensitive or device-specific
-var _NOSYNC = ['mft_sys_admin_hash', 'mft_sys_migrated', SYNC_KEY_STORAGE, 'mft_fin_hidden'];
+const SYNC_KEY_STORAGE = "mft_cloud_code";
+var _NOSYNC = ["mft_sys_migrated", SYNC_KEY_STORAGE, "mft_fin_hidden"];
 function _syncable(k) {
   if (!k) return false;
   if (_NOSYNC.indexOf(k) !== -1) return false;
-  // Match both bare mft_ keys (e.g. mft_sys_profiles)
-  // and profile-prefixed keys (e.g. alex__mft_expenses_may_2026)
-  return k.startsWith('mft_') || k.indexOf('__mft_') !== -1;
+  return k.startsWith("mft_") || k.indexOf("__mft_") !== -1;
 }
 var _db           = null;
 var _syncKey      = null;
@@ -2890,7 +2901,7 @@ function _batchPush() {
   }
   _db.ref(_syncKey).update(batch).catch(function(e) {
     _pendingSync = true;
-    console.warn('Batch sync failed:', e.message);
+    console.warn("Sync failed:", e.message);
   });
 }
 
@@ -2901,31 +2912,30 @@ function _scheduleBatchPush() {
   _syncTimer = setTimeout(_batchPush, 5000);
 }
 
-// Patch localStorage — every mft_ write/remove mirrors to Firebase,
-// with a debounced batch-push safety net for Safari/iOS write failures
+// Patch localStorage — every mft_ write/remove mirrors to Firebase
 localStorage.setItem = function(key, value) {
   _lsSet(key, value);
   if (!_cloudSyncing && _db && _syncKey && _syncable(key)) {
-    _db.ref(_syncKey + '/' + key).set(value).catch(function() {
-      _scheduleBatchPush();
-    });
+    _db.ref(_syncKey + "/" + key).set(value).catch(function() { _scheduleBatchPush(); });
     _scheduleBatchPush();
   }
 };
 localStorage.removeItem = function(key) {
   _lsRemove(key);
   if (!_cloudSyncing && _db && _syncKey && _syncable(key)) {
-    _db.ref(_syncKey + '/' + key).remove().catch(function() {
-      _scheduleBatchPush();
-    });
+    _db.ref(_syncKey + "/" + key).remove().catch(function() { _scheduleBatchPush(); });
     _scheduleBatchPush();
   }
 };
 
-// When user switches back to the tab, flush any writes that failed in the background
-document.addEventListener('visibilitychange', function() {
+// Flush pending writes when the tab becomes visible again (catches background suspension on iOS)
+document.addEventListener("visibilitychange", function() {
   if (!document.hidden && _pendingSync && _db && _syncKey) _batchPush();
 });
+// iPad: flush immediately on touch interaction so writes aren't lost when switching apps
+document.addEventListener("touchstart", function() {
+  if (_pendingSync && _db && _syncKey) { clearTimeout(_syncTimer); _batchPush(); }
+}, { passive: true });
 
 function _fbConfigured() {
   return FIREBASE_CONFIG.apiKey && !FIREBASE_CONFIG.apiKey.startsWith('PASTE');
@@ -2940,14 +2950,14 @@ function initFirebase() {
 }
 
 function _genSyncKey() {
-  try { return 'mft-' + crypto.randomUUID(); } catch(e) {
-    return 'mft-' + 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+  try { return "mft-" + crypto.randomUUID(); } catch(e) {
+    return "mft-" + "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function(c) {
       var r = Math.random() * 16 | 0;
-      return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+      return (c === "x" ? r : (r & 0x3 | 0x8)).toString(16);
     });
   }
 }
-
+// getSyncKey kept for any legacy references
 function getSyncKey() {
   var k = localStorage.getItem(SYNC_KEY_STORAGE);
   if (!k) { k = _genSyncKey(); _lsSet(SYNC_KEY_STORAGE, k); }
@@ -2984,78 +2994,73 @@ function _setSyncStatus(color, text) {
 }
 
 function openSyncModal() {
-  var dd = document.getElementById('profileDropdown');
-  if (dd) dd.classList.remove('open');
-  var modal = document.getElementById('syncOverlay');
-  if (!modal) return;
-  modal.classList.remove('hidden');
-  var keyEl = document.getElementById('syncKeyDisplay');
-  if (keyEl) keyEl.textContent = _syncKey || getSyncKey();
-  var inp = document.getElementById('syncKeyInput');
-  if (inp) inp.value = '';
+  var dd = document.getElementById("profileDropdown");
+  if (dd) dd.classList.remove("open");
+  document.getElementById("syncOverlay").classList.remove("hidden");
+  var el = document.getElementById("syncCodeDisplay");
+  if (el) el.textContent = _syncKey || getSyncKey();
+  var inp = document.getElementById("syncCodeInput");
+  if (inp) inp.value = "";
   if (!_fbConfigured()) {
-    _setSyncStatus('red', 'Firebase not configured yet');
+    _setSyncStatus("red", "Firebase not configured");
   } else if (_db) {
-    _setSyncStatus(_syncKey ? 'green' : 'grey', _syncKey ? 'Connected' : 'No sync key');
+    _setSyncStatus(_syncKey ? "green" : "grey", _syncKey ? "Connected" : "Not syncing");
   } else {
-    _setSyncStatus('grey', 'Not initialized');
+    _setSyncStatus("grey", "Not initialized");
   }
 }
 
 function closeSyncModal() {
-  var modal = document.getElementById('syncOverlay');
-  if (modal) modal.classList.add('hidden');
+  document.getElementById("syncOverlay").classList.add("hidden");
 }
 
-function copySyncKey() {
-  var key = _syncKey || getSyncKey();
-  navigator.clipboard.writeText(key).then(function() {
-    var btn = document.querySelector('.sync-copy-btn');
+function copySyncCode() {
+  var code = _syncKey || getSyncKey();
+  navigator.clipboard.writeText(code).then(function() {
+    var btn = document.getElementById("syncCopyBtn");
     if (!btn) return;
-    btn.textContent = 'Copied!';
-    setTimeout(function() { btn.textContent = 'Copy'; }, 1800);
-  }).catch(function() {
-    prompt('Copy your sync key:', key);
-  });
+    btn.textContent = "Copied!";
+    setTimeout(function() { btn.textContent = "Copy"; }, 1800);
+  }).catch(function() { prompt("Copy your sync code:", code); });
 }
 
-async function applySyncKey() {
-  var inp = document.getElementById('syncKeyInput');
-  var key = inp ? inp.value.trim() : '';
-  if (!key) { _setSyncStatus('red', 'Please enter a sync key'); return; }
-  if (!_db) { _setSyncStatus('red', 'Firebase not configured'); return; }
-  _syncKey = key;
-  _lsSet(SYNC_KEY_STORAGE, key);
-  var keyEl = document.getElementById('syncKeyDisplay');
-  if (keyEl) keyEl.textContent = key;
-  if (inp) inp.value = '';
+async function connectSyncCode() {
+  var inp = document.getElementById("syncCodeInput");
+  var code = inp ? inp.value.trim() : "";
+  if (!code) { _setSyncStatus("red", "Paste a sync code first"); return; }
+  if (!_db)  { _setSyncStatus("red", "Firebase not connected"); return; }
+  _syncKey = code;
+  _lsSet(SYNC_KEY_STORAGE, code);
+  var el = document.getElementById("syncCodeDisplay");
+  if (el) el.textContent = code;
+  if (inp) inp.value = "";
   await pullFromCloud();
   if (activeProfileId) {
     syncDebtCommitments(); renderPanelA(); renderPanelB(); renderBudget(); renderCommitments(); renderOtPanel(); renderDebtPanel();
   } else {
-    // Not logged in yet — show synced profiles in the picker then reload
     closeSyncModal();
     renderPickerCards();
   }
 }
 
+// Kept for compatibility
+function copySyncKey() { copySyncCode(); }
+function applySyncKey() { connectSyncCode(); }
+
 async function pushAllToCloud() {
-  if (!_db) { _setSyncStatus('red', 'Firebase not configured'); return; }
-  if (!_syncKey) { _syncKey = getSyncKey(); }
-  _setSyncStatus('yellow', 'Uploading…');
+  if (!_db) { _setSyncStatus("red", "Firebase not configured"); return; }
+  if (!_syncKey) _syncKey = getSyncKey();
+  _setSyncStatus("yellow", "Uploading…");
   try {
     var batch = {};
     for (var i = 0; i < localStorage.length; i++) {
       var k = localStorage.key(i);
-      if (_syncable(k)) {
-        batch[k] = localStorage.getItem(k);
-      }
+      if (_syncable(k)) batch[k] = localStorage.getItem(k);
     }
     await _db.ref(_syncKey).update(batch);
-    _setSyncStatus('green', 'Uploaded ' + Object.keys(batch).length + ' records');
+    _setSyncStatus("green", "Uploaded " + Object.keys(batch).length + " records ✓");
   } catch(e) {
-    _setSyncStatus('red', 'Upload failed: ' + e.message);
-    console.warn('Push failed:', e);
+    _setSyncStatus("red", "Upload failed: " + e.message);
   }
 }
 
@@ -7451,6 +7456,19 @@ async function hashPin(pin) {
 
 async function verifyPin(pin, hash) { return (await hashPin(pin)) === hash; }
 
+function migrateProfileSyncKeys() {
+  var profiles = getProfiles();
+  var changed = false;
+  profiles.forEach(function(p) {
+    if (!p.syncKey) { p.syncKey = _genSyncKey(); changed = true; }
+  });
+  if (changed) {
+    _lsSet("mft_sys_profiles", JSON.stringify(profiles));
+    // Push updated profile list to master key if we have one
+    if (_db && _masterKey) _db.ref(_masterKey + "/mft_sys_profiles").set(JSON.stringify(profiles)).catch(function() {});
+  }
+}
+
 function migrateExistingData() {
   if (localStorage.getItem(MIGRATED_KEY)) return;
   // Snapshot keys first so adding new items doesn't affect iteration
@@ -7656,51 +7674,59 @@ function renderPickerCards() {
   document.getElementById('profManageArea').innerHTML =
     '<div class="prof-picker-actions">'
   + '<div class="prof-manage-link" onclick="showManagePrompt()"><span class="pm-icon">⚙</span><span>Manage Profiles</span></div>'
-  + (_fbConfigured() ? '<div class="prof-manage-link" onclick="showPickerSyncPrompt()"><span class="pm-icon">☁</span><span>Sync from Cloud</span></div>' : '')
+  + (_fbConfigured() ? "<div class=\"prof-manage-link\" onclick=\"showPickerSyncPrompt()\"><span class=\"pm-icon\">&#x2601;</span><span>" + (localStorage.getItem(SYNC_KEY_STORAGE) ? "Cloud Sync &#x2713;" : "Connect to Cloud") + "</span></div>" : "")
   + '</div>';
 }
 
 function showPickerSyncPrompt() {
-  document.getElementById('profScreenTitle').textContent = 'Sync from Cloud';
-  document.getElementById('profScreenSub').textContent   = 'Enter the sync key from your other device';
-  document.getElementById('profManageArea').innerHTML    = '';
-  document.getElementById('profScreenBody').innerHTML    =
-    '<div class="prof-setup-wrap">'
-  + '<div class="sync-label" style="margin-bottom:0.5rem;">Sync Key</div>'
-  + '<input class="prof-setup-input" id="pickerSyncInput" placeholder="mft-xxxxxxxx-xxxx-…" style="font-family:monospace;font-size:0.8rem;" />'
-  + '<div id="pickerSyncStatus" style="font-size:0.72rem;color:#64748b;min-height:1.1rem;margin-top:0.3rem;"></div>'
-  + '<button class="prof-btn" onclick="pickerSyncApply()">☁ Sync Now</button>'
-  + '<button class="prof-btn secondary" onclick="renderPickerCards()">← Back</button>'
-  + '</div>';
+  var curCode = localStorage.getItem(SYNC_KEY_STORAGE) || "";
+  document.getElementById("profScreenTitle").textContent = "Cloud Sync";
+  document.getElementById("profScreenSub").textContent   = "Connect all your devices with one code";
+  document.getElementById("profManageArea").innerHTML    = "";
+  document.getElementById("profScreenBody").innerHTML    =
+    "<div class=\"prof-setup-wrap\">"
+  + (curCode
+      ? "<div style=\"background:rgba(34,197,94,0.07);border:1px solid rgba(34,197,94,0.18);border-radius:12px;padding:0.7rem 1rem;margin-bottom:1rem;\">"
+        + "<div style=\"font-size:0.62rem;font-weight:700;color:#22c55e;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:0.25rem;\">&#x2713; Currently connected</div>"
+        + "<div style=\"font-family:monospace;font-size:0.72rem;color:#64748b;word-break:break-all;\">" + escHtml(curCode) + "</div>"
+        + "</div>"
+      : "")
+  + "<div style=\"font-size:0.78rem;color:#64748b;margin-bottom:1rem;line-height:1.6;\">"
+  + "On your main device: open the app &#x2192; tap your avatar &#x2192; <strong style=\"color:#94a3b8;\">Cloud Sync</strong> &#x2192; Copy your sync code."
+  + "</div>"
+  + "<div class=\"sync-label\">Paste Sync Code</div>"
+  + "<input class=\"prof-setup-input\" id=\"pickerSyncInput\" placeholder=\"mft-xxxxxxxx-xxxx-…\" style=\"font-family:monospace;font-size:0.8rem;\" />"
+  + "<div id=\"pickerSyncStatus\" style=\"font-size:0.72rem;color:#64748b;min-height:1.1rem;margin-top:0.3rem;\"></div>"
+  + "<button class=\"prof-btn\" onclick=\"pickerSyncApply()\">&#x2601; Connect &amp; Load Profiles</button>"
+  + "<button class=\"prof-btn secondary\" onclick=\"renderPickerCards()\">&#x2190; Back</button>"
+  + "</div>";
   setTimeout(function() {
-    var inp = document.getElementById('pickerSyncInput');
+    var inp = document.getElementById("pickerSyncInput");
     if (inp) inp.focus();
   }, 50);
 }
 
 async function pickerSyncApply() {
-  var inp = document.getElementById('pickerSyncInput');
-  var key = inp ? inp.value.trim() : '';
-  var statusEl = document.getElementById('pickerSyncStatus');
-  if (!key) { if (statusEl) statusEl.textContent = 'Please enter a sync key.'; return; }
-  if (!_db)  { if (statusEl) statusEl.textContent = 'Firebase not connected.'; return; }
-  if (statusEl) statusEl.textContent = 'Syncing…';
-  _syncKey = key;
-  _lsSet(SYNC_KEY_STORAGE, key);
+  var inp = document.getElementById("pickerSyncInput");
+  var code = inp ? inp.value.trim() : "";
+  var statusEl = document.getElementById("pickerSyncStatus");
+  if (!code) { if (statusEl) statusEl.textContent = "Please paste a sync code."; return; }
+  if (!_db)  { if (statusEl) statusEl.textContent = "Firebase not connected."; return; }
+  if (statusEl) statusEl.textContent = "Connecting…";
+  _syncKey = code;
+  _lsSet(SYNC_KEY_STORAGE, code);
   try {
-    var snap = await _db.ref(_syncKey).once('value');
+    var snap = await _db.ref(code).once("value");
     var data = snap.val();
-    if (!data) { if (statusEl) statusEl.textContent = 'No data found for this key. Check the key and try again.'; return; }
+    if (!data) { if (statusEl) statusEl.textContent = "No data found for this code. Double-check and try again."; return; }
     _cloudSyncing = true;
-    Object.keys(data).forEach(function(k) {
-      if (_syncable(k)) _lsSet(k, data[k]);
-    });
+    Object.keys(data).forEach(function(k) { if (_syncable(k)) _lsSet(k, data[k]); });
     _cloudSyncing = false;
-    if (statusEl) statusEl.textContent = 'Synced ' + Object.keys(data).length + ' records. Loading profiles…';
+    if (statusEl) statusEl.textContent = "&#x2713; Connected! Loading profiles…";
     setTimeout(function() { renderPickerCards(); }, 800);
   } catch(e) {
     _cloudSyncing = false;
-    if (statusEl) statusEl.textContent = 'Error: ' + e.message;
+    if (statusEl) statusEl.textContent = "Error: " + e.message;
   }
 }
 
@@ -7755,8 +7781,7 @@ function profPinSubmit(id) {
 }
 
 function loginWithProfile(profile) {
-  sessionStorage.setItem('mft_active_profile', profile.id);
-  // Reload so all key constants are recomputed with the correct prefix
+  sessionStorage.setItem("mft_active_profile", profile.id);
   location.reload();
 }
 
@@ -7806,17 +7831,18 @@ function saveNewProfile() {
   var profiles = getProfiles();
   var id = name.toLowerCase().replace(/[^a-z0-9]/g, '') + '_' + Date.now().toString(36);
   var initials = name.slice(0, 2).toUpperCase();
+  var newSyncKey = _genSyncKey();
   if (pin) {
     hashPin(pin).then(function(hash) {
-      profiles.push({ id: id, name: name, initials: initials, color: _newProfColor, pinHash: hash });
+      profiles.push({ id: id, name: name, initials: initials, color: _newProfColor, pinHash: hash, syncKey: newSyncKey });
       saveProfiles(profiles);
-      showToast('Profile created!');
+      showToast("Profile created!");
       renderPickerCards();
     });
   } else {
-    profiles.push({ id: id, name: name, initials: initials, color: _newProfColor, pinHash: null });
+    profiles.push({ id: id, name: name, initials: initials, color: _newProfColor, pinHash: null, syncKey: newSyncKey });
     saveProfiles(profiles);
-    showToast('Profile created!');
+    showToast("Profile created!");
     renderPickerCards();
   }
 }
@@ -8090,25 +8116,77 @@ function _closeOnboarding() {
 
 // ── First-time setup (no profiles exist yet) ─────────────
 function showFirstTimeSetup() {
-  document.getElementById('profScreenTitle').textContent = 'Welcome to MyFinance Tracker';
-  document.getElementById('profScreenSub').textContent   = "Let's get you set up — this only takes a moment";
+  document.getElementById('profScreenTitle').textContent = 'Welcome';
+  document.getElementById('profScreenSub').textContent   = 'Your personal finance tracker';
   document.getElementById('profManageArea').innerHTML    = '';
   document.getElementById('profScreenBody').innerHTML =
     '<div class="prof-setup-wrap">'
-  + '<div class="prof-setup-title">Welcome!</div>'
-  + '<div class="prof-setup-desc">Let\'s set up your tracker. This only takes a moment.</div>'
+  // Tab toggle
+  + '<div class="ft-tabs">'
+  + '<button class="ft-tab active" id="ftTabFresh" onclick="ftSwitchTab(\'fresh\')">✦ Start Fresh</button>'
+  + '<button class="ft-tab" id="ftTabSync" onclick="ftSwitchTab(\'sync\')">☁ Already have a sync code</button>'
+  + '</div>'
+
+  // ── Panel A: Start Fresh ──
+  + '<div id="ftPanelFresh">'
   + '<div class="prof-setup-label">Your Name</div>'
   + '<input class="prof-setup-input" id="setupUserName" type="text" placeholder="e.g. Alex" maxlength="30" />'
-  + '<div class="prof-setup-label">Admin PIN</div>'
-  + '<div class="prof-setup-desc" style="margin-bottom:0.5rem;">Used to manage profiles (add, delete). Keep it safe.</div>'
-  + '<input class="prof-setup-input" id="setupAdminPin" type="password" placeholder="Choose a PIN (e.g. 1234)" maxlength="20" />'
-  + '<div class="prof-setup-label">Confirm Admin PIN</div>'
-  + '<input class="prof-setup-input" id="setupAdminPin2" type="password" placeholder="Repeat PIN" maxlength="20" />'
-  + '<div class="prof-setup-label">Your Profile PIN <span style="color:#475569;font-weight:400;">(optional)</span></div>'
-  + '<input class="prof-setup-input" id="setupUserPin" type="password" placeholder="Leave blank for no PIN" maxlength="20" onkeydown="if(event.key===\'Enter\')submitFirstTimeSetup()" />'
-  + '<button class="prof-btn" onclick="submitFirstTimeSetup()" style="margin-top:0.5rem;">Create My Profile →</button>'
+  + '<hr class="ft-divider" />'
+  + '<div class="prof-setup-label">Master PIN</div>'
+  + '<div class="prof-setup-hint">Needed to add or delete profiles. Pick any PIN you\'ll remember.</div>'
+  + '<input class="prof-setup-input" id="setupAdminPin" type="password" placeholder="Choose a PIN" maxlength="20" style="margin-top:0.2rem;" />'
+  + '<input class="prof-setup-input" id="setupAdminPin2" type="password" placeholder="Confirm PIN" maxlength="20" />'
+  + '<hr class="ft-divider" />'
+  + '<div class="prof-setup-label">Profile PIN <span style="color:#475569;font-weight:400;">— optional</span></div>'
+  + '<div class="prof-setup-hint">Locks your own profile login. Leave blank if you don\'t need it.</div>'
+  + '<input class="prof-setup-input" id="setupUserPin" type="password" placeholder="Leave blank for no PIN" maxlength="20" style="margin-top:0.2rem;" onkeydown="if(event.key===\'Enter\')submitFirstTimeSetup()" />'
+  + '<button class="prof-btn" onclick="submitFirstTimeSetup()" style="margin-top:0.6rem;">Create My Profile →</button>'
+  + '</div>'
+
+  // ── Panel B: Sync from another device ──
+  + '<div id="ftPanelSync" style="display:none;">'
+  + '<div class="prof-setup-label">Paste your sync code</div>'
+  + '<div class="prof-setup-hint">On your other device: tap your avatar → Cloud Sync → Copy the code, then paste it here.</div>'
+  + '<input class="prof-setup-input" id="ftSyncCode" type="text" placeholder="mft-xxxxxxxx-xxxx-…" maxlength="60" style="font-family:monospace;font-size:0.82rem;margin-top:0.25rem;" />'
+  + '<div class="ft-sync-status" id="ftSyncStatus"></div>'
+  + '<button class="prof-btn" onclick="ftApplySync()" style="margin-top:0.4rem;">☁ Connect &amp; Load My Profiles →</button>'
+  + '</div>'
+
   + '</div>';
-  setTimeout(function() { var inp = document.getElementById('setupAdminPin'); if (inp) inp.focus(); }, 80);
+  setTimeout(function() { var inp = document.getElementById('setupUserName'); if (inp) inp.focus(); }, 80);
+}
+
+function ftSwitchTab(tab) {
+  document.getElementById('ftPanelFresh').style.display = (tab === 'fresh') ? '' : 'none';
+  document.getElementById('ftPanelSync').style.display  = (tab === 'sync')  ? '' : 'none';
+  document.getElementById('ftTabFresh').classList.toggle('active', tab === 'fresh');
+  document.getElementById('ftTabSync').classList.toggle('active',  tab === 'sync');
+  var focusId = (tab === 'fresh') ? 'setupUserName' : 'ftSyncCode';
+  setTimeout(function() { var inp = document.getElementById(focusId); if (inp) inp.focus(); }, 60);
+}
+
+async function ftApplySync() {
+  var inp      = document.getElementById('ftSyncCode');
+  var code     = inp ? inp.value.trim() : '';
+  var statusEl = document.getElementById('ftSyncStatus');
+  if (!code)  { if (statusEl) statusEl.textContent = 'Paste a sync code first.'; return; }
+  if (!_db)   { if (statusEl) statusEl.textContent = 'Not connected to Firebase. Check your internet.'; return; }
+  if (statusEl) statusEl.textContent = 'Connecting…';
+  _syncKey = code;
+  _lsSet(SYNC_KEY_STORAGE, code);
+  try {
+    var snap = await _db.ref(code).once('value');
+    var data = snap.val();
+    if (!data) { if (statusEl) statusEl.textContent = 'No data found for that code. Double-check and try again.'; return; }
+    _cloudSyncing = true;
+    Object.keys(data).forEach(function(k) { if (_syncable(k)) _lsSet(k, data[k]); });
+    _cloudSyncing = false;
+    if (statusEl) statusEl.textContent = '✓ Connected! Loading your profiles…';
+    setTimeout(function() { location.reload(); }, 900);
+  } catch(e) {
+    _cloudSyncing = false;
+    if (statusEl) statusEl.textContent = 'Error: ' + e.message;
+  }
 }
 
 function submitFirstTimeSetup() {
@@ -8130,7 +8208,7 @@ function submitFirstTimeSetup() {
     }
     return Promise.resolve(null);
   }).then(function(userHash) {
-    var profiles = [{ id: profileId, name: userName, initials: initials, color: color, pinHash: userHash }];
+    var profiles = [{ id: profileId, name: userName, initials: initials, color: color, pinHash: userHash, syncKey: _genSyncKey() }];
     saveProfiles(profiles);
     migrateExistingData();
     showToast('Profile created! Logging in…');
@@ -8143,7 +8221,7 @@ function submitFirstTimeSetup() {
   var profiles  = getProfiles();
   var adminHash = localStorage.getItem(ADMIN_HASH_KEY);
 
-  if (!adminHash || profiles.length === 0) {
+  if (profiles.length === 0) {
     // First time ever — show setup
     showFirstTimeSetup();
     return;
@@ -8209,7 +8287,7 @@ _syncKey = getSyncKey();
       <div class="onboard-avatar-wrap" id="onboardAvatar"></div>
       <div class="onboard-welcome">Welcome</div>
       <div class="onboard-name" id="onboardName">—</div>
-      <div class="onboard-tagline">Answer a few quick questions so your tracker is ready from day one — skip anything you're not sure about.</div>
+      <div class="onboard-tagline">Two quick things and you're done. Skip anything you're unsure about — you can change it anytime.</div>
     </div>
 
     <div class="onboard-body">
@@ -8218,12 +8296,12 @@ _syncKey = getSyncKey();
         <div class="onboard-section-title">💰 Salary</div>
 
         <div class="onboard-field">
-          <label class="onboard-label">Which day of the month do you usually get paid?</label>
+          <label class="onboard-label">What day of the month do you get paid?</label>
           <div class="onboard-row">
             <input id="obSalDay" type="number" inputmode="numeric" min="1" max="31" class="onboard-input" placeholder="e.g. 25" style="width:90px;" />
             <span class="onboard-unit">of every month</span>
           </div>
-          <div class="onboard-hint">Leave blank if you're not sure — you can change this any time in the calendar settings.</div>
+          <div class="onboard-hint">Not sure? Leave blank — you can set this later in calendar settings.</div>
         </div>
 
         <div class="onboard-field" id="obWeekendField" style="display:none;">
@@ -8231,12 +8309,12 @@ _syncKey = getSyncKey();
           <select id="obSalWeekend" class="onboard-input">
             <option value="friday">Friday before (most common)</option>
             <option value="monday">Monday after</option>
-            <option value="exact">The exact date regardless</option>
+            <option value="exact">The exact date, always</option>
           </select>
         </div>
 
         <div class="onboard-field">
-          <label class="onboard-label">What's your monthly salary? <span class="onboard-optional">optional</span></label>
+          <label class="onboard-label">What's your monthly take-home pay? <span class="onboard-optional">optional</span></label>
           <div class="onboard-row">
             <span class="onboard-unit">RM</span>
             <input id="obSalary" type="number" inputmode="decimal" min="0" step="1" class="onboard-input" placeholder="e.g. 3500" style="flex:1;" />
@@ -8248,8 +8326,8 @@ _syncKey = getSyncKey();
     </div>
 
     <div class="onboard-footer">
-      <button class="onboard-btn-primary" onclick="submitOnboarding()">Start Tracking →</button>
-      <button class="onboard-btn-skip" onclick="dismissOnboarding()">Skip setup — I'll fill these in later</button>
+      <button class="onboard-btn-primary" onclick="submitOnboarding()">All Done — Start Tracking →</button>
+      <button class="onboard-btn-skip" onclick="dismissOnboarding()">Skip for now — I'll fill these in later</button>
     </div>
   </div>
 </div>
