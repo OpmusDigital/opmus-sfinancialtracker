@@ -1038,7 +1038,6 @@
       .btn-history { display: none !important; }
       #btnSettings, #btnApps { display: none !important; }
       #headerShiftChip, #headerSalChip { display: none !important; }
-      #dueAlertWrap { display: none !important; }
       .month-pill { padding: 5px 9px 5px 7px; gap: 0.3rem; }
       .month-pill-icon { width: 24px; height: 24px; border-radius: 7px; font-size: 0.85rem; }
       .month-pill-label { font-size: 0.72rem; }
@@ -2920,21 +2919,26 @@ function _scheduleBatchPush() {
   _syncTimer = setTimeout(_batchPush, 5000);
 }
 
-// Patch localStorage — every mft_ write/remove mirrors to Firebase
-localStorage.setItem = function(key, value) {
-  _lsSet(key, value);
-  if (!_cloudSyncing && _db && _syncKey && _syncable(key)) {
-    _db.ref(_syncKey + "/" + key).set(value).catch(function() { _scheduleBatchPush(); });
-    _scheduleBatchPush();
-  }
-};
-localStorage.removeItem = function(key) {
-  _lsRemove(key);
-  if (!_cloudSyncing && _db && _syncKey && _syncable(key)) {
-    _db.ref(_syncKey + "/" + key).remove().catch(function() { _scheduleBatchPush(); });
-    _scheduleBatchPush();
-  }
-};
+// Patch Storage.prototype (not localStorage instance) — Safari silently ignores
+// direct instance assignment (localStorage.setItem = ...) so prototype override is required
+(function() {
+  var _origSet    = Storage.prototype.setItem;
+  var _origRemove = Storage.prototype.removeItem;
+  Storage.prototype.setItem = function(key, value) {
+    _origSet.call(this, key, value);
+    if (this === localStorage && !_cloudSyncing && _db && _syncKey && _syncable(key)) {
+      _db.ref(_syncKey + "/" + key).set(value).catch(function() { _scheduleBatchPush(); });
+      _scheduleBatchPush();
+    }
+  };
+  Storage.prototype.removeItem = function(key) {
+    _origRemove.call(this, key);
+    if (this === localStorage && !_cloudSyncing && _db && _syncKey && _syncable(key)) {
+      _db.ref(_syncKey + "/" + key).remove().catch(function() { _scheduleBatchPush(); });
+      _scheduleBatchPush();
+    }
+  };
+})();
 
 // Flush pending writes when the tab becomes visible again (catches background suspension on iOS)
 document.addEventListener("visibilitychange", function() {
