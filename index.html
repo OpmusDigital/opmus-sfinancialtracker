@@ -1045,17 +1045,6 @@
       .month-pill-caret { display: none; }
       .header-right { gap: 0.55rem; flex-shrink: 0; }
       #profileBtnWrap { flex-shrink: 0; }
-      /* Due alert popup: fixed from header bottom, full-width on mobile */
-      #dueAlertPopup {
-        position: fixed !important;
-        top: calc(56px + env(safe-area-inset-top, 0px) + 8px) !important;
-        right: 1rem !important;
-        left: 1rem !important;
-        width: auto !important;
-        max-height: 60vh;
-        overflow-y: auto;
-      }
-
       /* ─ App body: scrollable column ─ */
       .app-body { top: calc(56px + env(safe-area-inset-top, 0px)); overflow-y: auto; overflow-x: hidden; flex-direction: column; }
 
@@ -1864,7 +1853,6 @@
         <i class="ph-fill ph-bell"></i>
         <span id="dueAlertBadge" style="position:absolute;top:2px;right:2px;min-width:16px;height:16px;border-radius:8px;background:#ef4444;color:#fff;font-size:0.6rem;font-weight:800;display:flex;align-items:center;justify-content:center;padding:0 3px;pointer-events:none;"></span>
       </button>
-      <div id="dueAlertPopup" class="cal-popup" style="width:300px;right:0;left:auto;display:none;"></div>
     </div>
     <div class="header-sep"></div>
     <button class="btn-hide-vals" id="dashHideBtn" onclick="toggleFinVisibility()" title="Hide / show amounts"><i class="ph-fill ph-eye" id="dashHideIcon"></i></button>
@@ -1873,6 +1861,9 @@
     </div>
   </div>
 </header>
+
+<!-- Due alert popup: at body level to escape header's backdrop-filter stacking context -->
+<div id="dueAlertPopup" class="cal-popup" style="display:none;position:fixed;z-index:300;width:300px;"></div>
 
 <!-- Profile dropdown: at body level to escape header's backdrop-filter stacking context -->
 <div class="prof-dropdown" id="profileDropdown">
@@ -7283,6 +7274,25 @@ function toggleDueAlert() {
   }
 
   popup.innerHTML = html;
+
+  // Position popup — fixed to viewport, aligned to button on desktop, full-width on mobile
+  var btn  = document.getElementById('dueAlertBtn');
+  var rect = btn ? btn.getBoundingClientRect() : { bottom: 64, right: window.innerWidth - 16 };
+  if (window.innerWidth <= 768) {
+    popup.style.left     = '1rem';
+    popup.style.right    = '1rem';
+    popup.style.width    = 'auto';
+    popup.style.top      = (rect.bottom + 8) + 'px';
+    popup.style.maxHeight = '60vh';
+    popup.style.overflowY = 'auto';
+  } else {
+    popup.style.width  = '300px';
+    popup.style.right  = (window.innerWidth - rect.right) + 'px';
+    popup.style.left   = 'auto';
+    popup.style.top    = (rect.bottom + 8) + 'px';
+    popup.style.maxHeight = '';
+    popup.style.overflowY = '';
+  }
   popup.style.display = 'block';
 }
 
