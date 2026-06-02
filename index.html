@@ -7283,9 +7283,10 @@ function toggleDueAlert() {
   popup.style.position  = 'fixed';
   popup.style.top       = (rect.bottom + 8) + 'px';
   if (window.innerWidth <= 768) {
-    popup.style.left      = '16px';
-    popup.style.right     = '16px';
-    popup.style.width     = 'auto';
+    var popW = Math.min(340, window.innerWidth - 32);
+    popup.style.width     = popW + 'px';
+    popup.style.left      = Math.round((window.innerWidth - popW) / 2) + 'px';
+    popup.style.right     = 'auto';
     popup.style.maxHeight = (window.innerHeight * 0.6) + 'px';
     popup.style.overflowY = 'auto';
   } else {
