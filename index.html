@@ -906,17 +906,63 @@
     .pay-preview-val { font-size: 1rem; font-weight: 700; color: #22c55e; }
     .pay-preview-hrs { font-size: 0.72rem; color: #475569; }
 
-    /* Category grid */
-    .cat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.4rem; }
-    .cat-btn {
-      padding: 0.5rem 0.25rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.08);
-      background: rgba(255,255,255,0.04); color: #64748b; font-size: 0.68rem; font-weight: 500;
-      cursor: pointer; text-align: center; transition: all 0.15s;
-      display: flex; flex-direction: column; align-items: center; gap: 3px;
+    /* Category pills */
+    .cat-grid { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+    .cat-pill {
+      display: inline-flex; align-items: center; gap: 0.3rem;
+      padding: 0.38rem 0.7rem; border-radius: 999px;
+      border: 1.5px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.04);
+      color: #64748b; font-size: 0.76rem; font-weight: 500;
+      cursor: pointer; white-space: nowrap; flex-shrink: 0; transition: all 0.15s;
     }
-    .cat-btn .cat-dot-lg { width: 8px; height: 8px; border-radius: 50%; }
-    .cat-btn.selected { border-color: rgba(239,68,68,0.5); background: rgba(239,68,68,0.1); color: #fca5a5; }
-    .cat-btn:hover { background: rgba(255,255,255,0.08); color: #cbd5e1; }
+    .cat-pill.selected { border-color: rgba(239,68,68,0.5); background: rgba(239,68,68,0.12); color: #fca5a5; }
+    .cat-pill:hover { background: rgba(255,255,255,0.08); color: #cbd5e1; }
+    .cat-pill-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+    .cat-pill-add { border-style: dashed; color: #475569; }
+    .cat-pill-add:hover { color: #94a3b8; border-color: rgba(255,255,255,0.25); }
+    .cat-pill-manage { color: #334155; border-color: rgba(255,255,255,0.07); font-size: 0.7rem; }
+    .cat-pill-manage:hover { color: #64748b; border-color: rgba(255,255,255,0.15); background: rgba(255,255,255,0.05); }
+    /* Category manager overlay */
+    .cat-manager-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.65); z-index: 600; display: flex; align-items: center; justify-content: center; }
+    .cat-manager-panel { background: #0f172a; border: 1px solid rgba(255,255,255,0.13); border-radius: 18px; width: 320px; max-width: calc(100vw - 2rem); max-height: 75vh; display: flex; flex-direction: column; box-shadow: 0 24px 64px rgba(0,0,0,0.7); overflow: hidden; }
+    .cat-manager-head { display: flex; align-items: center; justify-content: space-between; padding: 1.1rem 1.25rem 0.9rem; border-bottom: 1px solid rgba(255,255,255,0.07); }
+    .cat-manager-ttl { font-size: 0.95rem; font-weight: 700; color: #f1f5f9; }
+    .cat-manager-close { background: none; border: none; color: #475569; cursor: pointer; font-size: 1rem; padding: 0; line-height: 1; }
+    .cat-manager-close:hover { color: #94a3b8; }
+    .cat-manager-body { overflow-y: auto; padding: 0.65rem 0.8rem; display: flex; flex-direction: column; gap: 0.3rem; flex: 1; }
+    .cat-manager-row { display: flex; align-items: center; gap: 0.65rem; padding: 0.65rem 0.6rem; border-radius: 10px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); }
+    .cat-manager-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+    .cat-manager-lbl { flex: 1; font-size: 0.84rem; color: #e2e8f0; font-weight: 500; }
+    .cat-manager-edit-btn { padding: 0.22rem 0.6rem; border-radius: 6px; background: rgba(59,130,246,0.12); border: 1px solid rgba(59,130,246,0.22); color: #60a5fa; font-size: 0.72rem; cursor: pointer; font-weight: 600; }
+    .cat-manager-edit-btn:hover { background: rgba(59,130,246,0.22); }
+    .cat-manager-del-btn { padding: 0.22rem 0.55rem; border-radius: 6px; background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.18); color: #f87171; font-size: 0.72rem; cursor: pointer; font-weight: 600; }
+    .cat-manager-del-btn:hover { background: rgba(239,68,68,0.2); }
+    .cat-manager-empty { text-align: center; color: #475569; font-size: 0.8rem; padding: 1.8rem 0; }
+    .cat-manager-foot { padding: 0.7rem 0.8rem; border-top: 1px solid rgba(255,255,255,0.07); }
+    .cat-manager-add-btn { width: 100%; padding: 0.6rem; border-radius: 10px; border: 1.5px dashed rgba(255,255,255,0.14); background: transparent; color: #64748b; font-size: 0.82rem; font-weight: 600; cursor: pointer; transition: all 0.15s; font-family: inherit; }
+    .cat-manager-add-btn:hover { color: #94a3b8; border-color: rgba(255,255,255,0.24); background: rgba(255,255,255,0.04); }
+    /* Category editor overlay */
+    .cat-editor-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.65); z-index: 600; display: flex; align-items: center; justify-content: center; }
+    .cat-editor-panel { background: #0f172a; border: 1px solid rgba(255,255,255,0.13); border-radius: 18px; padding: 1.4rem 1.3rem 1.2rem; width: 300px; max-width: calc(100vw - 2rem); display: flex; flex-direction: column; gap: 0.85rem; box-shadow: 0 24px 64px rgba(0,0,0,0.7); }
+    .cat-editor-title { font-size: 1rem; font-weight: 700; color: #f1f5f9; }
+    .cat-editor-input { width: 100%; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); border-radius: 10px; padding: 9px 12px; font-size: 0.88rem; color: #f1f5f9; font-family: inherit; outline: none; box-sizing: border-box; }
+    .cat-editor-input:focus { border-color: rgba(239,68,68,0.45); }
+    .cat-editor-sublabel { font-size: 0.68rem; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.07em; }
+    .cat-swatches { display: flex; gap: 0.4rem; flex-wrap: wrap; }
+    .cat-swatch { width: 22px; height: 22px; border-radius: 50%; cursor: pointer; border: 2.5px solid transparent; flex-shrink: 0; transition: border-color 0.15s, transform 0.15s; }
+    .cat-swatch.active { border-color: #fff; transform: scale(1.15); }
+    /* Color picker inside editor */
+    .cat-cp-top { display: flex; align-items: center; gap: 0.75rem; }
+    .cat-cp-circle { width: 46px; height: 46px; border-radius: 50%; flex-shrink: 0; border: 3px solid rgba(255,255,255,0.18); box-shadow: 0 4px 16px rgba(0,0,0,0.5); transition: background 0.1s; }
+    .cat-cp-hex-inp { flex: 1; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); border-radius: 8px; padding: 9px 11px; font-size: 0.87rem; color: #f1f5f9; font-family: monospace; outline: none; letter-spacing: 0.04em; }
+    .cat-cp-hex-inp:focus { border-color: rgba(255,255,255,0.3); }
+    .cat-cp-sliders { display: flex; flex-direction: column; gap: 0.6rem; }
+    .cat-cp-row { display: flex; align-items: center; gap: 0.55rem; }
+    .cat-cp-lbl { font-size: 0.63rem; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: 0.06em; width: 11px; flex-shrink: 0; }
+    .cat-cp-slider { -webkit-appearance: none; appearance: none; flex: 1; height: 10px; border-radius: 999px; outline: none; cursor: pointer; border: none; }
+    .cat-cp-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 22px; height: 22px; border-radius: 50%; background: #fff; box-shadow: 0 2px 8px rgba(0,0,0,0.55); cursor: pointer; border: 2.5px solid rgba(255,255,255,0.9); }
+    .cat-cp-slider::-moz-range-thumb { width: 22px; height: 22px; border-radius: 50%; background: #fff; box-shadow: 0 2px 8px rgba(0,0,0,0.55); cursor: pointer; border: 2.5px solid rgba(255,255,255,0.9); }
+    .cat-editor-btns { display: flex; gap: 0.5rem; margin-top: 0.1rem; }
 
     /* History modal */
     .hist-modal {
@@ -1177,7 +1223,7 @@
         animation: mSheetUp 0.3s cubic-bezier(0.22,1,0.36,1) both;
       }
       @keyframes mSheetUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
-      .modal .cat-grid { grid-template-columns: repeat(4, 1fr); }
+      .modal .cat-grid { gap: 0.35rem; }
       .hist-modal { border-radius: 24px 24px 0 0; max-height: 90vh; width: 100%; max-width: 100%; }
 
       /* ─ Calendar popup: centred on mobile ─ */
@@ -1743,6 +1789,24 @@
       border:1px solid rgba(255,255,255,0.1);
     }
     .theme-done-btn:hover { background:rgba(255,255,255,0.13); border-color:rgba(255,255,255,0.2); }
+    .theme-section-lbl { font-size:0.62rem; font-weight:700; color:#334155; text-transform:uppercase; letter-spacing:0.1em; margin-bottom:0.55rem; }
+    .theme-divider { display:flex; align-items:center; gap:0.6rem; margin:0.75rem 0 0.7rem; }
+    .theme-divider::before, .theme-divider::after { content:''; flex:1; height:1px; background:rgba(255,255,255,0.07); }
+    .theme-divider-txt { font-size:0.65rem; color:#334155; text-transform:uppercase; letter-spacing:0.08em; white-space:nowrap; }
+    .theme-cp-wrap { background:rgba(255,255,255,0.025); border:1px solid rgba(255,255,255,0.07); border-radius:14px; padding:1rem; display:flex; flex-direction:column; gap:0.75rem; margin-bottom:0.9rem; }
+    /* Base style cards */
+    .style-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:0.5rem; margin-bottom:1.1rem; }
+    .style-card { display:flex; flex-direction:column; align-items:center; gap:0.35rem; padding:0.65rem 0.3rem 0.55rem; border-radius:12px; border:1px solid rgba(255,255,255,0.06); background:rgba(255,255,255,0.02); cursor:pointer; transition:all 0.15s; }
+    .style-card:hover { background:rgba(255,255,255,0.05); border-color:rgba(255,255,255,0.13); transform:translateY(-1px); }
+    .style-card.active { border-color:rgba(255,255,255,0.28); background:rgba(255,255,255,0.06); }
+    .style-preview { width:40px; height:26px; border-radius:6px; overflow:hidden; position:relative; flex-shrink:0; border:1px solid rgba(255,255,255,0.1); }
+    .style-preview-body { position:absolute; inset:0; }
+    .style-preview-topbar { position:absolute; top:0; left:0; right:0; height:7px; opacity:0.6; }
+    .style-preview-card { position:absolute; bottom:3px; left:3px; right:3px; height:8px; border-radius:2px; opacity:0.5; }
+    .style-name { font-size:0.58rem; font-weight:600; color:#334155; transition:color 0.15s; }
+    .style-card.active .style-name { color:#94a3b8; }
+    .style-check { font-size:0.72rem; color:#64748b; opacity:0; line-height:1; }
+    .style-card.active .style-check { opacity:1; }
   </style>
 </head>
 <body>
@@ -2329,6 +2393,53 @@
 
     <button class="modal-btn primary" id="expSaveBtn" onclick="saveExpense()">Add Expense</button>
     <button class="modal-btn secondary" onclick="closeAddExpense()">Cancel</button>
+  </div>
+</div>
+
+<!-- Category Editor Overlay -->
+<div class="cat-editor-overlay" id="catEditorOverlay" style="display:none;" onclick="if(event.target===this)closeCatEditor()">
+  <div class="cat-editor-panel">
+    <div class="cat-editor-title" id="catEditorTitle">New Category</div>
+    <input class="cat-editor-input" id="catEditorInp" type="text" placeholder="e.g. Gym, Petrol, Groceries" maxlength="24"
+      onkeydown="if(event.key==='Enter')submitCatEditor()" />
+    <div class="cat-cp-top">
+      <div class="cat-cp-circle" id="catCpCircle"></div>
+      <input class="cat-cp-hex-inp" id="catCpHex" type="text" maxlength="7" spellcheck="false" placeholder="#f97316"
+        oninput="_cpHexChange(this.value)" />
+    </div>
+    <div class="cat-swatches" id="catEditorSwatches"></div>
+    <div class="cat-cp-sliders">
+      <div class="cat-cp-row">
+        <span class="cat-cp-lbl">H</span>
+        <input type="range" class="cat-cp-slider" id="catCpH" min="0" max="360" oninput="_cpSliderChange()" />
+      </div>
+      <div class="cat-cp-row">
+        <span class="cat-cp-lbl">S</span>
+        <input type="range" class="cat-cp-slider" id="catCpS" min="0" max="100" oninput="_cpSliderChange()" />
+      </div>
+      <div class="cat-cp-row">
+        <span class="cat-cp-lbl">L</span>
+        <input type="range" class="cat-cp-slider" id="catCpL" min="10" max="90" oninput="_cpSliderChange()" />
+      </div>
+    </div>
+    <div class="cat-editor-btns">
+      <button class="modal-btn primary" id="catEditorSaveBtn" onclick="submitCatEditor()" style="margin:0;flex:1;padding:0.55rem;">Save</button>
+      <button class="modal-btn secondary" onclick="closeCatEditor()" style="margin:0;padding:0.55rem 1rem;">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Category Manager Overlay -->
+<div class="cat-manager-overlay" id="catManagerOverlay" style="display:none;" onclick="if(event.target===this)closeCatManager()">
+  <div class="cat-manager-panel">
+    <div class="cat-manager-head">
+      <span class="cat-manager-ttl">My Categories</span>
+      <button class="cat-manager-close" onclick="closeCatManager()">✕</button>
+    </div>
+    <div class="cat-manager-body" id="catManagerBody"></div>
+    <div class="cat-manager-foot">
+      <button class="cat-manager-add-btn" onclick="closeCatManager();openCatEditor('add',_catManagerGridId)">+ Add New Category</button>
+    </div>
   </div>
 </div>
 
@@ -3187,6 +3298,15 @@ const CATEGORIES = {
   education:     { label: 'Education',      color: '#14b8a6' },
   others:        { label: 'Others',         color: '#6b7280' },
 };
+
+var CUSTOM_CATS_KEY = profilePrefix + "mft_custom_cats";
+function loadCustomCats() { try { return JSON.parse(localStorage.getItem(CUSTOM_CATS_KEY)) || []; } catch(e) { return []; } }
+function saveCustomCats(list) { localStorage.setItem(CUSTOM_CATS_KEY, JSON.stringify(list)); }
+function mergeCustomCats() {
+  Object.keys(CATEGORIES).forEach(function(k) { if (CATEGORIES[k].custom) delete CATEGORIES[k]; });
+  loadCustomCats().forEach(function(c) { CATEGORIES[c.id] = { label: c.label, color: c.color, custom: true }; });
+}
+mergeCustomCats();
 
 // Pre-seed default values for active profile only
 if (activeProfileId) {
@@ -5216,23 +5336,204 @@ function closeAddExpense() {
 }
 
 function renderCatGrid(gridId, activeCat) {
-  const el = document.getElementById(gridId);
+  var el = document.getElementById(gridId);
   if (!el) return;
-  el.innerHTML = Object.entries(CATEGORIES).map(function([k, v]) {
-    return '<button class="cat-btn' + (activeCat === k ? ' selected' : '') + '" ' +
-      'onclick="selectCat(\'' + k + '\',\'' + gridId + '\')">' +
-      '<div class="cat-dot-lg" style="background:' + v.color + '"></div>' +
-      v.label + '</button>';
+  var hasCustom = loadCustomCats().length > 0;
+  var html = Object.entries(CATEGORIES).map(function(entry) {
+    var k = entry[0], v = entry[1];
+    return '<button class="cat-pill' + (activeCat === k ? ' selected' : '') + '" onclick="selectCat(\'' + k + '\',\'' + gridId + '\')">'
+      + '<div class="cat-pill-dot" style="background:' + v.color + '"></div>'
+      + v.label
+      + '</button>';
   }).join('');
+  html += '<button class="cat-pill cat-pill-add" onclick="openCatEditor(\'add\',\'' + gridId + '\')">+ New</button>';
+  if (hasCustom) {
+    html += '<button class="cat-pill cat-pill-manage" onclick="openCatManager(\'' + gridId + '\')">⚙ Manage</button>';
+  }
+  el.innerHTML = html;
 }
 
 function selectCat(cat, gridId) {
-  if (gridId === 'tplCatGrid') {
-    _tplSelectedCat = cat;
-  } else {
-    selectedCat = cat;
-  }
+  if (gridId === 'tplCatGrid') { _tplSelectedCat = cat; } else { selectedCat = cat; }
   renderCatGrid(gridId, cat);
+}
+
+var _CAT_COLORS = ["#f97316","#3b82f6","#eab308","#a855f7","#ec4899","#22c55e","#14b8a6","#ef4444","#06b6d4","#f43f5e","#84cc16","#6b7280"];
+var _catEditorMode   = null;
+var _catEditorId     = null;
+var _catEditorGridId = null;
+var _catEditorColor  = "#f97316";
+var _cpH = 25, _cpS = 95, _cpL = 52;
+
+function _hslToHex(h, s, l) {
+  s /= 100; l /= 100;
+  var a = s * Math.min(l, 1 - l);
+  var f = function(n) {
+    var k = (n + h / 30) % 12;
+    var c = l - a * Math.max(Math.min(k - 3, 9 - k, 1), -1);
+    var v = Math.round(255 * c).toString(16);
+    return v.length < 2 ? "0" + v : v;
+  };
+  return "#" + f(0) + f(8) + f(16);
+}
+
+function _hexToHsl(hex) {
+  if (!hex || !/^#[0-9a-fA-F]{6}$/.test(hex)) return { h: 25, s: 95, l: 52 };
+  var r = parseInt(hex.slice(1,3),16)/255, g = parseInt(hex.slice(3,5),16)/255, b = parseInt(hex.slice(5,7),16)/255;
+  var max = Math.max(r,g,b), min = Math.min(r,g,b), h = 0, s = 0, l = (max+min)/2;
+  if (max !== min) {
+    var d = max - min;
+    s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+    if (max === r) h = (g - b) / d + (g < b ? 6 : 0);
+    else if (max === g) h = (b - r) / d + 2;
+    else h = (r - g) / d + 4;
+    h /= 6;
+  }
+  return { h: Math.round(h * 360), s: Math.round(s * 100), l: Math.round(l * 100) };
+}
+
+function _cpUpdateUI() {
+  var hex = _hslToHex(_cpH, _cpS, _cpL);
+  _catEditorColor = hex;
+  var circle = document.getElementById("catCpCircle");
+  if (circle) circle.style.background = hex;
+  var hexInp = document.getElementById("catCpHex");
+  if (hexInp && document.activeElement !== hexInp) hexInp.value = hex;
+  var hsl = "hsl(" + _cpH + "," + _cpS + "%," + _cpL + "%)";
+  var hEl = document.getElementById("catCpH");
+  if (hEl) { hEl.value = _cpH; hEl.style.background = "linear-gradient(to right,hsl(0,100%,50%),hsl(30,100%,50%),hsl(60,100%,50%),hsl(90,100%,50%),hsl(120,100%,50%),hsl(150,100%,50%),hsl(180,100%,50%),hsl(210,100%,50%),hsl(240,100%,50%),hsl(270,100%,50%),hsl(300,100%,50%),hsl(330,100%,50%),hsl(360,100%,50%))"; }
+  var sEl = document.getElementById("catCpS");
+  if (sEl) { sEl.value = _cpS; sEl.style.background = "linear-gradient(to right,hsl(" + _cpH + ",0%," + _cpL + "%),hsl(" + _cpH + ",100%," + _cpL + "%))"; }
+  var lEl = document.getElementById("catCpL");
+  if (lEl) { lEl.value = _cpL; lEl.style.background = "linear-gradient(to right,hsl(" + _cpH + "," + _cpS + "%,10%),hsl(" + _cpH + "," + _cpS + "%,50%),hsl(" + _cpH + "," + _cpS + "%,90%))"; }
+  document.querySelectorAll("#catEditorSwatches .cat-swatch").forEach(function(s) {
+    s.classList.toggle("active", s.dataset.color === hex);
+  });
+}
+
+function _cpSliderChange() {
+  _cpH = parseInt(document.getElementById("catCpH").value, 10);
+  _cpS = parseInt(document.getElementById("catCpS").value, 10);
+  _cpL = parseInt(document.getElementById("catCpL").value, 10);
+  _cpUpdateUI();
+}
+
+function _cpHexChange(val) {
+  if (/^#[0-9a-fA-F]{6}$/.test(val)) {
+    var hsl = _hexToHsl(val);
+    _cpH = hsl.h; _cpS = hsl.s; _cpL = hsl.l;
+    _cpUpdateUI();
+  }
+}
+
+function _cpPickPreset(color) {
+  var hsl = _hexToHsl(color);
+  _cpH = hsl.h; _cpS = hsl.s; _cpL = hsl.l;
+  _cpUpdateUI();
+}
+
+function openCatEditor(mode, gridId, id) {
+  _catEditorMode   = mode;
+  _catEditorGridId = gridId;
+  _catEditorId     = id || null;
+  var title   = document.getElementById("catEditorTitle");
+  var inp     = document.getElementById("catEditorInp");
+  var saveBtn = document.getElementById("catEditorSaveBtn");
+  if (mode === "edit") {
+    var cat = loadCustomCats().find(function(c) { return c.id === id; });
+    if (!cat) return;
+    _catEditorColor     = cat.color;
+    title.textContent   = "Edit Category";
+    inp.value           = cat.label;
+    saveBtn.textContent = "Save Changes";
+  } else {
+    _catEditorColor     = "#f97316";
+    title.textContent   = "New Category";
+    inp.value           = "";
+    saveBtn.textContent = "Add Category";
+  }
+  var hsl = _hexToHsl(_catEditorColor);
+  _cpH = hsl.h; _cpS = hsl.s; _cpL = hsl.l;
+  document.getElementById("catEditorSwatches").innerHTML = _CAT_COLORS.map(function(c) {
+    return "<div class=\"cat-swatch\" data-color=\"" + c + "\" style=\"background:" + c + "\" onclick=\"_cpPickPreset('" + c + "')\"></div>";
+  }).join("");
+  document.getElementById("catEditorOverlay").style.display = "flex";
+  _cpUpdateUI();
+  setTimeout(function() { var i = document.getElementById("catEditorInp"); if (i) { i.focus(); if (mode === "edit") i.select(); } }, 80);
+}
+
+function closeCatEditor() {
+  document.getElementById("catEditorOverlay").style.display = "none";
+}
+
+function submitCatEditor() {
+  var inp   = document.getElementById("catEditorInp");
+  var label = inp ? inp.value.trim() : "";
+  if (!label) { showToast("Enter a category name"); return; }
+  if (_catEditorMode === "edit") {
+    var list = loadCustomCats().map(function(c) {
+      return c.id === _catEditorId ? { id: _catEditorId, label: label, color: _catEditorColor } : c;
+    });
+    saveCustomCats(list);
+    showToast(label + " updated");
+  } else {
+    var newId = "ccat_" + label.toLowerCase().replace(/[^a-z0-9]/g, "_").slice(0, 12) + "_" + Date.now().toString(36);
+    var list2 = loadCustomCats();
+    list2.push({ id: newId, label: label, color: _catEditorColor });
+    saveCustomCats(list2);
+    if (_catEditorGridId === "tplCatGrid") { _tplSelectedCat = newId; } else { selectedCat = newId; }
+    showToast(label + " added");
+  }
+  mergeCustomCats();
+  closeCatEditor();
+  if (_catEditorGridId) {
+    var activeCat = (_catEditorGridId === "tplCatGrid" ? _tplSelectedCat : selectedCat) || "food";
+    renderCatGrid(_catEditorGridId, activeCat);
+  }
+}
+
+var _catManagerGridId = null;
+
+function openCatManager(gridId) {
+  _catManagerGridId = gridId;
+  renderCatManager();
+  document.getElementById("catManagerOverlay").style.display = "flex";
+}
+
+function closeCatManager() {
+  document.getElementById("catManagerOverlay").style.display = "none";
+}
+
+function renderCatManager() {
+  var list = loadCustomCats();
+  var body = document.getElementById("catManagerBody");
+  if (!body) return;
+  if (list.length === 0) {
+    body.innerHTML = "<div class=\"cat-manager-empty\">No custom categories yet.<br>Tap \"Add New\" to create one.</div>";
+    return;
+  }
+  body.innerHTML = list.map(function(c) {
+    return "<div class=\"cat-manager-row\">"
+      + "<div class=\"cat-manager-dot\" style=\"background:" + c.color + "\"></div>"
+      + "<span class=\"cat-manager-lbl\">" + c.label + "</span>"
+      + "<button class=\"cat-manager-edit-btn\" onclick=\"closeCatManager();openCatEditor('edit',_catManagerGridId,'" + c.id + "')\">Edit</button>"
+      + "<button class=\"cat-manager-del-btn\" onclick=\"deleteCatFromManager('" + c.id + "')\">Delete</button>"
+      + "</div>";
+  }).join("");
+}
+
+function deleteCatFromManager(id) {
+  if (!confirm("Remove this category?")) return;
+  var list = loadCustomCats().filter(function(c) { return c.id !== id; });
+  saveCustomCats(list);
+  delete CATEGORIES[id];
+  if (selectedCat === id) selectedCat = "others";
+  if (_tplSelectedCat === id) _tplSelectedCat = "others";
+  renderCatManager();
+  if (_catManagerGridId) {
+    var activeCat = (_catManagerGridId === "tplCatGrid" ? _tplSelectedCat : selectedCat) || "food";
+    renderCatGrid(_catManagerGridId, activeCat);
+  }
 }
 
 function saveExpense() {
@@ -7536,11 +7837,132 @@ function applyProfileToUI(profile) {
   if (nameEl) nameEl.textContent = profile.name;
   var mgNameEl = document.getElementById('mgName');
   if (mgNameEl) mgNameEl.textContent = profile.name;
-  // Apply this profile's saved theme
+  // Apply this profile's saved theme and style
   loadTheme();
+  loadStyle();
+}
+
+// ── Base Style System ─────────────────────────────────────
+var STYLE_KEY = profilePrefix + "mft_style";
+var STYLES = {
+  default:  { name: "Default",  body: "#080808", modal: "#111111", card: "rgba(255,255,255,0.04)" },
+  navy:     { name: "Navy",     body: "#05101e", modal: "#0b1830", card: "rgba(255,255,255,0.05)" },
+  amoled:   { name: "AMOLED",  body: "#000000", modal: "#0d0d0d", card: "rgba(255,255,255,0.035)" },
+  charcoal: { name: "Charcoal", body: "#0c0c0d", modal: "#161618", card: "rgba(255,255,255,0.045)" },
+};
+
+function _buildStyleCSS(key) {
+  var s = STYLES[key];
+  if (!s || key === "default") return "body{background:#080808;}";
+  var b = s.body, m = s.modal, c = s.card;
+  return [
+    "body{background:" + b + ";}",
+    ".modal{background:" + m + "!important;}",
+    ".cal-popup,#dueAlertPopup{background:" + m + "!important;}",
+    ".cal-modal-box{background:" + m + "!important;}",
+    ".theme-box,.onboard-box,.hist-modal{background:" + m + "!important;}",
+    ".cat-editor-panel,.cat-manager-panel{background:" + m + "!important;}",
+    ".dash-card{background:" + c + "!important;}",
+    ".prof-inner{background:" + b + "!important;}",
+    ".profileDropdown{background:" + m + "!important;}",
+  ].join("");
+}
+
+function applyStyle(key) {
+  var el = document.getElementById("style-overrides");
+  if (!el) { el = document.createElement("style"); el.id = "style-overrides"; document.head.appendChild(el); }
+  el.textContent = _buildStyleCSS(key);
+}
+
+function saveStyle(key) {
+  localStorage.setItem(STYLE_KEY, key);
+  applyStyle(key);
+  renderStyleSelector(key);
+}
+
+function loadStyle() {
+  applyStyle(localStorage.getItem(STYLE_KEY) || "default");
+}
+
+function renderStyleSelector(activeKey) {
+  var grid = document.getElementById("styleGrid");
+  if (!grid) return;
+  var html = "";
+  Object.keys(STYLES).forEach(function(key) {
+    var s = STYLES[key];
+    var isActive = key === activeKey;
+    html += "<div class=\"style-card" + (isActive ? " active" : "") + "\" onclick=\"saveStyle('" + key + "')\">";
+    html += "<div class=\"style-preview\">";
+    html += "<div class=\"style-preview-body\" style=\"background:" + s.body + "\"></div>";
+    html += "<div class=\"style-preview-topbar\" style=\"background:var(--th-accent,#ef4444)\"></div>";
+    html += "<div class=\"style-preview-card\" style=\"background:" + s.modal + "\"></div>";
+    html += "</div>";
+    html += "<div class=\"style-name\">" + s.name + "</div>";
+    html += "<span class=\"style-check\">✓</span>";
+    html += "</div>";
+  });
+  grid.innerHTML = html;
 }
 
 // ── Theme System ──────────────────────────────────────────
+var THEME_CUSTOM_COLOR_KEY = profilePrefix + "mft_theme_custom_color";
+var _thCpH = 0, _thCpS = 84, _thCpL = 52;
+
+function _themeFromHex(hex) {
+  var hsl = _hexToHsl(hex);
+  var r = parseInt(hex.slice(1,3),16), g = parseInt(hex.slice(3,5),16), b = parseInt(hex.slice(5,7),16);
+  return {
+    name: "Custom", accent: hex,
+    dim:   _hslToHex(hsl.h, hsl.s, Math.max(10, hsl.l - 12)),
+    dark:  _hslToHex(hsl.h, Math.min(100, hsl.s + 10), Math.max(8, hsl.l - 32)),
+    light: _hslToHex(hsl.h, Math.max(0, hsl.s - 20), Math.min(93, hsl.l + 28)),
+    r: r, g: g, b: b
+  };
+}
+
+function _thCpUpdateUI() {
+  var hex = _hslToHex(_thCpH, _thCpS, _thCpL);
+  var circle = document.getElementById("thCpCircle");
+  if (circle) circle.style.background = hex;
+  var hexInp = document.getElementById("thCpHex");
+  if (hexInp && document.activeElement !== hexInp) hexInp.value = hex;
+  var hEl = document.getElementById("thCpH");
+  if (hEl) { hEl.value = _thCpH; hEl.style.background = "linear-gradient(to right,hsl(0,100%,50%),hsl(30,100%,50%),hsl(60,100%,50%),hsl(90,100%,50%),hsl(120,100%,50%),hsl(150,100%,50%),hsl(180,100%,50%),hsl(210,100%,50%),hsl(240,100%,50%),hsl(270,100%,50%),hsl(300,100%,50%),hsl(330,100%,50%),hsl(360,100%,50%))"; }
+  var sEl = document.getElementById("thCpS");
+  if (sEl) { sEl.value = _thCpS; sEl.style.background = "linear-gradient(to right,hsl("+_thCpH+",0%,"+_thCpL+"%),hsl("+_thCpH+",100%,"+_thCpL+"%))"; }
+  var lEl = document.getElementById("thCpL");
+  if (lEl) { lEl.value = _thCpL; lEl.style.background = "linear-gradient(to right,hsl("+_thCpH+","+_thCpS+"%,10%),hsl("+_thCpH+","+_thCpS+"%,50%),hsl("+_thCpH+","+_thCpS+"%,90%))"; }
+}
+
+function _thCpSliderChange() {
+  _thCpH = parseInt(document.getElementById("thCpH").value, 10);
+  _thCpS = parseInt(document.getElementById("thCpS").value, 10);
+  _thCpL = parseInt(document.getElementById("thCpL").value, 10);
+  _thCpUpdateUI();
+  var styleEl = document.getElementById("theme-overrides");
+  if (styleEl) styleEl.textContent = _buildThemeCSS(_themeFromHex(_hslToHex(_thCpH, _thCpS, _thCpL)));
+}
+
+function _thCpHexChange(val) {
+  if (/^#[0-9a-fA-F]{6}$/.test(val)) {
+    var hsl = _hexToHsl(val);
+    _thCpH = hsl.h; _thCpS = hsl.s; _thCpL = hsl.l;
+    _thCpUpdateUI();
+    var styleEl = document.getElementById("theme-overrides");
+    if (styleEl) styleEl.textContent = _buildThemeCSS(_themeFromHex(val));
+  }
+}
+
+function _thCpSave() {
+  var hex = _hslToHex(_thCpH, _thCpS, _thCpL);
+  localStorage.setItem(THEME_KEY, "custom");
+  localStorage.setItem(THEME_CUSTOM_COLOR_KEY, hex);
+  var styleEl = document.getElementById("theme-overrides");
+  if (!styleEl) { styleEl = document.createElement("style"); styleEl.id = "theme-overrides"; document.head.appendChild(styleEl); }
+  styleEl.textContent = _buildThemeCSS(_themeFromHex(hex));
+  renderThemeModal("custom");
+}
+
 var THEMES = {
   crimson: { name:'Crimson', accent:'#ef4444', dim:'#dc2626', dark:'#7f1d1d', light:'#fca5a5', r:239, g:68,  b:68  },
   ocean:   { name:'Ocean',   accent:'#3b82f6', dim:'#2563eb', dark:'#1e3a8a', light:'#93c5fd', r:59,  g:130, b:246 },
@@ -7594,26 +8016,48 @@ function applyTheme(key) {
 }
 
 function loadTheme() {
-  var saved = localStorage.getItem(THEME_KEY) || 'crimson';
-  applyTheme(saved);
+  var saved = localStorage.getItem(THEME_KEY) || "crimson";
+  if (saved === "custom") {
+    var hex = localStorage.getItem(THEME_CUSTOM_COLOR_KEY) || "#ef4444";
+    var styleEl = document.getElementById("theme-overrides");
+    if (!styleEl) { styleEl = document.createElement("style"); styleEl.id = "theme-overrides"; document.head.appendChild(styleEl); }
+    styleEl.textContent = _buildThemeCSS(_themeFromHex(hex));
+  } else {
+    applyTheme(saved);
+  }
 }
 
 function saveTheme(key) {
   localStorage.setItem(THEME_KEY, key);
   applyTheme(key);
   renderThemeModal(key);
+  var t = THEMES[key];
+  if (t) {
+    var hsl = _hexToHsl(t.accent);
+    _thCpH = hsl.h; _thCpS = hsl.s; _thCpL = hsl.l;
+    _thCpUpdateUI();
+  }
 }
 
 function openThemeModal() {
-  var dd = document.getElementById('profileDropdown');
-  if (dd) dd.classList.remove('open');
-  var saved = localStorage.getItem(THEME_KEY) || 'crimson';
+  var dd = document.getElementById("profileDropdown");
+  if (dd) dd.classList.remove("open");
+  var saved = localStorage.getItem(THEME_KEY) || "crimson";
+  var initHex = saved === "custom"
+    ? (localStorage.getItem(THEME_CUSTOM_COLOR_KEY) || "#ef4444")
+    : ((THEMES[saved] || THEMES.crimson).accent);
+  var hsl = _hexToHsl(initHex);
+  _thCpH = hsl.h; _thCpS = hsl.s; _thCpL = hsl.l;
   renderThemeModal(saved);
-  document.getElementById('themeOverlay').classList.add('open');
+  renderStyleSelector(localStorage.getItem(STYLE_KEY) || "default");
+  document.getElementById("themeOverlay").classList.add("open");
+  setTimeout(_thCpUpdateUI, 30);
 }
 
 function closeThemeModal() {
-  document.getElementById('themeOverlay').classList.remove('open');
+  document.getElementById("themeOverlay").classList.remove("open");
+  loadTheme();
+  loadStyle();
 }
 
 function themeOverlayClick(e) {
@@ -7621,20 +8065,22 @@ function themeOverlayClick(e) {
 }
 
 function renderThemeModal(activeKey) {
-  var grid = document.getElementById('themeGrid');
+  var grid = document.getElementById("themeGrid");
   if (!grid) return;
-  var html = '';
+  var html = "";
   Object.keys(THEMES).forEach(function(key) {
     var t = THEMES[key];
     var isActive = key === activeKey;
-    html += '<div class="theme-swatch-wrap' + (isActive ? ' active' : '') + '" onclick="saveTheme(\'' + key + '\')">';
-    html += '<div class="theme-swatch" style="background:linear-gradient(135deg,'+t.accent+','+t.dim+');">';
+    html += '<div class="theme-swatch-wrap' + (isActive ? " active" : "") + '" onclick="saveTheme(\'' + key + '\')">';
+    html += '<div class="theme-swatch" style="background:linear-gradient(135deg,' + t.accent + "," + t.dim + ');">';
     html += '<span class="theme-check">✓</span>';
-    html += '</div>';
-    html += '<div class="theme-swatch-name">' + t.name + '</div>';
-    html += '</div>';
+    html += "</div>";
+    html += '<div class="theme-swatch-name">' + t.name + "</div>";
+    html += "</div>";
   });
   grid.innerHTML = html;
+  var thCpWrap = document.querySelector(".theme-cp-wrap");
+  if (thCpWrap) thCpWrap.style.borderColor = activeKey === "custom" ? "rgba(255,255,255,0.2)" : "rgba(255,255,255,0.07)";
 }
 
 function toggleProfileDropdown() {
@@ -8367,10 +8813,38 @@ _syncKey = getSyncKey();
 
 <!-- ── Theme Picker Modal ────────────────────────────── -->
 <div class="theme-overlay" id="themeOverlay" onclick="themeOverlayClick(event)">
-  <div class="theme-box" id="themeBox">
+  <div class="theme-box" id="themeBox" style="max-height:90vh;overflow-y:auto;">
     <div class="theme-title">Appearance</div>
-    <div class="theme-sub" id="themeSubLabel">Choose your color theme — saved to your profile</div>
+    <div class="theme-sub" style="margin-bottom:1rem;">Personalise your app's look and colour</div>
+    <div class="theme-section-lbl">Accent Colour</div>
     <div class="theme-grid" id="themeGrid"></div>
+    <div class="theme-divider"><span class="theme-divider-txt">or pick your own</span></div>
+    <div class="theme-cp-wrap">
+      <div class="cat-cp-top">
+        <div class="cat-cp-circle" id="thCpCircle"></div>
+        <input class="cat-cp-hex-inp" id="thCpHex" type="text" maxlength="7" spellcheck="false"
+          placeholder="#ef4444" oninput="_thCpHexChange(this.value)" onchange="_thCpSave()" />
+      </div>
+      <div class="cat-cp-sliders">
+        <div class="cat-cp-row">
+          <span class="cat-cp-lbl">H</span>
+          <input type="range" class="cat-cp-slider" id="thCpH" min="0" max="360"
+            oninput="_thCpSliderChange()" onchange="_thCpSave()" />
+        </div>
+        <div class="cat-cp-row">
+          <span class="cat-cp-lbl">S</span>
+          <input type="range" class="cat-cp-slider" id="thCpS" min="0" max="100"
+            oninput="_thCpSliderChange()" onchange="_thCpSave()" />
+        </div>
+        <div class="cat-cp-row">
+          <span class="cat-cp-lbl">L</span>
+          <input type="range" class="cat-cp-slider" id="thCpL" min="10" max="90"
+            oninput="_thCpSliderChange()" onchange="_thCpSave()" />
+        </div>
+      </div>
+    </div>
+    <div class="theme-section-lbl">Base Style</div>
+    <div class="style-grid" id="styleGrid"></div>
     <button class="theme-done-btn" onclick="closeThemeModal()">Done</button>
   </div>
 </div>
