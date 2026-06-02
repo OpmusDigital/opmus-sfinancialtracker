@@ -188,8 +188,8 @@
       animation: calFadeIn 0.15s ease;
     }
     .cal-popup.open { display: block; }
-    /* Due alert uses fixed positioning via JS — neutralise cal-popup's absolute positioning */
-    #dueAlertPopup { position: fixed !important; top: auto !important; right: auto !important; left: auto !important; }
+    /* Due alert uses fixed positioning via JS — only neutralise position and top from cal-popup */
+    #dueAlertPopup { position: fixed !important; top: auto !important; }
     @keyframes calFadeIn { from { opacity:0; transform:translateY(-6px); } to { opacity:1; transform:translateY(0); } }
     .cal-popup-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:0.65rem; }
     .cal-month-label { font-size: 0.8rem; font-weight: 700; color: #f1f5f9; letter-spacing: 0.02em; }
