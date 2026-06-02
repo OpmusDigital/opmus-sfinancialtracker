@@ -1032,14 +1032,20 @@
 
       /* ─ Header ─ */
       header { height: calc(56px + env(safe-area-inset-top, 0px)); padding: env(safe-area-inset-top, 0px) 1rem 0; }
-      .header-center { display: none; }
-      .btn-history { display: none; }
-      .month-pill { padding: 3px 7px; gap: 0.3rem; }
-      .month-pill-icon { font-size: 1.1rem; }
-      .month-pill-label { font-size: 0.7rem; }
-      .month-pill-hint { display: none; }
-      .header-right { gap: 0.5rem; }
+      .header-center { display: none !important; }
+      .logo-wordmark { display: none !important; }
+      .logo-area { gap: 0; }
+      .btn-history { display: none !important; }
+      #btnSettings, #btnApps { display: none !important; }
       #headerShiftChip, #headerSalChip { display: none !important; }
+      #dueAlertWrap { display: none !important; }
+      .month-pill { padding: 5px 9px 5px 7px; gap: 0.3rem; }
+      .month-pill-icon { width: 24px; height: 24px; border-radius: 7px; font-size: 0.85rem; }
+      .month-pill-label { font-size: 0.72rem; }
+      .month-pill-hint { display: none; }
+      .month-pill-caret { display: none; }
+      .header-right { gap: 0.55rem; flex-shrink: 0; }
+      #profileBtnWrap { flex-shrink: 0; }
 
       /* ─ App body: scrollable column ─ */
       .app-body { top: calc(56px + env(safe-area-inset-top, 0px)); overflow-y: auto; overflow-x: hidden; flex-direction: column; }
@@ -1201,8 +1207,10 @@
       .btn-history   { display: none !important; }
       #btnSettings, #btnApps { display: none !important; }
       #headerShiftChip, #headerSalChip { display: none !important; }
+      #dueAlertWrap  { display: none !important; }
       .logo-wordmark-sub { display: none; }
-      .header-right  { gap: 0.75rem; }
+      .header-right  { gap: 0.75rem; flex-shrink: 0; }
+      #profileBtnWrap { flex-shrink: 0; }
 
       /* ─ Show greeting card + tablet action row ─ */
       .mobile-greeting { display: flex; flex-direction: column; margin: 0.75rem 1.5rem 0; }
