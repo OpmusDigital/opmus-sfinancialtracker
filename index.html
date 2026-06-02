@@ -1045,6 +1045,16 @@
       .month-pill-caret { display: none; }
       .header-right { gap: 0.55rem; flex-shrink: 0; }
       #profileBtnWrap { flex-shrink: 0; }
+      /* Due alert popup: fixed from header bottom, full-width on mobile */
+      #dueAlertPopup {
+        position: fixed !important;
+        top: calc(56px + env(safe-area-inset-top, 0px) + 8px) !important;
+        right: 1rem !important;
+        left: 1rem !important;
+        width: auto !important;
+        max-height: 60vh;
+        overflow-y: auto;
+      }
 
       /* ─ App body: scrollable column ─ */
       .app-body { top: calc(56px + env(safe-area-inset-top, 0px)); overflow-y: auto; overflow-x: hidden; flex-direction: column; }
