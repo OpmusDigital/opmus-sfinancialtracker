@@ -5,7 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>My Financial Tracker</title>
   <link rel="manifest" href="./manifest.json" />
-  <meta name="theme-color" content="#ef4444" />
+  <meta name="theme-color" content="#0a0f1e" />
+  <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Finance" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <script src="https://unpkg.com/@phosphor-icons/web@2.1.1"></script>
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
@@ -338,6 +342,38 @@
     .cfg-save-blue  { background:linear-gradient(135deg,#3b82f6,#2563eb); box-shadow:0 2px 10px rgba(59,130,246,0.3); }
     .cfg-save-green { background:linear-gradient(135deg,#22c55e,#16a34a); box-shadow:0 2px 10px rgba(34,197,94,0.3); }
     .cfg-date-inp { flex:1; padding:0.5rem 0.7rem; border-radius:8px; border:1px solid rgba(255,255,255,0.1); background:rgba(255,255,255,0.05); color:#f1f5f9; font-size:0.84rem; }
+    .cfg-section { margin-bottom:1.3rem; }
+    .cfg-sec-head { display:flex; align-items:center; gap:0.55rem; margin-bottom:0.28rem; }
+    .cfg-sec-bar { width:3px; height:14px; border-radius:99px; flex-shrink:0; }
+    .cfg-sec-title { font-size:0.62rem; font-weight:800; text-transform:uppercase; letter-spacing:0.14em; color:#94a3b8; }
+    .cfg-sec-sub { font-size:0.72rem; color:#475569; margin-bottom:0.8rem; line-height:1.45; }
+    .cfg-sec-micro { font-size:0.6rem; color:#334155; font-weight:700; text-transform:uppercase; letter-spacing:0.1em; margin-bottom:0.42rem; }
+    .cfg-divider { height:1px; background:rgba(255,255,255,0.06); margin-bottom:1.3rem; }
+    .cfg-sep-dot { font-size:1.5rem; color:#1e293b; align-self:center; padding-bottom:1.35rem; flex-shrink:0; line-height:1; }
+    .cfg-payday-picker { text-align:center; background:rgba(255,255,255,0.025); border:1px solid rgba(255,255,255,0.06); border-radius:14px; padding:0.85rem 1rem 1rem; margin-bottom:0.85rem; }
+    .cfg-payday-lbl { font-size:0.72rem; color:#475569; }
+    .cfg-num-field { flex:1; display:flex; flex-direction:column; align-items:center; gap:0.25rem; }
+    .cfg-num-lbl { font-size:0.68rem; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.06em; }
+    .cfg-num-sub { font-size:0.6rem; color:#334155; }
+    .cfg-num-inp { width:100%; text-align:center; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.09); border-radius:10px; color:#f1f5f9; font-size:1.6rem; font-weight:800; padding:0.5rem 0; outline:none; -moz-appearance:textfield; }
+    .cfg-num-inp::-webkit-inner-spin-button, .cfg-num-inp::-webkit-outer-spin-button { -webkit-appearance:none; }
+    .cfg-num-inp:focus { border-color:rgba(255,255,255,0.2); background:rgba(255,255,255,0.07); }
+    .cfg-num-inp-lg { font-size:2.4rem; padding:0.6rem 1rem; width:auto; min-width:5rem; border-radius:12px; margin:0.4rem 0; }
+    .cfg-slider-wrap { display:flex; flex-direction:column; gap:0.7rem; margin-bottom:1rem; }
+    .cfg-slider-row { display:flex; align-items:center; gap:0.75rem; }
+    .cfg-slider-name { font-size:0.7rem; font-weight:700; width:2.5rem; flex-shrink:0; color:#64748b; }
+    .cfg-slider-val { font-size:1rem; font-weight:800; color:#f1f5f9; min-width:1.6rem; text-align:right; flex-shrink:0; }
+    .cfg-slider { flex:1; -webkit-appearance:none; appearance:none; height:3px; border-radius:99px; background:rgba(255,255,255,0.1); outline:none; cursor:pointer; }
+    .cfg-slider::-webkit-slider-thumb { -webkit-appearance:none; width:18px; height:18px; border-radius:50%; cursor:pointer; border:3px solid #0f172a; }
+    .cfg-slider::-moz-range-thumb { width:18px; height:18px; border-radius:50%; cursor:pointer; border:3px solid #0f172a; box-sizing:border-box; }
+    .cfg-slider-work::-webkit-slider-thumb { background:#60a5fa; box-shadow:0 0 0 2px rgba(96,165,250,0.25); }
+    .cfg-slider-work::-moz-range-thumb   { background:#60a5fa; }
+    .cfg-slider-off::-webkit-slider-thumb  { background:#22d3ee; box-shadow:0 0 0 2px rgba(34,211,238,0.25); }
+    .cfg-slider-off::-moz-range-thumb    { background:#22d3ee; }
+    .cfg-slider-rest::-webkit-slider-thumb { background:#c084fc; box-shadow:0 0 0 2px rgba(192,132,252,0.25); }
+    .cfg-slider-rest::-moz-range-thumb   { background:#c084fc; }
+    .cfg-slider-pay::-webkit-slider-thumb  { background:#4ade80; box-shadow:0 0 0 2px rgba(74,222,128,0.25); }
+    .cfg-slider-pay::-moz-range-thumb    { background:#4ade80; }
     .cfg-weekend-opt { flex:1; padding:0.45rem 0.3rem; border-radius:8px; border:1px solid rgba(255,255,255,0.09); background:rgba(255,255,255,0.04); color:#64748b; font-size:0.72rem; cursor:pointer; font-weight:600; transition:all 0.15s; text-align:center; white-space:nowrap; }
     .cfg-weekend-opt:hover { border-color:rgba(34,197,94,0.35); color:#86efac; background:rgba(34,197,94,0.07); }
     .cfg-weekend-opt.active { border-color:rgba(34,197,94,0.5); background:rgba(34,197,94,0.14); color:#4ade80; }
@@ -2977,85 +3013,64 @@
 
 <!-- Shift & Pay Config Modal -->
 <div class="modal-overlay" id="calCfgOverlay" onclick="if(event.target===this)closeCalCfg()" style="z-index:420;">
-  <div class="modal" style="max-width:440px;">
+  <div class="modal" style="max-width:420px;">
     <button class="modal-close" onclick="closeCalCfg()">&#10005;</button>
 
-    <!-- ① Work Schedule -->
-    <div style="margin-bottom:1.1rem;">
-      <div style="font-size:1rem;font-weight:700;color:#f1f5f9;margin-bottom:0.2rem;">&#128197; Work Schedule</div>
-      <div style="font-size:0.75rem;color:#64748b;margin-bottom:0.75rem;">How many days do you work in a row before getting a day off?</div>
+    <!-- Work Schedule -->
+    <div class="cfg-section">
+      <div class="cfg-sec-head">
+        <div class="cfg-sec-bar" style="background:#3b82f6;"></div>
+        <span class="cfg-sec-title">Work Schedule</span>
+      </div>
+      <div class="cfg-sec-sub">Days on, off, and rest before the cycle repeats.</div>
 
-      <div style="font-size:0.58rem;color:#334155;text-transform:uppercase;letter-spacing:0.08em;font-weight:700;margin-bottom:0.35rem;">Common patterns — tap to apply</div>
-      <div style="display:flex;gap:0.4rem;flex-wrap:wrap;margin-bottom:0.85rem;">
-        <button class="rp-preset-btn" id="rp411" onclick="applyRosterPreset(4,1,1)">4 work · 1 off · 1 rest</button>
-        <button class="rp-preset-btn" id="rp511" onclick="applyRosterPreset(5,1,1)">5 work · 1 off · 1 rest</button>
-        <button class="rp-preset-btn" id="rp520" onclick="applyRosterPreset(5,2,0)">5 work · 2 off</button>
-        <button class="rp-preset-btn" id="rp712" onclick="applyRosterPreset(7,1,2)">7 work · 1 off · 2 rest</button>
+      <div class="cfg-sec-micro" style="margin-bottom:0.45rem;">Quick presets <span style="color:#1e293b;font-weight:400;text-transform:none;letter-spacing:0;">(work &middot; off &middot; rest)</span></div>
+      <div style="display:flex;gap:0.35rem;flex-wrap:wrap;margin-bottom:1rem;">
+        <button class="rp-preset-btn" id="rp411" onclick="applyRosterPreset(4,1,1)">4 &middot; 1 &middot; 1</button>
+        <button class="rp-preset-btn" id="rp511" onclick="applyRosterPreset(5,1,1)">5 &middot; 1 &middot; 1</button>
+        <button class="rp-preset-btn" id="rp520" onclick="applyRosterPreset(5,2,0)">5 &middot; 2</button>
+        <button class="rp-preset-btn" id="rp712" onclick="applyRosterPreset(7,1,2)">7 &middot; 1 &middot; 2</button>
       </div>
 
-      <div class="cfg-steppers-row">
-        <div class="cfg-stepper-wrap">
-          <div style="display:inline-flex;align-items:center;gap:0.28rem;margin-bottom:0.22rem;">
-            <div style="width:9px;height:9px;border-radius:2px;background:rgba(100,116,139,0.5);border:1px solid rgba(100,116,139,0.7);flex-shrink:0;"></div>
-            <span class="cfg-stepper-lbl" style="margin:0;">Work days</span>
-          </div>
-          <div class="cfg-stepper">
-            <button class="cfg-step-btn" onclick="stepRoster('rosterWork',-1)">&#8722;</button>
-            <input type="number" id="rosterWork" min="1" max="14" value="4" class="cfg-step-val" oninput="renderRosterPreview()" />
-            <button class="cfg-step-btn" onclick="stepRoster('rosterWork',1)">&#43;</button>
-          </div>
-          <div class="cfg-stepper-sub">Go to work</div>
+      <div style="display:flex;gap:0.6rem;margin-bottom:1rem;">
+        <div class="cfg-num-field">
+          <div class="cfg-num-lbl">Work</div>
+          <input type="number" class="cfg-num-inp" id="rosterWork" min="1" max="14" value="4" oninput="renderRosterPreview()" />
+          <div class="cfg-num-sub">days on</div>
         </div>
-        <div class="cfg-stepper-wrap">
-          <div style="display:inline-flex;align-items:center;gap:0.28rem;margin-bottom:0.22rem;">
-            <div style="width:9px;height:9px;border-radius:2px;background:rgba(6,182,212,0.35);border:1px solid rgba(6,182,212,0.6);flex-shrink:0;"></div>
-            <span class="cfg-stepper-lbl" style="margin:0;">Off days</span>
-          </div>
-          <div class="cfg-stepper">
-            <button class="cfg-step-btn" onclick="stepRoster('rosterOff',-1)">&#8722;</button>
-            <input type="number" id="rosterOff" min="0" max="7" value="1" class="cfg-step-val" oninput="renderRosterPreview()" />
-            <button class="cfg-step-btn" onclick="stepRoster('rosterOff',1)">&#43;</button>
-          </div>
-          <div class="cfg-stepper-sub" style="color:#06b6d4;">Scheduled off</div>
+        <div class="cfg-num-field">
+          <div class="cfg-num-lbl" style="color:#22d3ee;">Off</div>
+          <input type="number" class="cfg-num-inp" id="rosterOff" min="0" max="7" value="1" oninput="renderRosterPreview()" style="color:#22d3ee;" />
+          <div class="cfg-num-sub" style="color:#22d3ee;">days off</div>
         </div>
-        <div class="cfg-stepper-wrap">
-          <div style="display:inline-flex;align-items:center;gap:0.28rem;margin-bottom:0.22rem;">
-            <div style="width:9px;height:9px;border-radius:2px;background:rgba(168,85,247,0.35);border:1px solid rgba(168,85,247,0.6);flex-shrink:0;"></div>
-            <span class="cfg-stepper-lbl" style="margin:0;">Rest days</span>
-          </div>
-          <div class="cfg-stepper">
-            <button class="cfg-step-btn" onclick="stepRoster('rosterRest',-1)">&#8722;</button>
-            <input type="number" id="rosterRest" min="0" max="7" value="1" class="cfg-step-val" oninput="renderRosterPreview()" />
-            <button class="cfg-step-btn" onclick="stepRoster('rosterRest',1)">&#43;</button>
-          </div>
-          <div class="cfg-stepper-sub" style="color:#a855f7;">Rest day</div>
+        <div class="cfg-num-field">
+          <div class="cfg-num-lbl" style="color:#c084fc;">Rest</div>
+          <input type="number" class="cfg-num-inp" id="rosterRest" min="0" max="7" value="1" oninput="renderRosterPreview()" style="color:#c084fc;" />
+          <div class="cfg-num-sub" style="color:#c084fc;">days rest</div>
         </div>
       </div>
 
-      <div style="font-size:0.58rem;color:#334155;text-transform:uppercase;letter-spacing:0.08em;font-weight:700;margin-bottom:0.3rem;">Your pattern repeats like this:</div>
-      <div id="rosterPreview" style="display:flex;gap:4px;flex-wrap:wrap;min-height:32px;align-items:center;margin-bottom:0.75rem;"></div>
-      <button onclick="saveRosterPattern()" class="cfg-save-btn cfg-save-blue">Save Work Schedule</button>
+      <div id="rosterPreview" style="display:flex;gap:4px;flex-wrap:wrap;min-height:28px;align-items:center;margin-bottom:1rem;"></div>
+      <button onclick="saveRosterPattern()" class="cfg-save-btn cfg-save-blue">Save Schedule</button>
     </div>
 
-    <div style="height:1px;background:rgba(255,255,255,0.07);margin-bottom:1.1rem;"></div>
+    <div class="cfg-divider"></div>
 
-    <!-- ② Pay Day -->
-    <div style="margin-bottom:1.1rem;">
-      <div style="font-size:1rem;font-weight:700;color:#f1f5f9;margin-bottom:0.2rem;">&#128176; Pay Day</div>
-      <div style="font-size:0.75rem;color:#64748b;margin-bottom:0.75rem;">Which day of the month does your salary arrive?</div>
-
-      <div style="display:flex;align-items:center;gap:0.5rem;flex-wrap:wrap;margin-bottom:0.85rem;">
-        <span style="font-size:0.88rem;color:#94a3b8;">I get paid on the</span>
-        <div class="cfg-stepper cfg-stepper-big">
-          <button class="cfg-step-btn cfg-step-btn-big" onclick="stepSalDay(-1)">&#8722;</button>
-          <input type="number" id="salDayInput" min="1" max="31" value="25" class="cfg-step-val cfg-step-val-big" oninput="renderSalaryPreview()" />
-          <button class="cfg-step-btn cfg-step-btn-big" onclick="stepSalDay(1)">&#43;</button>
-        </div>
-        <span style="font-size:0.88rem;color:#94a3b8;">of every month</span>
+    <!-- Pay Day -->
+    <div class="cfg-section">
+      <div class="cfg-sec-head">
+        <div class="cfg-sec-bar" style="background:#22c55e;"></div>
+        <span class="cfg-sec-title">Pay Day</span>
       </div>
 
-      <div style="font-size:0.68rem;color:#475569;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;margin-bottom:0.42rem;">If payday falls on a weekend</div>
-      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:0.4rem;margin-bottom:0.75rem;">
+      <div class="cfg-payday-picker">
+        <div class="cfg-payday-lbl">Salary arrives on the</div>
+        <input type="number" id="salDayInput" min="1" max="31" value="25" class="cfg-num-inp cfg-num-inp-lg" oninput="renderSalaryPreview()" />
+        <div class="cfg-payday-lbl">of every month</div>
+      </div>
+
+      <div class="cfg-sec-micro">If payday falls on a weekend</div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:0.4rem;margin-bottom:0.85rem;">
         <button class="sal-wk-card" id="salWkFri" onclick="setSalWeekend('friday')">
           <div class="sal-wk-icon">&#9664;</div>
           <div class="sal-wk-title">Go earlier</div>
@@ -3077,22 +3092,21 @@
         <option value="monday">monday</option>
         <option value="exact">exact</option>
       </select>
-      <div id="salaryPreview" class="cfg-preview-box" style="margin-bottom:0.75rem;"></div>
       <button onclick="saveSalaryCfg()" class="cfg-save-btn cfg-save-green">Save Pay Day</button>
     </div>
 
-    <div style="height:1px;background:rgba(255,255,255,0.07);margin-bottom:1.1rem;"></div>
+    <div class="cfg-divider"></div>
 
-    <!-- ③ Cycle Start -->
-    <div>
-      <div style="font-size:1rem;font-weight:700;color:#f1f5f9;margin-bottom:0.2rem;">&#128336; First Day of Your Current Cycle</div>
-      <div style="font-size:0.75rem;color:#64748b;margin-bottom:0.5rem;">When did your <em>current</em> work rotation start? The app counts from this date to colour your calendar correctly.</div>
-      <div style="font-size:0.68rem;color:#475569;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:8px;padding:0.5rem 0.7rem;margin-bottom:0.6rem;line-height:1.5;">
-        Example: if your pattern is <strong style="color:#94a3b8;">4 work · 1 off · 1 rest</strong> and your last cycle started on <strong style="color:#94a3b8;">1 June</strong>, pick 1 June.
+    <!-- Cycle Start -->
+    <div class="cfg-section" style="margin-bottom:0;">
+      <div class="cfg-sec-head">
+        <div class="cfg-sec-bar" style="background:#475569;"></div>
+        <span class="cfg-sec-title">Cycle Start Date</span>
       </div>
+      <div class="cfg-sec-sub">When did your current rotation begin? The calendar colours from this date forward.</div>
       <div style="display:flex;gap:0.5rem;align-items:center;">
-        <input type="date" id="rosterStartInput" class="cfg-date-inp" />
-        <button onclick="saveRosterStart()" class="cfg-save-btn cfg-save-blue" style="width:auto;white-space:nowrap;padding:0.52rem 1.1rem;">Set</button>
+        <input type="date" id="rosterStartInput" class="cfg-date-inp" style="flex:1;" />
+        <button onclick="saveRosterStart()" class="cfg-save-btn cfg-save-blue" style="width:auto;white-space:nowrap;padding:0.52rem 1.2rem;">Set</button>
       </div>
     </div>
 
