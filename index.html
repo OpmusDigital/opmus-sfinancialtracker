@@ -1993,9 +1993,24 @@
     .style-card.active .style-name { color:#94a3b8; }
     .style-check { font-size:0.72rem; color:#64748b; opacity:0; line-height:1; }
     .style-card.active .style-check { opacity:1; }
+  #liveSyncToast {
+    position: fixed; bottom: 72px; left: 50%; transform: translateX(-50%) translateY(16px);
+    background: #0f172a; border: 1px solid #10b981; color: #10b981;
+    font-size: 0.78rem; font-weight: 600;
+    padding: 0.4rem 1rem; border-radius: 999px; z-index: 99999;
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+    white-space: nowrap; box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+  }
+  #liveSyncToast.visible {
+    opacity: 1; transform: translateX(-50%) translateY(0);
+  }
   </style>
 </head>
 <body>
+
+<!-- Live sync toast -->
+<div id="liveSyncToast">&#x2714; Partner synced</div>
 
 <!-- ── Profile Picker Overlay ───────────────────────────── -->
 <div id="profileOverlay">
@@ -3615,6 +3630,8 @@ async function connectSyncCode() {
   if (el) el.textContent = code;
   if (inp) inp.value = "";
   await pullFromCloud();
+  stopLiveSync();
+  startLiveSync();
   if (activeProfileId) {
     syncDebtCommitments(); renderPanelA(); renderPanelB(); renderBudget(); renderCommitments(); renderOtPanel(); renderDebtPanel(); renderWeddingPanel();
   } else {
@@ -3626,6 +3643,104 @@ async function connectSyncCode() {
 // Kept for compatibility
 function copySyncKey() { copySyncCode(); }
 function applySyncKey() { connectSyncCode(); }
+
+// ── Live Real-Time Listener ───────────────────────────────
+var _liveListening = false;
+var _rerenderTimer = null;
+var _syncToastTimer = null;
+
+var _isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.maxTouchPoints > 1 && /Macintosh/.test(navigator.userAgent));
+
+function _showSyncToast(msg) {
+  var t = document.getElementById("liveSyncToast");
+  if (!t) return;
+  t.textContent = msg || "✔ Partner synced";
+  t.classList.add("visible");
+  clearTimeout(_syncToastTimer);
+  _syncToastTimer = setTimeout(function() { t.classList.remove("visible"); }, 2500);
+}
+
+function _safeToReload() {
+  var focused = document.activeElement;
+  if (focused && ["INPUT","TEXTAREA","SELECT"].indexOf(focused.tagName) !== -1) return false;
+  if (document.querySelector(".sync-overlay:not(.hidden), .cal-cfg-overlay:not(.hidden)")) return false;
+  return true;
+}
+
+function _scheduleRerender() {
+  clearTimeout(_rerenderTimer);
+  _rerenderTimer = setTimeout(function() {
+    if (!activeProfileId) return;
+    if (_isIOS) {
+      // iOS Safari often doesn't repaint after JS DOM changes — reload instead.
+      // Safe to reload only if no input is focused and no modal is open.
+      if (_safeToReload()) {
+        _showSyncToast("↻ Partner updated — refreshing…");
+        setTimeout(function() { location.reload(); }, 900);
+        return;
+      }
+    }
+    // Desktop (or iOS with modal/input open) — do in-place render
+    try { renderDashboard();    } catch(e) {}
+    try { renderPanelA();       } catch(e) {}
+    try { renderPanelB();       } catch(e) {}
+    try { renderBudget();       } catch(e) {}
+    try { renderCommitments();  } catch(e) {}
+    try { renderOtPanel();      } catch(e) {}
+    try { renderDebtPanel();    } catch(e) {}
+    try { renderWeddingPanel(); } catch(e) {}
+    _setSyncStatus("green", "Live — just updated from partner");
+    _showSyncToast();
+  }, 300);
+}
+
+function startLiveSync() {
+  if (!_db || !_syncKey || _liveListening) return;
+  _liveListening = true;
+  var ref = _db.ref(_syncKey);
+  // Echo check is sufficient — if local already has this value, skip.
+  // No ready-flag needed: pullFromCloud() already seeded localStorage so
+  // initial child_added events will be caught and skipped by the echo check.
+  function applySnap(snap) {
+    if (_cloudSyncing) return;
+    var key = snap.key;
+    var val = snap.val();
+    if (!_syncable(key)) return;
+    if (val !== null && localStorage.getItem(key) === val) return;
+    _cloudSyncing = true;
+    if (val === null) { _lsRemove(key); } else { _lsSet(key, val); }
+    _cloudSyncing = false;
+    _scheduleRerender();
+  }
+  ref.on("child_changed", applySnap);
+  ref.on("child_added",   applySnap);
+  ref.on("child_removed", function(snap) {
+    if (_cloudSyncing) return;
+    var key = snap.key;
+    if (!_syncable(key)) return;
+    _cloudSyncing = true;
+    _lsRemove(key);
+    _cloudSyncing = false;
+    _scheduleRerender();
+  });
+  _setSyncStatus("green", "Live — watching for changes");
+}
+
+// Re-pull when iOS brings the tab back to foreground (Safari suspends WS on background)
+document.addEventListener("visibilitychange", function() {
+  if (document.visibilityState === "visible" && _db && _syncKey) {
+    pullFromCloud().then(function() {
+      if (activeProfileId) _scheduleRerender();
+    }).catch(function() {});
+  }
+});
+
+function stopLiveSync() {
+  if (_liveListening && _db && _syncKey) {
+    _db.ref(_syncKey).off();
+    _liveListening = false;
+  }
+}
 
 async function pushAllToCloud() {
   if (!_db) { _setSyncStatus("red", "Firebase not configured"); return; }
@@ -6399,9 +6514,17 @@ function saveCurrentLayout() {
   document.querySelectorAll('[data-panel]').forEach(function(el) {
     var id = el.dataset.panel;
     if (!id || el.style.display === 'none') return;
-    positions[id] = { top: parseInt(el.style.top) || 0, left: parseInt(el.style.left) || 0, width: el.offsetWidth, height: el.offsetHeight };
+    if (!el.style.top || !el.style.left) return;
+    var t = parseInt(el.style.top)  || 0;
+    var l = parseInt(el.style.left) || 0;
+    var w = el.offsetWidth;
+    var h = el.offsetHeight;
+    if (w === 0 || h === 0) return;
+    positions[id] = { top: t, left: l, width: w, height: h };
   });
-  localStorage.setItem(LAYOUT_KEY, JSON.stringify(positions));
+  if (Object.keys(positions).length > 0) {
+    localStorage.setItem(LAYOUT_KEY, JSON.stringify(positions));
+  }
 }
 
 function applyLayout() {
@@ -6412,17 +6535,12 @@ function applyLayout() {
     _initMobilePanels();
     return;
   }
-  if (window.innerWidth <= 1366) {
-    document.querySelectorAll('[data-panel]').forEach(function(el) {
-      el.style.top = ''; el.style.left = ''; el.style.width = ''; el.style.height = '';
-      if (_activeModules.indexOf(el.dataset.panel) >= 0) el.style.display = '';
-    });
-    return;
-  }
   var positions = loadLayout() || getDefaultPositions();
   document.querySelectorAll('[data-panel]').forEach(function(el) {
-    var pos = positions[el.dataset.panel];
-    if (!pos) return;
+    var id = el.dataset.panel;
+    if (!id) return;
+    var pos = positions[id];
+    if (!pos || pos.width === 0 || pos.height === 0) return;
     el.style.top    = pos.top    + 'px';
     el.style.left   = pos.left   + 'px';
     el.style.width  = pos.width  + 'px';
@@ -9306,6 +9424,8 @@ async function pickerSyncApply() {
     _cloudSyncing = true;
     Object.keys(data).forEach(function(k) { if (_syncable(k)) _lsSet(k, data[k]); });
     _cloudSyncing = false;
+    stopLiveSync();
+    startLiveSync();
     if (statusEl) statusEl.textContent = "&#x2713; Connected! Loading profiles…";
     setTimeout(function() { renderPickerCards(); }, 800);
   } catch(e) {
@@ -9834,6 +9954,7 @@ initFirebase();
 _syncKey = getSyncKey();
 (async function() {
   if (_fbConfigured()) await pullFromCloud();
+  startLiveSync();
   loadCurrency();
   loadActiveModules();
   if (activeProfileId) {
