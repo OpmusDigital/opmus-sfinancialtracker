@@ -306,6 +306,57 @@
     .rp-work { background:rgba(100,116,139,0.18); color:#94a3b8; border:1px solid rgba(100,116,139,0.28); }
     .rp-off  { background:rgba(6,182,212,0.15); color:#06b6d4; border:1px solid rgba(6,182,212,0.28); }
     .rp-rest { background:rgba(168,85,247,0.15); color:#a855f7; border:1px solid rgba(168,85,247,0.28); }
+    /* ── Calendar config redesign ─────────────────── */
+    .cfg-wrap { display:flex; flex-direction:column; gap:0.75rem; margin-top:1rem; }
+    .cfg-card { padding:1rem 1.1rem; border:1px solid rgba(255,255,255,0.07); border-radius:14px; background:rgba(255,255,255,0.025); }
+    .cfg-card-head { display:flex; align-items:flex-start; gap:0.7rem; margin-bottom:0.85rem; }
+    .cfg-card-icon { font-size:1.3rem; line-height:1; margin-top:0.05rem; flex-shrink:0; }
+    .cfg-card-ttl { font-size:0.9rem; font-weight:700; color:#f1f5f9; letter-spacing:-0.02em; }
+    .cfg-card-sub { font-size:0.7rem; color:#475569; margin-top:0.12rem; line-height:1.4; }
+    .cfg-presets-wrap { margin-bottom:0.75rem; }
+    .cfg-presets-lbl { font-size:0.56rem; color:#334155; text-transform:uppercase; letter-spacing:0.08em; font-weight:700; margin-bottom:0.35rem; }
+    .cfg-steppers-row { display:flex; gap:0.5rem; margin-bottom:0.7rem; }
+    .cfg-stepper-wrap { flex:1; display:flex; flex-direction:column; align-items:center; gap:0.18rem; }
+    .cfg-stepper-lbl { font-size:0.58rem; color:#64748b; text-transform:uppercase; letter-spacing:0.06em; font-weight:700; }
+    .cfg-stepper { display:inline-flex; align-items:center; border:1px solid rgba(255,255,255,0.1); border-radius:9px; overflow:hidden; }
+    .cfg-step-btn { background:rgba(255,255,255,0.06); border:none; color:#94a3b8; cursor:pointer; font-size:1.05rem; width:34px; height:38px; display:flex; align-items:center; justify-content:center; font-weight:700; transition:all 0.15s; user-select:none; -webkit-user-select:none; flex-shrink:0; }
+    .cfg-step-btn:hover { background:rgba(255,255,255,0.14); color:#f1f5f9; }
+    .cfg-step-btn:active { background:rgba(255,255,255,0.2); }
+    .cfg-step-val { width:44px; border:none; border-left:1px solid rgba(255,255,255,0.07); border-right:1px solid rgba(255,255,255,0.07); background:#0f172a; color:#f1f5f9; font-size:0.95rem; font-weight:700; text-align:center; height:38px; padding:0; -moz-appearance:textfield; }
+    .cfg-step-val::-webkit-inner-spin-button, .cfg-step-val::-webkit-outer-spin-button { -webkit-appearance:none; }
+    .cfg-stepper-sub { font-size:0.58rem; color:#475569; text-align:center; line-height:1.3; }
+    .cfg-step-val-big { width:58px; height:48px; font-size:1.35rem; }
+    .cfg-step-btn-big { width:44px; height:48px; font-size:1.3rem; }
+    .cfg-stepper-big { border-radius:12px; }
+    .cfg-select { width:100%; padding:0.42rem 0.6rem; border-radius:8px; border:1px solid rgba(255,255,255,0.1); background:#0f172a; color:#f1f5f9; font-size:0.78rem; cursor:pointer; }
+    .cfg-select option { background:#0f172a; color:#f1f5f9; }
+    .cfg-preview-box { font-size:0.72rem; color:#94a3b8; background:rgba(255,255,255,0.035); border:1px solid rgba(255,255,255,0.07); border-radius:8px; padding:0.45rem 0.7rem; min-height:2rem; display:flex; align-items:center; }
+    .cfg-hint-box { font-size:0.7rem; color:#475569; background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.06); border-radius:8px; padding:0.55rem 0.75rem; line-height:1.5; }
+    .cfg-hint-box strong { color:#94a3b8; }
+    .cfg-save-btn { width:100%; padding:0.52rem; border-radius:9px; border:none; color:#fff; font-size:0.82rem; cursor:pointer; font-weight:700; letter-spacing:0.01em; transition:filter 0.15s; }
+    .cfg-save-btn:hover { filter:brightness(1.1); }
+    .cfg-save-blue  { background:linear-gradient(135deg,#3b82f6,#2563eb); box-shadow:0 2px 10px rgba(59,130,246,0.3); }
+    .cfg-save-green { background:linear-gradient(135deg,#22c55e,#16a34a); box-shadow:0 2px 10px rgba(34,197,94,0.3); }
+    .cfg-date-inp { flex:1; padding:0.5rem 0.7rem; border-radius:8px; border:1px solid rgba(255,255,255,0.1); background:rgba(255,255,255,0.05); color:#f1f5f9; font-size:0.84rem; }
+    .cfg-weekend-opt { flex:1; padding:0.45rem 0.3rem; border-radius:8px; border:1px solid rgba(255,255,255,0.09); background:rgba(255,255,255,0.04); color:#64748b; font-size:0.72rem; cursor:pointer; font-weight:600; transition:all 0.15s; text-align:center; white-space:nowrap; }
+    .cfg-weekend-opt:hover { border-color:rgba(34,197,94,0.35); color:#86efac; background:rgba(34,197,94,0.07); }
+    .cfg-weekend-opt.active { border-color:rgba(34,197,94,0.5); background:rgba(34,197,94,0.14); color:#4ade80; }
+    .sal-wk-card { display:flex; flex-direction:column; align-items:center; gap:0.15rem; padding:0.6rem 0.25rem; border-radius:11px; border:1px solid rgba(255,255,255,0.09); background:rgba(255,255,255,0.03); cursor:pointer; transition:all 0.15s; text-align:center; }
+    .sal-wk-card:hover { border-color:rgba(34,197,94,0.3); background:rgba(34,197,94,0.06); }
+    .sal-wk-card.active { border-color:rgba(34,197,94,0.5); background:rgba(34,197,94,0.13); }
+    .sal-wk-icon { font-size:1.15rem; line-height:1; margin-bottom:0.08rem; }
+    .sal-wk-title { font-size:0.73rem; font-weight:700; color:#94a3b8; transition:color 0.15s; }
+    .sal-wk-card.active .sal-wk-title { color:#4ade80; }
+    .sal-wk-sub { font-size:0.6rem; color:#475569; line-height:1.35; transition:color 0.15s; }
+    .sal-wk-card.active .sal-wk-sub { color:#86efac; }
+    .cfg-open-btn { display:flex; align-items:center; gap:0.5rem; width:100%; padding:0.65rem 1rem; border-radius:10px; border:1px solid rgba(255,255,255,0.09); background:rgba(255,255,255,0.03); color:#64748b; font-size:0.82rem; cursor:pointer; font-weight:600; transition:all 0.15s; margin-top:0.85rem; }
+    .cfg-open-btn:hover { background:rgba(255,255,255,0.07); color:#cbd5e1; border-color:rgba(255,255,255,0.15); }
+    .cfg-open-btn-icon { font-size:1rem; }
+    /* cfg-wrap: single col on mobile, 2-col grid on desktop */
+    @media (min-width: 769px) {
+      .cfg-wrap { display:grid; grid-template-columns:1fr 1fr; gap:0.75rem; }
+      .cfg-wrap > .cfg-card:first-child { grid-column:1 / -1; } /* shift pattern full-width */
+    }
     /* Legend chips */
     .cal-legend { display:flex; flex-wrap:wrap; gap:0.4rem 0.5rem; margin-top:1rem; padding-top:0.9rem; border-top:1px solid rgba(255,255,255,0.07); }
     .cal-legend-item { display:flex; align-items:center; gap:0.3rem; font-size:0.62rem; color:#64748b; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.07); border-radius:6px; padding:3px 8px; }
@@ -637,6 +688,103 @@
     .debt-bill-del:hover { color:#ef4444; background:rgba(239,68,68,0.1); }
     /* Debt Tracker Panel */
     .panel-debt { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.07); border-radius: 16px; display: flex; flex-direction: column; overflow: hidden; }
+    .panel-wedding { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.07); border-radius: 16px; display: flex; flex-direction: column; overflow: hidden; }
+    .wp-sort-strip { display:flex; align-items:center; gap:0.5rem; padding:0.4rem 1rem; border-bottom:1px solid rgba(255,255,255,0.06); flex-shrink:0; }
+    .wp-sort-lbl { font-size:0.6rem; color:#475569; text-transform:uppercase; letter-spacing:0.07em; font-weight:700; flex-shrink:0; }
+    .wp-sort-btn { padding:3px 10px; border-radius:20px; border:1px solid rgba(255,255,255,0.08); background:rgba(255,255,255,0.03); color:#64748b; font-size:0.68rem; font-weight:600; cursor:pointer; transition:all 0.15s; white-space:nowrap; }
+    .wp-sort-btn:hover { border-color:rgba(239,68,68,0.35); color:#fca5a5; }
+    .wp-sort-btn.active { border-color:rgba(239,68,68,0.45); background:rgba(239,68,68,0.1); color:#fca5a5; }
+    .wp-scroll { flex:1; overflow-y:auto; padding:0.75rem 1rem 1.25rem; }
+    .wp-scroll::-webkit-scrollbar { width:4px; }
+    .wp-scroll::-webkit-scrollbar-thumb { background:rgba(255,255,255,0.1); border-radius:4px; }
+    .wp-summary-bar { padding:0.75rem 1rem; border-top:1px solid rgba(255,255,255,0.06); display:flex; align-items:center; gap:0.9rem; flex-shrink:0; }
+    .wp-chart-wrap { position:relative; width:76px; height:76px; flex-shrink:0; }
+    .wp-chart-center { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; pointer-events:none; }
+    .wp-chart-pct { font-size:0.85rem; font-weight:800; color:#f1f5f9; line-height:1; }
+    .wp-chart-lbl { font-size:0.48rem; text-transform:uppercase; letter-spacing:0.08em; color:#475569; margin-top:2px; }
+    .wp-sum-rows { flex:1; display:flex; flex-direction:column; gap:0.3rem; min-width:0; }
+    .wp-sum-row { display:flex; align-items:center; gap:0.45rem; }
+    .wp-sum-dot { width:7px; height:7px; border-radius:50%; flex-shrink:0; }
+    .wp-sum-key { flex:1; font-size:0.67rem; color:#64748b; }
+    .wp-sum-val { font-size:0.78rem; font-weight:700; flex-shrink:0; }
+    .wp-sum-divider { height:1px; background:rgba(255,255,255,0.06); margin:0.1rem 0; }
+    .wp-item-remaining { font-size:0.69rem; color:#f87171; margin-top:0.3rem; font-weight:600; }
+
+    /* ── Wedding card ── */
+    .wp-card { background:rgba(244,63,94,0.04); border:1px solid rgba(244,63,94,0.14); border-radius:16px; padding:1.1rem 1.15rem; margin-bottom:0.7rem; transition:border-color 0.2s, background 0.2s; }
+    .wp-card:hover { border-color:rgba(244,63,94,0.28); background:rgba(244,63,94,0.065); }
+    .wp-card-top { display:flex; align-items:flex-start; justify-content:space-between; gap:0.5rem; margin-bottom:0.8rem; }
+    .wp-card-name { font-size:0.95rem; font-weight:700; color:#f1f5f9; letter-spacing:-0.01em; }
+    .wp-card-actions { display:flex; align-items:center; gap:0.2rem; flex-shrink:0; }
+    .wp-card-btn { background:none; border:none; cursor:pointer; font-size:12px; color:#334155; padding:3px 5px; border-radius:6px; line-height:1; transition:background 0.15s,color 0.15s; }
+    .wp-card-btn:hover { background:rgba(255,255,255,0.07); color:#94a3b8; }
+    .wp-card-btn.del:hover { color:#ef4444; }
+    .wp-bar-wrap { height:4px; background:rgba(255,255,255,0.06); border-radius:99px; overflow:hidden; margin-bottom:0.9rem; }
+    .wp-bar-fill { height:100%; border-radius:99px; background:linear-gradient(90deg,#f43f5e,#fb7185); transition:width 0.5s cubic-bezier(0.4,0,0.2,1); }
+    .wp-bar-fill.done { background:linear-gradient(90deg,#22c55e,#4ade80); }
+    .wp-amounts { display:flex; justify-content:space-between; align-items:flex-end; gap:0.5rem; }
+    .wp-paid-side {}
+    .wp-paid-val { font-size:0.88rem; font-weight:700; color:#94a3b8; }
+    .wp-paid-lbl { font-size:0.62rem; color:#475569; margin-top:0.1rem; }
+    .wp-rem-side { text-align:right; }
+    .wp-rem-val { font-size:1.05rem; font-weight:800; color:#fb7185; }
+    .wp-rem-lbl { font-size:0.62rem; color:#64748b; margin-top:0.1rem; }
+    .wp-done-badge { font-size:0.82rem; font-weight:700; color:#4ade80; text-align:right; }
+    .wp-deadline { font-size:0.68rem; color:#64748b; margin-top:0.5rem; }
+    .wp-card-footer { display:flex; align-items:center; gap:0.5rem; margin-top:0.8rem; padding-top:0.65rem; border-top:1px solid rgba(244,63,94,0.09); }
+    .wp-hist-toggle { flex:1; font-size:0.7rem; color:#475569; cursor:pointer; background:none; border:none; text-align:left; padding:0; transition:color 0.15s; }
+    .wp-hist-toggle:hover { color:#94a3b8; }
+    .wp-pay-btn { display:flex; align-items:center; gap:0.3rem; padding:5px 12px; border-radius:8px; border:1px solid rgba(244,63,94,0.3); background:rgba(244,63,94,0.09); color:#fb7185; font-size:0.72rem; font-weight:700; cursor:pointer; transition:all 0.15s; white-space:nowrap; }
+    .wp-pay-btn:hover { background:rgba(244,63,94,0.18); border-color:rgba(244,63,94,0.5); }
+    .wp-hist-list { margin-top:0.5rem; padding-top:0.4rem; border-top:1px solid rgba(244,63,94,0.08); display:flex; flex-direction:column; gap:2px; }
+    .wp-hist-row { display:flex; align-items:center; gap:0.5rem; padding:3px 0; font-size:0.71rem; color:#64748b; }
+    .wp-hist-date { min-width:72px; flex-shrink:0; }
+    .wp-hist-note { flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .wp-hist-amt { font-weight:600; color:#4ade80; flex-shrink:0; }
+    .wp-hist-del { background:none; border:none; color:#334155; cursor:pointer; font-size:0.8rem; padding:0 3px; }
+    .wp-hist-del:hover { color:#ef4444; }
+
+    /* ── Wedding checklist ── */
+    .wp-checklist-wrap { display:flex; flex-direction:column; flex:1; overflow:hidden; }
+    .wp-check-hdr { display:flex; align-items:center; justify-content:space-between; padding:0.45rem 1rem; border-bottom:1px solid rgba(255,255,255,0.06); flex-shrink:0; gap:0.5rem; }
+    .wp-check-progress-txt { font-size:0.7rem; color:#64748b; flex-shrink:0; }
+    .wp-check-filters { display:flex; gap:0.3rem; }
+    .wp-check-filter-btn { padding:2px 9px; border-radius:20px; border:1px solid rgba(255,255,255,0.08); background:rgba(255,255,255,0.03); color:#64748b; font-size:0.65rem; font-weight:600; cursor:pointer; transition:all 0.15s; }
+    .wp-check-filter-btn.active { border-color:rgba(244,63,94,0.4); background:rgba(244,63,94,0.1); color:#fb7185; }
+    .wp-check-scroll { flex:1; overflow-y:auto; padding:0.4rem 1rem; }
+    .wp-check-scroll::-webkit-scrollbar { width:4px; }
+    .wp-check-scroll::-webkit-scrollbar-thumb { background:rgba(255,255,255,0.1); border-radius:4px; }
+    .wp-check-item { display:flex; align-items:center; gap:0.65rem; padding:0.55rem 0; border-bottom:1px solid rgba(255,255,255,0.04); }
+    .wp-check-item:last-child { border-bottom:none; }
+    .wp-check-box { width:20px; height:20px; border-radius:6px; border:1.5px solid rgba(244,63,94,0.35); background:rgba(244,63,94,0.05); cursor:pointer; flex-shrink:0; display:flex; align-items:center; justify-content:center; transition:all 0.15s; }
+    .wp-check-box:hover { border-color:rgba(244,63,94,0.65); background:rgba(244,63,94,0.12); }
+    .wp-check-box.done { background:rgba(34,197,94,0.14); border-color:rgba(34,197,94,0.45); }
+    .wp-check-tick { color:#4ade80; font-size:0.72rem; font-weight:900; line-height:1; }
+    .wp-check-text { flex:1; font-size:0.83rem; color:#cbd5e1; line-height:1.4; word-break:break-word; }
+    .wp-check-text.done { text-decoration:line-through; color:#334155; }
+    .wp-check-del { background:none; border:none; color:#1e293b; cursor:pointer; font-size:0.78rem; padding:2px 4px; border-radius:4px; transition:color 0.15s; flex-shrink:0; }
+    .wp-check-del:hover { color:#ef4444; }
+    .wp-check-add-row { display:flex; align-items:center; gap:0.5rem; padding:0.6rem 1rem; border-top:1px solid rgba(255,255,255,0.06); flex-shrink:0; }
+    .wp-check-add-inp { flex:1; padding:0.45rem 0.7rem; border-radius:8px; border:1px solid rgba(244,63,94,0.18); background:rgba(244,63,94,0.04); color:#f1f5f9; font-size:0.82rem; font-family:inherit; outline:none; transition:border-color 0.2s; }
+    .wp-check-add-inp:focus { border-color:rgba(244,63,94,0.45); background:rgba(244,63,94,0.08); }
+    .wp-check-add-inp::placeholder { color:#334155; }
+    .wp-check-add-btn { width:30px; height:30px; border-radius:8px; border:1px solid rgba(244,63,94,0.28); background:rgba(244,63,94,0.09); color:#fb7185; font-size:1.15rem; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all 0.15s; flex-shrink:0; font-weight:700; }
+    .wp-check-add-btn:hover { background:rgba(244,63,94,0.18); border-color:rgba(244,63,94,0.5); }
+    .wp-check-empty { text-align:center; padding:2.5rem 1rem; color:#1e293b; font-size:0.82rem; line-height:1.6; }
+    .wp-check-edit-btn { background:none; border:none; color:#1e293b; cursor:pointer; font-size:0.78rem; padding:2px 4px; border-radius:4px; transition:color 0.15s; flex-shrink:0; }
+    .wp-check-edit-btn:hover { color:#94a3b8; }
+    .wp-check-note { font-size:0.71rem; color:#475569; margin:0.15rem 0 0.1rem 2.4rem; line-height:1.45; font-style:italic; }
+    .wp-group-section { margin-bottom:0.1rem; }
+    .wp-group-hdr { display:flex; align-items:center; gap:0.45rem; padding:0.55rem 0 0.25rem; border-bottom:1px solid rgba(255,255,255,0.04); margin-bottom:0.15rem; }
+    .wp-group-toggle { background:none; border:none; color:#334155; cursor:pointer; font-size:0.65rem; padding:0; flex-shrink:0; width:14px; line-height:1; }
+    .wp-group-name { font-size:0.72rem; font-weight:700; color:#64748b; letter-spacing:0.04em; text-transform:uppercase; flex:1; }
+    .wp-group-meta { font-size:0.63rem; color:#334155; flex-shrink:0; }
+    .wp-group-del { background:none; border:none; color:#1e293b; cursor:pointer; font-size:0.7rem; padding:1px 4px; border-radius:4px; flex-shrink:0; }
+    .wp-group-del:hover { color:#ef4444; }
+    .wp-group-add-btn { background:none; border:none; color:#475569; cursor:pointer; font-size:0.75rem; padding:1px 5px; border-radius:5px; border:1px solid rgba(255,255,255,0.07); transition:all 0.15s; white-space:nowrap; }
+    .wp-group-add-btn:hover { color:#fb7185; border-color:rgba(244,63,94,0.3); background:rgba(244,63,94,0.06); }
+    .wp-check-group-sel { padding:0.28rem 0.45rem; border-radius:7px; border:1px solid rgba(244,63,94,0.16); background:rgba(244,63,94,0.04); color:#64748b; font-size:0.72rem; cursor:pointer; font-family:inherit; outline:none; flex-shrink:0; max-width:110px; }
+    .wp-check-group-sel option { background:#0f172a; color:#f1f5f9; }
     .debt-body { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
     .debt-summary { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.4rem; padding: 0.6rem 1rem; flex-shrink: 0; border-bottom: 1px solid rgba(255,255,255,0.06); }
     .debt-sum-card { background: rgba(255,255,255,0.04); border-radius: 10px; padding: 0.55rem 0.4rem; text-align: center; }
@@ -1131,7 +1279,7 @@
       .logo-wordmark-sub { display: none; }
 
       /* ─ Fix panels: allow natural height expansion ─ */
-      .panel-a, .panel-b, .panel-commit, .panel-debt, .panel-ot, .panel-budget {
+      .panel-a, .panel-b, .panel-commit, .panel-debt, .panel-ot, .panel-budget, .panel-wedding {
         overflow: visible !important;
       }
 
@@ -1227,7 +1375,10 @@
       .hist-modal { border-radius: 24px 24px 0 0; max-height: 90vh; width: 100%; max-width: 100%; }
 
       /* ─ Calendar popup: centred on mobile ─ */
-      .cal-popup { position: fixed; top: calc(60px + env(safe-area-inset-top, 0px)); left: 50%; transform: translateX(-50%); right: auto; z-index: 100; max-height: calc(100vh - 80px - env(safe-area-inset-top, 0px)); overflow-y: auto; }
+      .cal-popup { position: fixed; top: calc(56px + env(safe-area-inset-top, 0px) + 6px); left: 50%; transform: translateX(-50%); right: auto; z-index: 100; max-height: calc(100vh - 76px - env(safe-area-inset-top, 0px)); overflow-y: auto; width: calc(100vw - 2rem); max-width: 360px; }
+
+      /* ─ Expanded calendar: centred small modal on mobile ─ */
+      .cal-modal-box { padding: 1.1rem 1rem 1.25rem !important; }
 
       /* ─ Profile picker: compact cards ─ */
       .prof-title { font-size: 1.5rem; }
@@ -1241,8 +1392,7 @@
       .prof-logo { margin-bottom: 2rem; }
 
       /* ─ Cal modal ─ */
-      .cal-modal-box { min-width: unset; width: calc(100vw - 2rem); max-width: calc(100vw - 2rem); padding: 1.25rem 1rem; }
-      .cal-cfg-grid { grid-template-columns: 1fr; }
+      .cal-modal-box { min-width: unset; width: 100% !important; max-width: 100% !important; }
 
     }
 
@@ -1281,7 +1431,7 @@
       .dash-card  { min-width: calc(33.33% - 0.4rem); flex: none; }
 
       /* ─ Fix panels: allow natural height expansion ─ */
-      .panel-a, .panel-b, .panel-commit, .panel-debt, .panel-ot, .panel-budget {
+      .panel-a, .panel-b, .panel-commit, .panel-debt, .panel-ot, .panel-budget, .panel-wedding {
         overflow: visible !important;
       }
 
@@ -2058,6 +2208,31 @@
         <button class="settings-action-btn" onclick="closeSettings();openAppLibrary()">📦 Open</button>
       </div>
     </div>
+
+    <div class="settings-section">
+      <div class="settings-section-title">Roster &amp; Pay Day</div>
+      <div class="settings-row">
+        <div>
+          <div class="settings-row-label">Shift Pattern</div>
+          <div class="settings-row-sub" id="settingsShiftSummary">Not configured — tap Configure to set up</div>
+        </div>
+        <button class="settings-action-btn" onclick="closeSettings();openCalCfg()">&#9998; Edit</button>
+      </div>
+      <div class="settings-row">
+        <div>
+          <div class="settings-row-label">Pay Day</div>
+          <div class="settings-row-sub" id="settingsPaySummary">Not configured — tap Configure to set up</div>
+        </div>
+        <button class="settings-action-btn" onclick="closeSettings();openCalCfg()">&#9998; Edit</button>
+      </div>
+      <div class="settings-row" style="border-bottom:none;">
+        <div>
+          <div class="settings-row-label">Cycle Start Date</div>
+          <div class="settings-row-sub" id="settingsCycleSummary">Not set — tap Configure to set up</div>
+        </div>
+        <button class="settings-action-btn" onclick="closeSettings();openCalCfg()">&#9998; Edit</button>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -2146,6 +2321,10 @@
     <div class="mpanel-tab-grp" data-mpanel="debt">
       <button class="mpanel-tab-lbl" onclick="switchMPanel('debt')">💳 Debt</button>
       <button class="mpanel-tab-add" onclick="openAddDebt()">+</button>
+    </div>
+    <div class="mpanel-tab-grp" data-mpanel="wedding">
+      <button class="mpanel-tab-lbl" onclick="switchMPanel('wedding')">💍 Wedding</button>
+      <button class="mpanel-tab-add" onclick="openAddWpItem()">+</button>
     </div>
   </div>
 
@@ -2316,6 +2495,88 @@
         </div>
       </div>
       <div class="debt-body" id="debtBody"></div>
+      <div class="resize-handle rh-n"  data-dir="n"></div>
+      <div class="resize-handle rh-s"  data-dir="s"></div>
+      <div class="resize-handle rh-e"  data-dir="e"></div>
+      <div class="resize-handle rh-w"  data-dir="w"></div>
+      <div class="resize-handle rh-ne" data-dir="ne"></div>
+      <div class="resize-handle rh-nw" data-dir="nw"></div>
+      <div class="resize-handle rh-se" data-dir="se"></div>
+      <div class="resize-handle rh-sw" data-dir="sw"></div>
+    </div>
+
+    <div class="panel-wedding" data-panel="wedding">
+      <div class="panel-header">
+        <span class="drag-handle" title="Drag to move">⠿</span>
+        <div class="panel-label">
+          <div class="panel-badge"><i class="ph-fill ph-heart"></i></div>
+          <span class="panel-name">Wedding Planner</span>
+        </div>
+        <div class="panel-actions">
+          <button class="icon-btn red" onclick="onWpPlusBtn()" title="Add">+</button>
+        </div>
+      </div>
+      <div class="panel-subtabs">
+        <button class="subtab active" id="wpTabPayments" onclick="switchWpTab('payments')">Payments</button>
+        <button class="subtab" id="wpTabChecklist" onclick="switchWpTab('checklist')">&#9745; Checklist</button>
+      </div>
+      <!-- Payments tab content -->
+      <div id="wpPaymentsWrap" style="display:flex;flex-direction:column;flex:1;overflow:hidden;">
+        <div class="wp-sort-strip" id="wpSortStrip" style="display:none;">
+          <span class="wp-sort-lbl">Sort</span>
+          <button class="wp-sort-btn active" id="wpSortDue" onclick="wpSetSort('duedate')">📅 Due Date</button>
+          <button class="wp-sort-btn" id="wpSortRem" onclick="wpSetSort('remaining')">💰 Biggest Remaining</button>
+        </div>
+        <div class="wp-scroll" id="wpBody"></div>
+        <div class="wp-summary-bar" id="wpSummaryBar" style="display:none;">
+          <div class="wp-chart-wrap">
+            <canvas id="wpDonutChart"></canvas>
+            <div class="wp-chart-center">
+              <div class="wp-chart-pct" id="wpChartPct">0%</div>
+              <div class="wp-chart-lbl">paid</div>
+            </div>
+          </div>
+          <div class="wp-sum-rows">
+            <div class="wp-sum-row">
+              <span class="wp-sum-dot" style="background:#22c55e;"></span>
+              <span class="wp-sum-key">Total Paid</span>
+              <span class="wp-sum-val" id="wpSumPaid" style="color:#22c55e;">—</span>
+            </div>
+            <div class="wp-sum-row">
+              <span class="wp-sum-dot" style="background:#f43f5e;"></span>
+              <span class="wp-sum-key">Still to Pay</span>
+              <span class="wp-sum-val" id="wpSumRemaining" style="color:#fb7185;">—</span>
+            </div>
+            <div class="wp-sum-divider"></div>
+            <div class="wp-sum-row">
+              <span class="wp-sum-dot" style="background:#334155;"></span>
+              <span class="wp-sum-key">Grand Total</span>
+              <span class="wp-sum-val" id="wpSumTotal" style="color:#94a3b8;">—</span>
+            </div>
+          </div>
+        </div>
+      </div><!-- end wpPaymentsWrap -->
+      <!-- Checklist tab content -->
+      <div class="wp-checklist-wrap" id="wpChecklistWrap" style="display:none;">
+        <div class="wp-check-hdr">
+          <span class="wp-check-progress-txt" id="wpCheckProgressTxt">0 of 0 done</span>
+          <div class="wp-check-filters">
+            <button class="wp-check-filter-btn active" id="wpCkAll" onclick="wpSetFilter('all')">All</button>
+            <button class="wp-check-filter-btn" id="wpCkTodo" onclick="wpSetFilter('todo')">To do</button>
+            <button class="wp-check-filter-btn" id="wpCkDone" onclick="wpSetFilter('done')">Done</button>
+          </div>
+          <button class="wp-group-add-btn" onclick="openWpAddGroup()">+ Group</button>
+        </div>
+        <div class="wp-check-scroll" id="wpCheckBody"></div>
+        <div class="wp-check-add-row">
+          <select class="wp-check-group-sel" id="wpCheckGroupSel">
+            <option value="">No group</option>
+          </select>
+          <input class="wp-check-add-inp" type="text" id="wpCheckInput" placeholder="Add a task… press Enter"
+            maxlength="100" onkeydown="if(event.key==='Enter')addWpCheckItem()" />
+          <button class="wp-check-add-btn" onclick="addWpCheckItem()">+</button>
+        </div>
+      </div>
       <div class="resize-handle rh-n"  data-dir="n"></div>
       <div class="resize-handle rh-s"  data-dir="s"></div>
       <div class="resize-handle rh-e"  data-dir="e"></div>
@@ -2563,6 +2824,114 @@
   </div>
 </div>
 
+<!-- Wedding Checklist — Edit Task Modal -->
+<div class="modal-overlay" id="wpCheckEditModal" onclick="if(event.target===this)closeWpCheckEdit()">
+  <div class="modal" style="max-width:400px;">
+    <button class="modal-close" onclick="closeWpCheckEdit()">✕</button>
+    <div class="modal-icon">&#9998;</div>
+    <div class="modal-title">Edit Task</div>
+
+    <div class="field-label">Task</div>
+    <input type="text" id="wpCheckEditText" maxlength="100"
+      onkeydown="if(event.key==='Enter')saveWpCheckEdit()" />
+
+    <div class="field-label">Note <span style="color:#475569;font-weight:400;">(optional)</span></div>
+    <textarea id="wpCheckEditNote" maxlength="300" rows="3"
+      style="width:100%;padding:0.6rem 0.8rem;border-radius:10px;border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.05);color:#f1f5f9;font-size:0.85rem;font-family:inherit;outline:none;resize:vertical;"
+      placeholder="Add a note, reminder, or detail…"></textarea>
+
+    <div class="field-label">Group</div>
+    <select id="wpCheckEditGroup"
+      style="width:100%;padding:0.5rem 0.7rem;border-radius:9px;border:1px solid rgba(255,255,255,0.1);background:#0f172a;color:#f1f5f9;font-size:0.85rem;font-family:inherit;outline:none;">
+      <option value="">No group</option>
+    </select>
+
+    <button class="modal-btn primary" onclick="saveWpCheckEdit()">Save Changes</button>
+    <button class="modal-btn secondary" onclick="closeWpCheckEdit()">Cancel</button>
+  </div>
+</div>
+
+<!-- Wedding Checklist — Add Group Modal -->
+<div class="modal-overlay" id="wpAddGroupModal" onclick="if(event.target===this)closeWpAddGroup()">
+  <div class="modal" style="max-width:360px;">
+    <button class="modal-close" onclick="closeWpAddGroup()">✕</button>
+    <div class="modal-icon">&#128198;</div>
+    <div class="modal-title">New Group</div>
+    <div class="modal-sub">Organise your tasks by category</div>
+
+    <div class="field-label">Group Name</div>
+    <input type="text" id="wpGroupNameInput" maxlength="40"
+      placeholder="e.g. Venue, Catering, Photography…"
+      onkeydown="if(event.key==='Enter')saveWpGroup()" />
+
+    <button class="modal-btn primary" onclick="saveWpGroup()">Create Group</button>
+    <button class="modal-btn secondary" onclick="closeWpAddGroup()">Cancel</button>
+  </div>
+</div>
+
+<!-- Wedding Planner — Add/Edit Item Modal -->
+<div class="modal-overlay" id="wpAddItemModal" onclick="if(event.target===this)closeWpItem()">
+  <div class="modal" style="max-width:420px;">
+    <button class="modal-close" onclick="closeWpItem()">✕</button>
+    <div class="modal-icon">💍</div>
+    <div class="modal-title" id="wpItemModalTitle">New Wedding Item</div>
+
+    <div class="field-label">Item Name</div>
+    <input type="text" id="wpItemName" placeholder="e.g. Catering, Dress, Venue, Flowers…" maxlength="50"
+      onkeydown="if(event.key==='Enter')document.getElementById('wpItemTarget').focus()" />
+
+    <div class="field-label">Total Cost (RM)</div>
+    <input type="number" id="wpItemTarget" inputmode="decimal" placeholder="e.g. 8000.00" step="0.01" min="0" />
+
+    <div class="field-label">Due / Payment Deadline <span style="color:#475569;font-weight:400;">(optional)</span></div>
+    <div class="date-row">
+      <input type="number" id="wpItemDay" inputmode="numeric" placeholder="DD" min="1" max="31" style="width:60px;"
+        oninput="autoAdvanceDate(this,'wpItemMonth',2)" />
+      <div class="date-sep">/</div>
+      <input type="number" id="wpItemMonth" inputmode="numeric" placeholder="MM" min="1" max="12" style="width:60px;"
+        oninput="autoAdvanceDate(this,'wpItemYear',2)" />
+      <div class="date-sep">/</div>
+      <input type="number" id="wpItemYear" inputmode="numeric" placeholder="YYYY" min="2024" max="2099" style="width:80px;" />
+    </div>
+
+    <button class="modal-btn primary" id="wpItemSaveBtn" onclick="saveWpItem()">Create Item</button>
+    <button class="modal-btn secondary" onclick="closeWpItem()">Cancel</button>
+  </div>
+</div>
+
+<!-- Wedding Planner — Log Payment Modal -->
+<div class="modal-overlay" id="wpAddPaymentModal" onclick="if(event.target===this)closeWpPayment()">
+  <div class="modal" style="max-width:420px;">
+    <button class="modal-close" onclick="closeWpPayment()">✕</button>
+    <div class="modal-icon">💸</div>
+    <div class="modal-title">Log Payment</div>
+    <div class="modal-sub"><span id="wpPaymentItemName" style="color:#22c55e;font-weight:600;"></span></div>
+
+    <div class="field-label">Amount Paid (RM)</div>
+    <input type="number" id="wpPaymentAmt" inputmode="decimal" placeholder="0.00" step="0.01" min="0"
+      onkeydown="if(event.key==='Enter')saveWpPayment()" />
+
+    <div class="field-label">Payment Date (DD / MM / YYYY)</div>
+    <div class="date-row">
+      <input type="number" id="wpPayDay" inputmode="numeric" placeholder="DD" min="1" max="31" style="width:60px;"
+        oninput="autoAdvanceDate(this,'wpPayMonth',2)" />
+      <div class="date-sep">/</div>
+      <input type="number" id="wpPayMonth" inputmode="numeric" placeholder="MM" min="1" max="12" style="width:60px;"
+        oninput="autoAdvanceDate(this,'wpPayYear',2)" />
+      <div class="date-sep">/</div>
+      <input type="number" id="wpPayYear" inputmode="numeric" placeholder="YYYY" min="2020" max="2099" style="width:80px;" />
+    </div>
+
+    <div class="field-label">Note <span style="color:#475569;font-weight:400;">(optional)</span></div>
+    <input type="text" id="wpPayNote" placeholder="e.g. Deposit, Full payment, Instalment 1…" maxlength="60" />
+
+    <button class="modal-btn"
+      style="background:linear-gradient(135deg,#22c55e,#15803d);color:#fff;width:100%;padding:12px;border:none;border-radius:12px;font-size:0.9rem;font-weight:600;cursor:pointer;"
+      onclick="saveWpPayment()">Log Payment</button>
+    <button class="modal-btn secondary" onclick="closeWpPayment()">Cancel</button>
+  </div>
+</div>
+
 <!-- Quick Templates Modal -->
 <div class="modal-overlay" id="templatesModal" onclick="if(event.target===this)closeTemplatesModal()">
   <div class="modal" style="max-width:440px;">
@@ -2598,68 +2967,135 @@
     <div class="cal-big-grid" id="calExpandGrid"></div>
     <div id="calExpandNote" class="cal-salary-note"></div>
     <div id="calExpandLegend" class="cal-legend"></div>
+    <button class="cfg-open-btn" onclick="openCalCfg()">
+      <span class="cfg-open-btn-icon">&#9881;</span>
+      <span>Configure Shift Pattern &amp; Pay Day</span>
+      <span style="margin-left:auto;font-size:0.7rem;opacity:0.4;">&#8250;</span>
+    </button>
+  </div>
+</div>
 
-    <!-- Config cards — 2-column grid -->
-    <div class="cal-cfg-grid">
-      <!-- LEFT: Shift Pattern -->
-      <div class="cal-cfg-card">
-        <div class="roster-section-label">🗓 Shift Pattern</div>
-        <div style="display:flex;gap:0.4rem;margin-bottom:0.65rem;flex-wrap:wrap;">
-          <button class="rp-preset-btn" id="rp411" onclick="applyRosterPreset(4,1,1)">4W+1O+1R</button>
-          <button class="rp-preset-btn" id="rp511" onclick="applyRosterPreset(5,1,1)">5W+1O+1R</button>
-          <button class="rp-preset-btn" id="rp520" onclick="applyRosterPreset(5,2,0)">5W+2O</button>
-          <button class="rp-preset-btn" id="rp712" onclick="applyRosterPreset(7,1,2)">7W+1O+2R</button>
-        </div>
-        <div style="display:flex;gap:0.5rem;margin-bottom:0.65rem;">
-          <div class="rp-input-group">
-            <label class="rp-input-label">Work Days</label>
-            <input type="number" id="rosterWork" min="1" max="14" value="4" class="rp-input" oninput="renderRosterPreview()" />
-          </div>
-          <div class="rp-input-group">
-            <label class="rp-input-label">Off Day(s)</label>
-            <input type="number" id="rosterOff" min="0" max="7" value="1" class="rp-input" oninput="renderRosterPreview()" />
-          </div>
-          <div class="rp-input-group">
-            <label class="rp-input-label">Rest Day(s)</label>
-            <input type="number" id="rosterRest" min="0" max="7" value="1" class="rp-input" oninput="renderRosterPreview()" />
-          </div>
-        </div>
-        <div id="rosterPreview" style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:0.65rem;min-height:32px;"></div>
-        <button onclick="saveRosterPattern()" class="cal-cfg-save" style="background:linear-gradient(135deg,#3b82f6,#2563eb);box-shadow:0 2px 10px rgba(59,130,246,0.3);">Save Shift Pattern</button>
+<!-- Shift & Pay Config Modal -->
+<div class="modal-overlay" id="calCfgOverlay" onclick="if(event.target===this)closeCalCfg()" style="z-index:420;">
+  <div class="modal" style="max-width:440px;">
+    <button class="modal-close" onclick="closeCalCfg()">&#10005;</button>
+
+    <!-- ① Work Schedule -->
+    <div style="margin-bottom:1.1rem;">
+      <div style="font-size:1rem;font-weight:700;color:#f1f5f9;margin-bottom:0.2rem;">&#128197; Work Schedule</div>
+      <div style="font-size:0.75rem;color:#64748b;margin-bottom:0.75rem;">How many days do you work in a row before getting a day off?</div>
+
+      <div style="font-size:0.58rem;color:#334155;text-transform:uppercase;letter-spacing:0.08em;font-weight:700;margin-bottom:0.35rem;">Common patterns — tap to apply</div>
+      <div style="display:flex;gap:0.4rem;flex-wrap:wrap;margin-bottom:0.85rem;">
+        <button class="rp-preset-btn" id="rp411" onclick="applyRosterPreset(4,1,1)">4 work · 1 off · 1 rest</button>
+        <button class="rp-preset-btn" id="rp511" onclick="applyRosterPreset(5,1,1)">5 work · 1 off · 1 rest</button>
+        <button class="rp-preset-btn" id="rp520" onclick="applyRosterPreset(5,2,0)">5 work · 2 off</button>
+        <button class="rp-preset-btn" id="rp712" onclick="applyRosterPreset(7,1,2)">7 work · 1 off · 2 rest</button>
       </div>
 
-      <!-- RIGHT column: Salary Cycle + Cycle Start Date -->
-      <div style="display:flex;flex-direction:column;gap:0.6rem;">
-        <!-- Salary Cycle -->
-        <div class="cal-cfg-card">
-          <div class="roster-section-label">💰 Salary Cycle</div>
-          <div style="display:flex;gap:0.5rem;align-items:flex-end;margin-bottom:0.55rem;">
-            <div class="rp-input-group" style="flex:0 0 80px;">
-              <label class="rp-input-label">Salary Day</label>
-              <input type="number" id="salDayInput" min="1" max="31" value="25" class="rp-input" oninput="renderSalaryPreview()" />
-            </div>
-            <div class="rp-input-group" style="flex:1;">
-              <label class="rp-input-label">If Weekend</label>
-              <select id="salWeekendRule" class="rp-input" onchange="renderSalaryPreview()">
-                <option value="friday">Pay Friday before</option>
-                <option value="monday">Pay Monday after</option>
-                <option value="exact">Exact day</option>
-              </select>
-            </div>
+      <div class="cfg-steppers-row">
+        <div class="cfg-stepper-wrap">
+          <div style="display:inline-flex;align-items:center;gap:0.28rem;margin-bottom:0.22rem;">
+            <div style="width:9px;height:9px;border-radius:2px;background:rgba(100,116,139,0.5);border:1px solid rgba(100,116,139,0.7);flex-shrink:0;"></div>
+            <span class="cfg-stepper-lbl" style="margin:0;">Work days</span>
           </div>
-          <div id="salaryPreview" style="font-size:0.72rem;color:#94a3b8;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);border-radius:8px;padding:0.45rem 0.65rem;margin-bottom:0.55rem;min-height:1.8rem;"></div>
-          <button onclick="saveSalaryCfg()" class="cal-cfg-save" style="background:linear-gradient(135deg,#22c55e,#16a34a);box-shadow:0 2px 10px rgba(34,197,94,0.3);">Save Salary Cycle</button>
-        </div>
-        <!-- Cycle Start Date -->
-        <div class="cal-cfg-card">
-          <div class="roster-section-label">📅 Cycle Start — First Work Day</div>
-          <div style="display:flex;gap:0.5rem;align-items:center;">
-            <input type="date" id="rosterStartInput" style="flex:1;padding:0.4rem 0.7rem;border-radius:8px;border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.05);color:#f1f5f9;font-size:0.82rem;" />
-            <button onclick="saveRosterStart()" style="padding:0.4rem 1rem;border-radius:8px;border:none;background:linear-gradient(135deg,#3b82f6,#2563eb);color:#fff;font-size:0.82rem;cursor:pointer;font-weight:600;white-space:nowrap;box-shadow:0 2px 10px rgba(59,130,246,0.3);">Set</button>
+          <div class="cfg-stepper">
+            <button class="cfg-step-btn" onclick="stepRoster('rosterWork',-1)">&#8722;</button>
+            <input type="number" id="rosterWork" min="1" max="14" value="4" class="cfg-step-val" oninput="renderRosterPreview()" />
+            <button class="cfg-step-btn" onclick="stepRoster('rosterWork',1)">&#43;</button>
           </div>
+          <div class="cfg-stepper-sub">Go to work</div>
         </div>
+        <div class="cfg-stepper-wrap">
+          <div style="display:inline-flex;align-items:center;gap:0.28rem;margin-bottom:0.22rem;">
+            <div style="width:9px;height:9px;border-radius:2px;background:rgba(6,182,212,0.35);border:1px solid rgba(6,182,212,0.6);flex-shrink:0;"></div>
+            <span class="cfg-stepper-lbl" style="margin:0;">Off days</span>
+          </div>
+          <div class="cfg-stepper">
+            <button class="cfg-step-btn" onclick="stepRoster('rosterOff',-1)">&#8722;</button>
+            <input type="number" id="rosterOff" min="0" max="7" value="1" class="cfg-step-val" oninput="renderRosterPreview()" />
+            <button class="cfg-step-btn" onclick="stepRoster('rosterOff',1)">&#43;</button>
+          </div>
+          <div class="cfg-stepper-sub" style="color:#06b6d4;">Scheduled off</div>
+        </div>
+        <div class="cfg-stepper-wrap">
+          <div style="display:inline-flex;align-items:center;gap:0.28rem;margin-bottom:0.22rem;">
+            <div style="width:9px;height:9px;border-radius:2px;background:rgba(168,85,247,0.35);border:1px solid rgba(168,85,247,0.6);flex-shrink:0;"></div>
+            <span class="cfg-stepper-lbl" style="margin:0;">Rest days</span>
+          </div>
+          <div class="cfg-stepper">
+            <button class="cfg-step-btn" onclick="stepRoster('rosterRest',-1)">&#8722;</button>
+            <input type="number" id="rosterRest" min="0" max="7" value="1" class="cfg-step-val" oninput="renderRosterPreview()" />
+            <button class="cfg-step-btn" onclick="stepRoster('rosterRest',1)">&#43;</button>
+          </div>
+          <div class="cfg-stepper-sub" style="color:#a855f7;">Rest day</div>
+        </div>
+      </div>
+
+      <div style="font-size:0.58rem;color:#334155;text-transform:uppercase;letter-spacing:0.08em;font-weight:700;margin-bottom:0.3rem;">Your pattern repeats like this:</div>
+      <div id="rosterPreview" style="display:flex;gap:4px;flex-wrap:wrap;min-height:32px;align-items:center;margin-bottom:0.75rem;"></div>
+      <button onclick="saveRosterPattern()" class="cfg-save-btn cfg-save-blue">Save Work Schedule</button>
+    </div>
+
+    <div style="height:1px;background:rgba(255,255,255,0.07);margin-bottom:1.1rem;"></div>
+
+    <!-- ② Pay Day -->
+    <div style="margin-bottom:1.1rem;">
+      <div style="font-size:1rem;font-weight:700;color:#f1f5f9;margin-bottom:0.2rem;">&#128176; Pay Day</div>
+      <div style="font-size:0.75rem;color:#64748b;margin-bottom:0.75rem;">Which day of the month does your salary arrive?</div>
+
+      <div style="display:flex;align-items:center;gap:0.5rem;flex-wrap:wrap;margin-bottom:0.85rem;">
+        <span style="font-size:0.88rem;color:#94a3b8;">I get paid on the</span>
+        <div class="cfg-stepper cfg-stepper-big">
+          <button class="cfg-step-btn cfg-step-btn-big" onclick="stepSalDay(-1)">&#8722;</button>
+          <input type="number" id="salDayInput" min="1" max="31" value="25" class="cfg-step-val cfg-step-val-big" oninput="renderSalaryPreview()" />
+          <button class="cfg-step-btn cfg-step-btn-big" onclick="stepSalDay(1)">&#43;</button>
+        </div>
+        <span style="font-size:0.88rem;color:#94a3b8;">of every month</span>
+      </div>
+
+      <div style="font-size:0.68rem;color:#475569;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;margin-bottom:0.42rem;">If payday falls on a weekend</div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:0.4rem;margin-bottom:0.75rem;">
+        <button class="sal-wk-card" id="salWkFri" onclick="setSalWeekend('friday')">
+          <div class="sal-wk-icon">&#9664;</div>
+          <div class="sal-wk-title">Go earlier</div>
+          <div class="sal-wk-sub">Pay on the Friday before the weekend</div>
+        </button>
+        <button class="sal-wk-card" id="salWkMon" onclick="setSalWeekend('monday')">
+          <div class="sal-wk-icon">&#9654;</div>
+          <div class="sal-wk-title">Go later</div>
+          <div class="sal-wk-sub">Pay on the Monday after the weekend</div>
+        </button>
+        <button class="sal-wk-card" id="salWkExact" onclick="setSalWeekend('exact')">
+          <div class="sal-wk-icon">&#61;</div>
+          <div class="sal-wk-title">Don't shift</div>
+          <div class="sal-wk-sub">Pay on the exact date no matter what</div>
+        </button>
+      </div>
+      <select id="salWeekendRule" style="display:none;">
+        <option value="friday">friday</option>
+        <option value="monday">monday</option>
+        <option value="exact">exact</option>
+      </select>
+      <div id="salaryPreview" class="cfg-preview-box" style="margin-bottom:0.75rem;"></div>
+      <button onclick="saveSalaryCfg()" class="cfg-save-btn cfg-save-green">Save Pay Day</button>
+    </div>
+
+    <div style="height:1px;background:rgba(255,255,255,0.07);margin-bottom:1.1rem;"></div>
+
+    <!-- ③ Cycle Start -->
+    <div>
+      <div style="font-size:1rem;font-weight:700;color:#f1f5f9;margin-bottom:0.2rem;">&#128336; First Day of Your Current Cycle</div>
+      <div style="font-size:0.75rem;color:#64748b;margin-bottom:0.5rem;">When did your <em>current</em> work rotation start? The app counts from this date to colour your calendar correctly.</div>
+      <div style="font-size:0.68rem;color:#475569;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:8px;padding:0.5rem 0.7rem;margin-bottom:0.6rem;line-height:1.5;">
+        Example: if your pattern is <strong style="color:#94a3b8;">4 work · 1 off · 1 rest</strong> and your last cycle started on <strong style="color:#94a3b8;">1 June</strong>, pick 1 June.
+      </div>
+      <div style="display:flex;gap:0.5rem;align-items:center;">
+        <input type="date" id="rosterStartInput" class="cfg-date-inp" />
+        <button onclick="saveRosterStart()" class="cfg-save-btn cfg-save-blue" style="width:auto;white-space:nowrap;padding:0.52rem 1.1rem;">Set</button>
       </div>
     </div>
+
   </div>
 </div>
 
@@ -3166,7 +3602,7 @@ async function connectSyncCode() {
   if (inp) inp.value = "";
   await pullFromCloud();
   if (activeProfileId) {
-    syncDebtCommitments(); renderPanelA(); renderPanelB(); renderBudget(); renderCommitments(); renderOtPanel(); renderDebtPanel();
+    syncDebtCommitments(); renderPanelA(); renderPanelB(); renderBudget(); renderCommitments(); renderOtPanel(); renderDebtPanel(); renderWeddingPanel();
   } else {
     closeSyncModal();
     renderPickerCards();
@@ -3287,6 +3723,8 @@ const EST_DEDUCT_KEY       = profilePrefix + 'mft_est_deduct';
 const RECEIVED_KEY         = profilePrefix + 'mft_received_' + periodMonthLower + '_' + periodYear;
 const TEMPLATES_KEY        = profilePrefix + 'mft_templates';
 const GOALS_KEY            = profilePrefix + 'mft_goals';
+const WEDDING_KEY          = profilePrefix + 'mft_wedding';
+const WEDDING_CHECK_KEY    = profilePrefix + 'mft_wedding_checklist';
 
 const CATEGORIES = {
   food:          { label: 'Food & Drink',   color: '#f97316' },
@@ -3332,6 +3770,7 @@ function setCurrency(sym) {
   renderCommitments();
   renderOtPanel();
   renderDebtPanel();
+  renderWeddingPanel();
 }
 function fmt(n) {
   var sym = _currency;
@@ -5693,14 +6132,15 @@ var MODULES = {
   debt:     { id:'debt',     name:'Debt Tracker',     icon:'ph-arrow-down-left',   desc:'Monitor loans, credit cards & payoff progress',            color:'#f472b6' },
   expenses: { id:'expenses', name:'Expense Tracker',  icon:'ph-receipt',         desc:'Log and categorise every expense you make', color:'#fb923c' },
   goals:    { id:'goals',    name:'Savings Goals',    icon:'ph-crosshair',       desc:'Set targets and track your savings progress', color:'#22c55e' },
-  ot:       { id:'ot',      name:'OT Estimator',     icon:'ph-timer',            desc:'Log overtime hours and calculate OT pay',       color:'#3b82f6' }
+  ot:       { id:'ot',      name:'OT Estimator',     icon:'ph-timer',            desc:'Log overtime hours and calculate OT pay',       color:'#3b82f6' },
+  wedding:  { id:'wedding', name:'Wedding Planner',  icon:'ph-heart',            desc:'Track every wedding expense and payment deadline', color:'#f43f5e' }
 };
 var UPCOMING_MODULES = [
   { id:'bills',    name:'Recurring Bills', icon:'ph-lightning',      desc:'Track utility bills, subscriptions & due dates',     color:'#818cf8' },
   { id:'networth', name:'Net Worth',       icon:'ph-trend-up',       desc:'Assets minus liabilities — your financial snapshot', color:'#34d399' }
 ];
 var ACTIVE_MODULES_KEY = (activeProfileId ? activeProfileId + '__' : '') + 'mft_active_modules';
-var DEFAULT_MODULES = ['budget','commit','expenses','goals','debt','ot'];
+var DEFAULT_MODULES = ['budget','commit','expenses','goals','debt','ot','wedding'];
 var _activeModules  = DEFAULT_MODULES.slice();
 
 function loadActiveModules() {
@@ -6023,6 +6463,30 @@ function openSettings() {
       if (!found) customIn.value = _currency;
     }
   }
+  // Roster & Pay summary
+  (function() {
+    var p = getRosterPattern();
+    var shiftEl = document.getElementById('settingsShiftSummary');
+    if (shiftEl) {
+      var rs = localStorage.getItem(ROSTER_START_KEY);
+      if (rs) {
+        shiftEl.textContent = p.work + " work + " + p.off + " off + " + p.rest + " rest  ·  " + (p.work + p.off + p.rest) + "-day cycle";
+      } else {
+        shiftEl.textContent = p.work + " work + " + p.off + " off + " + p.rest + " rest  (no start date set yet)";
+      }
+    }
+    var sc = getSalaryCfg();
+    var payEl = document.getElementById('settingsPaySummary');
+    if (payEl) {
+      var ruleMap = { friday: "pay Friday before", monday: "pay Monday after", exact: "exact day" };
+      payEl.textContent = "Paid on the " + sc.day + ordSuffix(sc.day) + " each month  ·  weekend: " + (ruleMap[sc.weekend] || sc.weekend);
+    }
+    var cycleEl = document.getElementById('settingsCycleSummary');
+    var rs2 = localStorage.getItem(ROSTER_START_KEY);
+    if (cycleEl) {
+      cycleEl.textContent = rs2 ? "Started " + rs2 : "Not set — tap Edit to configure";
+    }
+  })();
   document.getElementById('settingsModal').classList.add('open');
 }
 
@@ -6824,8 +7288,583 @@ function deleteContrib(goalId, contribId) {
   renderPanelB();
 }
 
+// ══ Wedding Planner ══════════════════════════════════════
+
+function loadWpItems() {
+  try { return JSON.parse(localStorage.getItem(WEDDING_KEY)) || []; } catch(e) { return []; }
+}
+function saveWpItems(arr) { localStorage.setItem(WEDDING_KEY, JSON.stringify(arr)); }
+
+function wpItemPaid(item) {
+  return (item.payments || []).reduce(function(s, p) { return s + (parseFloat(p.amount) || 0); }, 0);
+}
+
+function wpItemColor(pct) {
+  if (pct >= 100) return "#22c55e";
+  if (pct >= 66)  return "#3b82f6";
+  if (pct >= 33)  return "#eab308";
+  return "#ef4444";
+}
+
+function wpDeadlineStr(deadline) {
+  if (!deadline) return "";
+  var parts = deadline.split("-");
+  if (parts.length !== 3) return "";
+  var target = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
+  var today  = new Date(); today.setHours(0,0,0,0);
+  var diff   = Math.round((target - today) / 86400000);
+  var label  = target.toLocaleDateString("en-GB", {day:"numeric", month:"short", year:"numeric"});
+  if (diff < 0)   return "<span style=\"color:#ef4444;\">&#9888; Overdue by " + Math.abs(diff) + " day" + (Math.abs(diff) === 1 ? "" : "s") + "</span>";
+  if (diff === 0) return "<span style=\"color:#eab308;\">Due today!</span>";
+  if (diff <= 30) return "<span style=\"color:#eab308;\">&#9203; " + diff + " days left</span>";
+  return "<span style=\"color:#64748b;\">&#128197; " + diff + " days left (" + label + ")</span>";
+}
+
+var _wpSortMode  = "duedate";
+var _wpExpanded  = {};
+var _wpDonut     = null;
+
+function updateWpDonut(paid, remaining) {
+  var canvas = document.getElementById("wpDonutChart");
+  var pctEl  = document.getElementById("wpChartPct");
+  if (!canvas) return;
+  var total = paid + remaining;
+  var pct   = total > 0 ? Math.round((paid / total) * 100) : 0;
+  if (pctEl) pctEl.textContent = pct + "%";
+  var d = [paid > 0 ? paid : 0.0001, remaining > 0 ? remaining : 0.0001];
+  if (_wpDonut) {
+    _wpDonut.data.datasets[0].data = d;
+    _wpDonut.update("none");
+    return;
+  }
+  _wpDonut = new Chart(canvas.getContext("2d"), {
+    type: "doughnut",
+    data: {
+      datasets: [{ data: d, backgroundColor: ["#22c55e", "#f43f5e"], borderWidth: 2, borderColor: "#0a0f1e", hoverOffset: 3 }]
+    },
+    options: {
+      cutout: "72%",
+      plugins: { legend: { display: false }, tooltip: { enabled: false } },
+      animation: { duration: 600 }
+    }
+  });
+}
+
+function wpSetSort(mode) {
+  _wpSortMode = mode;
+  var dueBtn = document.getElementById("wpSortDue");
+  var remBtn = document.getElementById("wpSortRem");
+  if (dueBtn) dueBtn.classList.toggle("active", mode === "duedate");
+  if (remBtn) remBtn.classList.toggle("active", mode === "remaining");
+  renderWeddingPanel();
+}
+
+function wpSortedItems(items) {
+  var arr = items.slice();
+  if (_wpSortMode === "duedate") {
+    arr.sort(function(a, b) {
+      var da = a.deadline || "9999-99-99";
+      var db = b.deadline || "9999-99-99";
+      return da.localeCompare(db);
+    });
+  } else {
+    arr.sort(function(a, b) {
+      var remA = (parseFloat(a.target) || 0) - wpItemPaid(a);
+      var remB = (parseFloat(b.target) || 0) - wpItemPaid(b);
+      return remB - remA;
+    });
+  }
+  return arr;
+}
+
+function wpToggleExpand(id) {
+  _wpExpanded[id] = !_wpExpanded[id];
+  renderWeddingPanel();
+}
+
+function renderWeddingPanel() {
+  var items   = loadWpItems();
+  var body    = document.getElementById("wpBody");
+  var sortStr = document.getElementById("wpSortStrip");
+  var sumBar  = document.getElementById("wpSummaryBar");
+  if (!body) return;
+
+  var grandTotal  = items.reduce(function(s, i) { return s + (parseFloat(i.target) || 0); }, 0);
+  var grandPaid   = items.reduce(function(s, i) { return s + wpItemPaid(i); }, 0);
+  var grandRemain = Math.max(0, grandTotal - grandPaid);
+
+  var hasItems = items.length > 0;
+  if (sortStr) sortStr.style.display = hasItems ? "" : "none";
+  if (sumBar)  sumBar.style.display  = hasItems ? "" : "none";
+
+  if (hasItems) {
+    var paidEl = document.getElementById("wpSumPaid");
+    var remEl  = document.getElementById("wpSumRemaining");
+    var totEl  = document.getElementById("wpSumTotal");
+    if (paidEl) paidEl.textContent = fmt(grandPaid);
+    if (remEl)  remEl.textContent  = grandRemain <= 0 ? "All paid!" : fmt(grandRemain);
+    if (totEl)  totEl.textContent  = fmt(grandTotal);
+    updateWpDonut(grandPaid, grandRemain);
+  }
+
+  if (!hasItems) {
+    body.innerHTML = "<div class=\"empty-state\"><div class=\"big\">&#128141;</div><div class=\"msg\">No items yet.<br>Tap <strong>+</strong> to add your first wedding expense.</div></div>";
+    return;
+  }
+
+  var sorted = wpSortedItems(items);
+  body.innerHTML = sorted.map(function(item) {
+    var paid    = wpItemPaid(item);
+    var target  = parseFloat(item.target) || 0;
+    var pct     = target > 0 ? Math.min(100, (paid / target) * 100) : 0;
+    var surplus = paid - target;
+    var isDone  = pct >= 100;
+    var isExp   = _wpExpanded[item.id];
+    var dl      = wpDeadlineStr(item.deadline);
+    var pCount  = (item.payments || []).length;
+
+    var h = "<div class=\"wp-card\">";
+
+    // Top: name + action buttons
+    h += "<div class=\"wp-card-top\">";
+    h += "<div class=\"wp-card-name\">" + escHtml(item.name) + "</div>";
+    h += "<div class=\"wp-card-actions\">";
+    h += "<button class=\"wp-card-btn\" onclick=\"openEditWpItem('" + item.id + "')\" title=\"Edit\">&#9998;</button>";
+    h += "<button class=\"wp-card-btn del\" onclick=\"deleteWpItem('" + item.id + "')\" title=\"Delete\">&#128465;</button>";
+    h += "</div></div>";
+
+    // Progress bar
+    h += "<div class=\"wp-bar-wrap\"><div class=\"wp-bar-fill" + (isDone ? " done" : "") + "\" style=\"width:" + pct.toFixed(1) + "%;\"></div></div>";
+
+    // Amounts row: paid on left, remaining on right
+    h += "<div class=\"wp-amounts\">";
+    h += "<div class=\"wp-paid-side\">";
+    h += "<div class=\"wp-paid-val\">" + fmt(paid) + "</div>";
+    h += "<div class=\"wp-paid-lbl\">paid of " + fmt(target) + "</div>";
+    h += "</div>";
+    h += "<div class=\"wp-rem-side\">";
+    if (isDone) {
+      h += "<div class=\"wp-done-badge\">&#10003; Fully paid!</div>";
+      if (surplus > 0) h += "<div class=\"wp-rem-lbl\" style=\"color:#4ade80;\">+" + fmt(surplus) + " over budget</div>";
+    } else {
+      h += "<div class=\"wp-rem-val\">" + fmt(Math.abs(surplus)) + "</div>";
+      h += "<div class=\"wp-rem-lbl\">still to pay</div>";
+    }
+    h += "</div></div>";
+
+    // Deadline
+    if (dl) h += "<div class=\"wp-deadline\">" + dl + "</div>";
+
+    // Footer: payment history toggle + log payment button
+    h += "<div class=\"wp-card-footer\">";
+    h += "<button class=\"wp-hist-toggle\" onclick=\"wpToggleExpand('" + item.id + "')\">";
+    h += pCount === 0 ? "No payments logged yet" : (isExp ? "&#9650; Hide" : "&#9660; Show") + " " + pCount + " payment" + (pCount === 1 ? "" : "s");
+    h += "</button>";
+    h += "<button class=\"wp-pay-btn\" onclick=\"openWpPayment('" + item.id + "')\">+ Log Payment</button>";
+    h += "</div>";
+
+    // Payment history
+    if (isExp && pCount > 0) {
+      var sorted2 = (item.payments || []).slice().sort(function(a, b) { return (b.date || "").localeCompare(a.date || ""); });
+      h += "<div class=\"wp-hist-list\">";
+      sorted2.forEach(function(p) {
+        h += "<div class=\"wp-hist-row\">";
+        h += "<span class=\"wp-hist-date\">" + escHtml(p.date || "") + "</span>";
+        h += "<span class=\"wp-hist-note\">" + escHtml(p.note || "—") + "</span>";
+        h += "<span class=\"wp-hist-amt\">+" + fmt(parseFloat(p.amount)) + "</span>";
+        h += "<button class=\"wp-hist-del\" onclick=\"deleteWpPayment('" + item.id + "','" + p.id + "')\" title=\"Remove\">&#10005;</button>";
+        h += "</div>";
+      });
+      h += "</div>";
+    }
+
+    h += "</div>";
+    return h;
+  }).join("");
+}
+
+// ── Add / Edit Wedding Item ──
+var _wpEditItemId = null;
+
+function openAddWpItem() {
+  _wpEditItemId = null;
+  document.getElementById("wpItemModalTitle").textContent = "New Wedding Item";
+  document.getElementById("wpItemSaveBtn").textContent    = "Create Item";
+  document.getElementById("wpItemName").value   = "";
+  document.getElementById("wpItemTarget").value = "";
+  document.getElementById("wpItemDay").value    = "";
+  document.getElementById("wpItemMonth").value  = "";
+  document.getElementById("wpItemYear").value   = "";
+  document.getElementById("wpAddItemModal").classList.add("open");
+  setTimeout(function() { document.getElementById("wpItemName").focus(); }, 100);
+}
+
+function openEditWpItem(id) {
+  var item = loadWpItems().find(function(x) { return x.id === id; });
+  if (!item) return;
+  _wpEditItemId = id;
+  document.getElementById("wpItemModalTitle").textContent = "Edit Item";
+  document.getElementById("wpItemSaveBtn").textContent    = "Save Changes";
+  document.getElementById("wpItemName").value   = item.name || "";
+  document.getElementById("wpItemTarget").value = item.target || "";
+  if (item.deadline) {
+    var p = item.deadline.split("-");
+    document.getElementById("wpItemDay").value   = parseInt(p[2], 10);
+    document.getElementById("wpItemMonth").value = parseInt(p[1], 10);
+    document.getElementById("wpItemYear").value  = p[0];
+  } else {
+    document.getElementById("wpItemDay").value   = "";
+    document.getElementById("wpItemMonth").value = "";
+    document.getElementById("wpItemYear").value  = "";
+  }
+  document.getElementById("wpAddItemModal").classList.add("open");
+}
+
+function closeWpItem() {
+  document.getElementById("wpAddItemModal").classList.remove("open");
+}
+
+function saveWpItem() {
+  var name   = (document.getElementById("wpItemName").value || "").trim();
+  var target = parseFloat(document.getElementById("wpItemTarget").value);
+  if (!name)              { showToast("Enter an item name"); return; }
+  if (isNaN(target) || target <= 0) { showToast("Enter a valid total cost"); return; }
+  var day   = parseInt(document.getElementById("wpItemDay").value, 10);
+  var month = parseInt(document.getElementById("wpItemMonth").value, 10);
+  var year  = parseInt(document.getElementById("wpItemYear").value, 10);
+  var deadline = "";
+  if (day && month && year && year >= 2024) {
+    deadline = year + "-" + String(month).padStart(2, "0") + "-" + String(day).padStart(2, "0");
+  }
+  var items = loadWpItems();
+  if (_wpEditItemId) {
+    items = items.map(function(i) {
+      if (i.id !== _wpEditItemId) return i;
+      return Object.assign({}, i, {name: name, target: target, deadline: deadline});
+    });
+    showToast("Item updated");
+  } else {
+    items.push({id: uid(), name: name, target: target, deadline: deadline, payments: []});
+    showToast("Added: " + name);
+  }
+  saveWpItems(items);
+  closeWpItem();
+  renderWeddingPanel();
+}
+
+function deleteWpItem(id) {
+  if (!confirm("Delete this item and all its payments?")) return;
+  saveWpItems(loadWpItems().filter(function(i) { return i.id !== id; }));
+  delete _wpExpanded[id];
+  renderWeddingPanel();
+  showToast("Item deleted");
+}
+
+// ── Log Wedding Payment ──
+var _wpPayItemId = null;
+
+function openWpPayment(id) {
+  _wpPayItemId = id;
+  var item = loadWpItems().find(function(x) { return x.id === id; });
+  document.getElementById("wpPaymentItemName").textContent = item ? item.name : "";
+  document.getElementById("wpPaymentAmt").value = "";
+  document.getElementById("wpPayNote").value    = "";
+  var d = new Date();
+  document.getElementById("wpPayDay").value   = d.getDate();
+  document.getElementById("wpPayMonth").value = d.getMonth() + 1;
+  document.getElementById("wpPayYear").value  = d.getFullYear();
+  document.getElementById("wpAddPaymentModal").classList.add("open");
+  setTimeout(function() { document.getElementById("wpPaymentAmt").focus(); }, 100);
+}
+
+function closeWpPayment() {
+  document.getElementById("wpAddPaymentModal").classList.remove("open");
+}
+
+function saveWpPayment() {
+  var amt   = parseFloat(document.getElementById("wpPaymentAmt").value);
+  var day   = parseInt(document.getElementById("wpPayDay").value, 10);
+  var month = parseInt(document.getElementById("wpPayMonth").value, 10);
+  var year  = parseInt(document.getElementById("wpPayYear").value, 10);
+  var note  = (document.getElementById("wpPayNote").value || "").trim();
+  if (!amt || amt <= 0)          { showToast("Enter a valid amount"); return; }
+  if (!day || !month || !year)   { showToast("Enter a valid date"); return; }
+  var dateStr = String(day).padStart(2, "0") + "/" + String(month).padStart(2, "0") + "/" + year;
+  var items = loadWpItems().map(function(i) {
+    if (i.id !== _wpPayItemId) return i;
+    var payments = (i.payments || []).concat([{id: uid(), date: dateStr, amount: amt, note: note}]);
+    return Object.assign({}, i, {payments: payments});
+  });
+  _wpExpanded[_wpPayItemId] = true;
+  saveWpItems(items);
+  closeWpPayment();
+  renderWeddingPanel();
+  showToast("Payment logged: " + fmt(amt));
+}
+
+function deleteWpPayment(itemId, payId) {
+  var items = loadWpItems().map(function(i) {
+    if (i.id !== itemId) return i;
+    return Object.assign({}, i, {payments: (i.payments || []).filter(function(p) { return p.id !== payId; })});
+  });
+  saveWpItems(items);
+  renderWeddingPanel();
+}
+
+// ── Wedding tab switching ──
+var _wpTab = "payments";
+
+function switchWpTab(tab) {
+  _wpTab = tab;
+  var paymentsWrap   = document.getElementById("wpPaymentsWrap");
+  var checklistWrap  = document.getElementById("wpChecklistWrap");
+  var tabPayments    = document.getElementById("wpTabPayments");
+  var tabChecklist   = document.getElementById("wpTabChecklist");
+  if (paymentsWrap)  paymentsWrap.style.display  = tab === "payments"  ? "flex" : "none";
+  if (checklistWrap) checklistWrap.style.display  = tab === "checklist" ? "flex" : "none";
+  if (tabPayments)   tabPayments.classList.toggle("active",  tab === "payments");
+  if (tabChecklist)  tabChecklist.classList.toggle("active", tab === "checklist");
+  if (tab === "checklist") renderWpChecklist();
+  if (tab === "payments")  renderWeddingPanel();
+}
+
+function onWpPlusBtn() {
+  if (_wpTab === "checklist") {
+    var inp = document.getElementById("wpCheckInput");
+    if (inp) inp.focus();
+  } else {
+    openAddWpItem();
+  }
+}
+
+// ── Wedding Checklist ──
+function loadWpChecklist() {
+  try {
+    var raw = JSON.parse(localStorage.getItem(WEDDING_CHECK_KEY));
+    if (!raw) return { groups: [], items: [] };
+    // backward compat: migrate old flat array
+    if (Array.isArray(raw)) return { groups: [], items: raw.map(function(i) { return Object.assign({ groupId: null, note: "" }, i); }) };
+    return raw;
+  } catch(e) { return { groups: [], items: [] }; }
+}
+function saveWpChecklist(data) { localStorage.setItem(WEDDING_CHECK_KEY, JSON.stringify(data)); }
+
+var _wpCheckFilter    = "all";
+var _wpGroupCollapsed = {};
+
+function wpSetFilter(f) {
+  _wpCheckFilter = f;
+  var map = { all:"wpCkAll", todo:"wpCkTodo", done:"wpCkDone" };
+  ["wpCkAll","wpCkTodo","wpCkDone"].forEach(function(id) {
+    var btn = document.getElementById(id);
+    if (btn) btn.classList.toggle("active", id === map[f]);
+  });
+  renderWpChecklist();
+}
+
+function wpToggleGroup(groupId) {
+  _wpGroupCollapsed[groupId] = !_wpGroupCollapsed[groupId];
+  renderWpChecklist();
+}
+
+function updateWpGroupSelect() {
+  var data = loadWpChecklist();
+  var opts = "<option value=\"\">No group</option>" +
+    (data.groups || []).map(function(g) {
+      return "<option value=\"" + g.id + "\">" + escHtml(g.name) + "</option>";
+    }).join("");
+  var strip = document.getElementById("wpCheckGroupSel");
+  if (strip) { var prev = strip.value; strip.innerHTML = opts; strip.value = prev; }
+  var edit = document.getElementById("wpCheckEditGroup");
+  if (edit) { var prev2 = edit.value; edit.innerHTML = opts; edit.value = prev2; }
+}
+
+function renderWpChecklist() {
+  var data   = loadWpChecklist();
+  var groups = data.groups || [];
+  var items  = data.items  || [];
+  var body   = document.getElementById("wpCheckBody");
+  var prog   = document.getElementById("wpCheckProgressTxt");
+  if (!body) return;
+
+  updateWpGroupSelect();
+
+  var doneCount = items.filter(function(i) { return i.done; }).length;
+  if (prog) prog.textContent = doneCount + " of " + items.length + " done";
+
+  var visible = items;
+  if (_wpCheckFilter === "todo") visible = items.filter(function(i) { return !i.done; });
+  if (_wpCheckFilter === "done") visible = items.filter(function(i) { return i.done;  });
+
+  function renderItem(item) {
+    var h = "<div class=\"wp-check-item\">";
+    h += "<div class=\"wp-check-box" + (item.done ? " done" : "") + "\" onclick=\"toggleWpCheck('" + item.id + "')\">";
+    if (item.done) h += "<span class=\"wp-check-tick\">&#10003;</span>";
+    h += "</div>";
+    h += "<span class=\"wp-check-text" + (item.done ? " done" : "") + "\">" + escHtml(item.text) + "</span>";
+    h += "<button class=\"wp-check-edit-btn\" onclick=\"openWpCheckEdit('" + item.id + "')\" title=\"Edit\">&#9998;</button>";
+    h += "<button class=\"wp-check-del\" onclick=\"deleteWpCheck('" + item.id + "')\" title=\"Remove\">&#10005;</button>";
+    h += "</div>";
+    if (item.note) h += "<div class=\"wp-check-note\">" + escHtml(item.note) + "</div>";
+    return h;
+  }
+
+  var html = "";
+
+  groups.forEach(function(group) {
+    var allInGroup  = items.filter(function(i)   { return i.groupId === group.id; });
+    var visInGroup  = visible.filter(function(i)  { return i.groupId === group.id; });
+    var doneCnt     = allInGroup.filter(function(i) { return i.done; }).length;
+    var isCollapsed = _wpGroupCollapsed[group.id];
+    var arrow       = isCollapsed ? "&#9654;" : "&#9660;";
+
+    html += "<div class=\"wp-group-section\">";
+    html += "<div class=\"wp-group-hdr\">";
+    html += "<button class=\"wp-group-toggle\" onclick=\"wpToggleGroup('" + group.id + "')\">" + arrow + "</button>";
+    html += "<span class=\"wp-group-name\">" + escHtml(group.name) + "</span>";
+    html += "<span class=\"wp-group-meta\">" + doneCnt + "/" + allInGroup.length + " done</span>";
+    html += "<button class=\"wp-group-del\" onclick=\"deleteWpGroup('" + group.id + "')\" title=\"Delete group\">&#10005;</button>";
+    html += "</div>";
+    if (!isCollapsed) {
+      if (visInGroup.length === 0) {
+        html += "<div style=\"font-size:0.72rem;color:#334155;padding:0.3rem 0 0.3rem 1.5rem;\">" + (_wpCheckFilter === "done" ? "None done yet in this group." : _wpCheckFilter === "todo" ? "All done in this group!" : "No tasks yet.") + "</div>";
+      } else {
+        visInGroup.forEach(function(item) { html += renderItem(item); });
+      }
+    }
+    html += "</div>";
+  });
+
+  // ungrouped items
+  var ungrouped = visible.filter(function(i) { return !i.groupId; });
+  if (ungrouped.length > 0) {
+    if (groups.length > 0) {
+      html += "<div class=\"wp-group-hdr\"><span class=\"wp-group-name\" style=\"color:#334155;\">Other</span></div>";
+    }
+    ungrouped.forEach(function(item) { html += renderItem(item); });
+  }
+
+  if (!html) {
+    var emptyMsg = _wpCheckFilter === "done" ? "Nothing completed yet." : _wpCheckFilter === "todo" ? "All tasks done! &#127881;" : "No tasks yet.<br>Type below and press Enter to add one.";
+    html = "<div class=\"wp-check-empty\">" + emptyMsg + "</div>";
+  }
+
+  body.innerHTML = html;
+}
+
+function addWpCheckItem() {
+  var inp = document.getElementById("wpCheckInput");
+  var sel = document.getElementById("wpCheckGroupSel");
+  if (!inp) return;
+  var text    = (inp.value || "").trim();
+  if (!text) { inp.focus(); return; }
+  var groupId = (sel && sel.value) ? sel.value : null;
+  var data    = loadWpChecklist();
+  data.items.push({ id: uid(), text: text, done: false, note: "", groupId: groupId });
+  saveWpChecklist(data);
+  inp.value = "";
+  inp.focus();
+  renderWpChecklist();
+}
+
+function toggleWpCheck(id) {
+  var data = loadWpChecklist();
+  data.items = data.items.map(function(i) {
+    if (i.id !== id) return i;
+    return Object.assign({}, i, { done: !i.done });
+  });
+  saveWpChecklist(data);
+  renderWpChecklist();
+}
+
+function deleteWpCheck(id) {
+  var data = loadWpChecklist();
+  data.items = data.items.filter(function(i) { return i.id !== id; });
+  saveWpChecklist(data);
+  renderWpChecklist();
+}
+
+// ── Edit checklist item ──
+var _wpEditCheckId = null;
+
+function openWpCheckEdit(id) {
+  var data = loadWpChecklist();
+  var item = data.items.find(function(i) { return i.id === id; });
+  if (!item) return;
+  _wpEditCheckId = id;
+  document.getElementById("wpCheckEditText").value = item.text || "";
+  document.getElementById("wpCheckEditNote").value = item.note || "";
+  updateWpGroupSelect();
+  document.getElementById("wpCheckEditGroup").value = item.groupId || "";
+  document.getElementById("wpCheckEditModal").classList.add("open");
+  setTimeout(function() { document.getElementById("wpCheckEditText").focus(); }, 100);
+}
+
+function closeWpCheckEdit() {
+  document.getElementById("wpCheckEditModal").classList.remove("open");
+}
+
+function saveWpCheckEdit() {
+  var text = (document.getElementById("wpCheckEditText").value || "").trim();
+  var note = (document.getElementById("wpCheckEditNote").value || "").trim();
+  var gid  = document.getElementById("wpCheckEditGroup").value || null;
+  if (!text) { showToast("Task cannot be empty"); return; }
+  var data = loadWpChecklist();
+  data.items = data.items.map(function(i) {
+    if (i.id !== _wpEditCheckId) return i;
+    return Object.assign({}, i, { text: text, note: note, groupId: gid });
+  });
+  saveWpChecklist(data);
+  closeWpCheckEdit();
+  renderWpChecklist();
+}
+
+// ── Checklist groups ──
+function openWpAddGroup() {
+  document.getElementById("wpGroupNameInput").value = "";
+  document.getElementById("wpAddGroupModal").classList.add("open");
+  setTimeout(function() { document.getElementById("wpGroupNameInput").focus(); }, 100);
+}
+
+function closeWpAddGroup() {
+  document.getElementById("wpAddGroupModal").classList.remove("open");
+}
+
+function saveWpGroup() {
+  var name = (document.getElementById("wpGroupNameInput").value || "").trim();
+  if (!name) { showToast("Enter a group name"); return; }
+  var data = loadWpChecklist();
+  if ((data.groups || []).some(function(g) { return g.name.toLowerCase() === name.toLowerCase(); })) {
+    showToast("Group already exists"); return;
+  }
+  data.groups.push({ id: uid(), name: name });
+  saveWpChecklist(data);
+  closeWpAddGroup();
+  renderWpChecklist();
+  showToast("Group added: " + name);
+}
+
+function deleteWpGroup(groupId) {
+  var data  = loadWpChecklist();
+  var group = (data.groups || []).find(function(g) { return g.id === groupId; });
+  var count = (data.items  || []).filter(function(i) { return i.groupId === groupId; }).length;
+  var label = group ? group.name : "this group";
+  var msg   = count > 0
+    ? "Delete \"" + label + "\"? Its " + count + " task" + (count === 1 ? "" : "s") + " will become ungrouped."
+    : "Delete group \"" + label + "\"?";
+  if (!confirm(msg)) return;
+  data.groups = (data.groups || []).filter(function(g) { return g.id !== groupId; });
+  data.items  = (data.items  || []).map(function(i) {
+    if (i.groupId !== groupId) return i;
+    return Object.assign({}, i, { groupId: null });
+  });
+  saveWpChecklist(data);
+  delete _wpGroupCollapsed[groupId];
+  renderWpChecklist();
+}
+
 // ── Mobile panel switching ──
-var _MOBILE_PANELS = ["expenses", "goals", "commit", "ot", "debt", "budget"];
+var _MOBILE_PANELS = ["expenses", "goals", "commit", "ot", "debt", "budget", "wedding"];
 var _activeMPanel  = "expenses";
 
 function switchMPanel(name) {
@@ -7282,6 +8321,38 @@ function openExpandedCal() {
 function closeExpandedCal() {
   document.getElementById('calExpandModal').classList.remove('open');
 }
+function openCalCfg() {
+  var p = getRosterPattern();
+  var wi = document.getElementById('rosterWork');
+  var oi = document.getElementById('rosterOff');
+  var ri = document.getElementById('rosterRest');
+  if (wi) wi.value = p.work;
+  if (oi) oi.value = p.off;
+  if (ri) ri.value = p.rest;
+  renderRosterPreview();
+  var sc = getSalaryCfg();
+  var sdi = document.getElementById('salDayInput');
+  if (sdi) sdi.value = sc.day;
+  setSalWeekend(sc.weekend || "friday");
+  renderSalaryPreview();
+  var rs = localStorage.getItem(ROSTER_START_KEY);
+  var rsi = document.getElementById('rosterStartInput');
+  if (rsi && rs) rsi.value = rs;
+  document.getElementById('calCfgOverlay').classList.add('open');
+}
+function closeCalCfg() {
+  document.getElementById('calCfgOverlay').classList.remove('open');
+}
+function setSalWeekend(rule) {
+  var sel = document.getElementById("salWeekendRule");
+  if (sel) sel.value = rule;
+  var map = { friday: "salWkFri", monday: "salWkMon", exact: "salWkExact" };
+  ["salWkFri","salWkMon","salWkExact"].forEach(function(id) {
+    var btn = document.getElementById(id);
+    if (btn) btn.classList.toggle("active", id === map[rule]);
+  });
+  renderSalaryPreview();
+}
 function shiftCalMonth(dir) {
   _calMonth += dir;
   if (_calMonth > 11) { _calMonth = 0;  _calYear++; }
@@ -7365,6 +8436,27 @@ function saveRosterPattern() {
   localStorage.setItem(ROSTER_PATTERN_KEY, JSON.stringify({work:w, off:o, rest:r}));
   renderExpandedCal();
   showToast('Shift pattern saved: ' + w + 'W + ' + o + 'O + ' + r + 'R = ' + (w+o+r) + '-day cycle');
+}
+function stepRoster(id, delta) {
+  var el = document.getElementById(id);
+  if (!el) return;
+  var v = parseInt(el.value) || 0;
+  v += delta;
+  var mn = parseInt(el.min);
+  var mx = parseInt(el.max);
+  if (!isNaN(mn) && v < mn) v = mn;
+  if (!isNaN(mx) && v > mx) v = mx;
+  el.value = v;
+  renderRosterPreview();
+}
+function stepSalDay(delta) {
+  var el = document.getElementById("salDayInput");
+  if (!el) return;
+  var v = (parseInt(el.value) || 25) + delta;
+  if (v < 1) v = 1;
+  if (v > 31) v = 31;
+  el.value = v;
+  renderSalaryPreview();
 }
 
 // ── Due Alert (upcoming payments bell) ───────────
@@ -8579,7 +9671,7 @@ function submitOnboarding() {
 
   _closeOnboarding();
   if (salDay || salary) {
-    renderPanelA(); renderPanelB(); renderBudget(); renderCommitments(); renderOtPanel(); renderDebtPanel(); renderOtPanel(); renderDashboard();
+    renderPanelA(); renderPanelB(); renderBudget(); renderCommitments(); renderOtPanel(); renderDebtPanel(); renderWeddingPanel(); renderOtPanel(); renderDashboard();
     showToast('All set — your tracker is ready!');
   }
 }
@@ -8738,6 +9830,7 @@ _syncKey = getSyncKey();
     renderCommitments();
     renderOtPanel();
     renderDebtPanel();
+    renderWeddingPanel();
     renderDashboard();
     checkFirstTimeSetup();
   } else if (localStorage.getItem(ADMIN_HASH_KEY)) {
