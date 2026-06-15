@@ -2099,6 +2099,32 @@
     }
     .onboard-btn-skip:hover { color: #64748b; }
 
+    /* ── Apps button hint (first-time tip) ──────────────────── */
+    .apps-hint {
+      position: fixed; z-index: 250; max-width: 230px;
+      background: #1a2332; border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 12px; padding: 0.85rem 1rem;
+      box-shadow: 0 16px 40px rgba(0,0,0,0.5);
+      font-size: 0.78rem; color: #cbd5e1; line-height: 1.55;
+      opacity: 0; transform: translateY(-8px);
+      pointer-events: none; transition: opacity 0.25s ease, transform 0.25s ease;
+    }
+    .apps-hint.open { opacity: 1; transform: translateY(0); pointer-events: auto; }
+    .apps-hint::before {
+      content: ''; position: absolute; top: -6px; right: 26px;
+      width: 12px; height: 12px; background: #1a2332;
+      border-left: 1px solid rgba(255,255,255,0.1); border-top: 1px solid rgba(255,255,255,0.1);
+      transform: rotate(45deg);
+    }
+    .apps-hint b { color: #fbbf24; }
+    .apps-hint-btn {
+      display: block; margin-top: 0.6rem; width: 100%; padding: 0.4rem;
+      border-radius: 8px; border: none; background: rgba(255,255,255,0.08);
+      color: #f1f5f9; font-size: 0.74rem; font-weight: 700;
+      cursor: pointer; font-family: inherit; transition: background 0.15s;
+    }
+    .apps-hint-btn:hover { background: rgba(255,255,255,0.16); }
+
     /* ── Theme Picker Modal ─────────────────────────────────── */
     .theme-overlay {
       display: none; position: fixed; inset: 0; z-index: 400;
@@ -2268,6 +2294,7 @@
         <span class="sync-key-text" id="syncCodeDisplay">—</span>
         <button class="sync-copy-btn" id="syncCopyBtn" onclick="copySyncCode()">Copy</button>
       </div>
+      <div class="sync-hint" style="margin-top:0.5rem;">Code looks wrong (doesn't start with "mft-")? <a href="#" onclick="regenerateSyncCode();return false;" style="color:#818cf8;">Regenerate it</a>.</div>
     </div>
     <hr class="sync-divider">
     <!-- Connect another device -->
@@ -2339,6 +2366,10 @@
     <div class="header-sep"></div>
     <button class="btn-history" onclick="openHistory()">📊 View History</button>
     <button class="btn-layout" id="btnApps" onclick="openAppLibrary()" title="Manage dashboard apps"><i class="ph-fill ph-squares-four" style="font-size:1rem;vertical-align:-2px;"></i> Apps</button>
+    <div class="apps-hint" id="appsHint">
+      Tip: tap <b>Apps</b> to add, remove, resize and rearrange dashboard panels — make this tracker your own!
+      <button class="apps-hint-btn" onclick="dismissAppsHint()">Got it</button>
+    </div>
     <button class="btn-layout" id="btnSettings" onclick="openSettings()" title="Settings">⚙ Settings</button>
     <div class="header-sep"></div>
     <div style="position:relative;" id="dueAlertWrap">
@@ -4677,10 +4708,23 @@ function copySyncCode() {
   }).catch(function() { prompt("Copy your sync code:", code); });
 }
 
+function regenerateSyncCode() {
+  if (!confirm("Generate a new sync code for this device?\n\nYour current code (" + (_syncKey || getSyncKey()) + ") will stop syncing. Only do this if your code looks wrong (e.g. doesn't start with \"mft-\"). You'll need to re-connect your other devices with the new code afterwards.")) return;
+  stopLiveSync();
+  _syncKey = _genSyncKey();
+  _lsSet(SYNC_KEY_STORAGE, _syncKey);
+  var el = document.getElementById("syncCodeDisplay");
+  if (el) el.textContent = _syncKey;
+  startLiveSync();
+  pushAllToCloud();
+  showToast("New sync code generated");
+}
+
 async function connectSyncCode() {
   var inp = document.getElementById("syncCodeInput");
   var code = inp ? inp.value.trim() : "";
   if (!code) { _setSyncStatus("red", "Paste a sync code first"); return; }
+  if (!/^mft-[0-9a-f-]{8,}$/i.test(code)) { _setSyncStatus("red", "Invalid code — it should start with \"mft-\""); return; }
   if (!_db)  { _setSyncStatus("red", "Firebase not connected"); return; }
   _syncKey = code;
   _lsSet(SYNC_KEY_STORAGE, code);
@@ -4858,6 +4902,7 @@ const SALARY_CFG_KEY       = profilePrefix + 'mft_salary_cfg';
 const LEAVE_KEY            = profilePrefix + 'mft_leave';
 const THEME_KEY            = profilePrefix + 'mft_theme';
 const ONBOARDED_KEY        = profilePrefix + 'mft_onboarded';
+const APPS_HINT_KEY        = profilePrefix + 'mft_apps_hint_seen';
 const OT_KEY               = profilePrefix + 'mft_ot_' + periodMonthLower + '_' + periodYear;
 const OT_CONFIG_KEY        = profilePrefix + 'mft_ot_config';
 const OT_RATE_OVERRIDE_KEY = profilePrefix + 'mft_ot_rate_override';
@@ -7568,6 +7613,27 @@ function renderAppLibrary() {
 function openAppLibrary() {
   renderAppLibrary();
   document.getElementById('appLibraryModal').classList.add('open');
+  dismissAppsHint();
+}
+
+// ── Apps button first-time hint ──────────────────────────
+function showAppsHint() {
+  if (window.innerWidth <= 1366) return; // #btnApps is hidden on mobile/tablet
+  if (localStorage.getItem(APPS_HINT_KEY)) return;
+  var btn  = document.getElementById('btnApps');
+  var hint = document.getElementById('appsHint');
+  if (!btn || !hint) return;
+  var r = btn.getBoundingClientRect();
+  hint.style.top   = (r.bottom + 10) + 'px';
+  hint.style.right = (window.innerWidth - r.right) + 'px';
+  hint.classList.add('open');
+}
+
+function dismissAppsHint() {
+  if (localStorage.getItem(APPS_HINT_KEY)) return;
+  localStorage.setItem(APPS_HINT_KEY, '1');
+  var hint = document.getElementById('appsHint');
+  if (hint) hint.classList.remove('open');
 }
 
 function closeAppLibrary() {
@@ -7991,14 +8057,23 @@ function getDefaultPositions() {
   var PAD  = 12;
   var leftW  = Math.round((W - PAD * 3) * 0.56);
   var rightW = W - PAD * 3 - leftW;
+  var rightLeft = PAD + leftW + PAD;
+
   var budH   = Math.round(H * 0.22);
   var comH   = Math.round(H * 0.16);
   var expH   = Math.max(200, H - PAD * 4 - budH - comH);
+
+  var goalsH = Math.round(H * 0.34);
+  var debtH  = Math.round(H * 0.28);
+  var otH    = Math.max(160, H - PAD * 4 - goalsH - debtH);
+
   return {
-    budget:   { top: PAD,                              left: PAD,               width: leftW,  height: budH  },
-    commit:   { top: PAD + budH + PAD,                 left: PAD,               width: leftW,  height: comH  },
-    expenses: { top: PAD + budH + PAD + comH + PAD,    left: PAD,               width: leftW,  height: expH  },
-    goals:    { top: PAD,                              left: PAD + leftW + PAD,  width: rightW, height: H - PAD * 2 }
+    budget:   { top: PAD,                              left: PAD,       width: leftW,  height: budH  },
+    commit:   { top: PAD + budH + PAD,                 left: PAD,       width: leftW,  height: comH  },
+    expenses: { top: PAD + budH + PAD + comH + PAD,    left: PAD,       width: leftW,  height: expH  },
+    goals:    { top: PAD,                              left: rightLeft, width: rightW, height: goalsH },
+    debt:     { top: PAD + goalsH + PAD,               left: rightLeft, width: rightW, height: debtH },
+    ot:       { top: PAD + goalsH + PAD + debtH + PAD, left: rightLeft, width: rightW, height: otH }
   };
 }
 
@@ -11382,6 +11457,7 @@ async function pickerSyncApply() {
   var code = inp ? inp.value.trim() : "";
   var statusEl = document.getElementById("pickerSyncStatus");
   if (!code) { if (statusEl) statusEl.textContent = "Please paste a sync code."; return; }
+  if (!/^mft-[0-9a-f-]{8,}$/i.test(code)) { if (statusEl) statusEl.textContent = "Invalid code — it should start with \"mft-\"."; return; }
   if (!_db)  { if (statusEl) statusEl.textContent = "Firebase not connected."; return; }
   if (statusEl) statusEl.textContent = "Connecting…";
   _syncKey = code;
@@ -11740,8 +11816,11 @@ function submitEditName(profileId) {
 // ── First-login Onboarding ───────────────────────────────
 function checkFirstTimeSetup() {
   if (!activeProfileId) return;
-  if (localStorage.getItem(ONBOARDED_KEY)) return;
-  setTimeout(showOnboarding, 350);
+  if (!localStorage.getItem(ONBOARDED_KEY)) {
+    setTimeout(showOnboarding, 350);
+  } else if (!localStorage.getItem(APPS_HINT_KEY)) {
+    setTimeout(showAppsHint, 600);
+  }
 }
 
 function showOnboarding() {
@@ -11786,6 +11865,7 @@ function _closeOnboarding() {
   localStorage.setItem(ONBOARDED_KEY, '1');
   var el = document.getElementById('onboardingOverlay');
   if (el) el.classList.remove('open');
+  if (!localStorage.getItem(APPS_HINT_KEY)) setTimeout(showAppsHint, 500);
 }
 
 // ── First-time setup (no profiles exist yet) ─────────────
@@ -11844,6 +11924,7 @@ async function ftApplySync() {
   var code     = inp ? inp.value.trim() : '';
   var statusEl = document.getElementById('ftSyncStatus');
   if (!code)  { if (statusEl) statusEl.textContent = 'Paste a sync code first.'; return; }
+  if (!/^mft-[0-9a-f-]{8,}$/i.test(code)) { if (statusEl) statusEl.textContent = 'Invalid code — it should start with "mft-".'; return; }
   if (!_db)   { if (statusEl) statusEl.textContent = 'Not connected to Firebase. Check your internet.'; return; }
   if (statusEl) statusEl.textContent = 'Connecting…';
   _syncKey = code;
