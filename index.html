@@ -149,6 +149,12 @@
       0%,100% { box-shadow: 0 0 22px rgba(34,197,94,0.28), 0 2px 8px rgba(34,197,94,0.15), inset 0 1px 0 rgba(255,255,255,0.1); }
       50%     { box-shadow: 0 0 36px rgba(34,197,94,0.45), 0 4px 18px rgba(34,197,94,0.28), inset 0 1px 0 rgba(255,255,255,0.1); }
     }
+    .header-chip-trial {
+      background: linear-gradient(135deg, rgba(245,158,11,0.18) 0%, rgba(245,158,11,0.07) 100%);
+      border: 1px solid rgba(245,158,11,0.32); border-left: 2px solid rgba(245,158,11,0.65);
+      color: #fbbf24; cursor: pointer;
+      box-shadow: 0 2px 10px rgba(245,158,11,0.1), inset 0 1px 0 rgba(255,255,255,0.04);
+    }
     .month-pill {
       position: relative; overflow: hidden;
       background: rgba(255,255,255,0.05);
@@ -545,6 +551,13 @@
     .module-card { display: flex; align-items: center; gap: 0.85rem; padding: 0.75rem 0.9rem; border: 1px solid rgba(255,255,255,0.07); border-radius: 12px; margin-bottom: 0.5rem; background: rgba(255,255,255,0.025); transition: border-color 0.2s; }
     .module-card.active { border-color: rgba(239,68,68,0.3); background: rgba(239,68,68,0.06); }
     .module-card.coming-soon { opacity: 0.45; }
+    .module-card.locked { opacity: 0.65; }
+    .locked-badge { background: rgba(248,113,113,0.12); color: #f87171; border-color: rgba(248,113,113,0.25); }
+    .trial-badge { background: rgba(245,158,11,0.14); color: #fbbf24; border-color: rgba(245,158,11,0.28); }
+    .redeem-row { display: flex; gap: 0.5rem; margin-bottom: 0.25rem; }
+    .redeem-row .form-input { flex: 1; }
+    .redeem-row .modal-btn { flex: 0 0 auto; padding: 0 1.1rem; margin: 0; }
+    .redeem-msg { font-size: 0.72rem; color: #64748b; min-height: 1.1em; margin: 0.25rem 0 0.5rem; }
     .module-card-icon { width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 1.1rem; }
     .module-card-info { flex: 1; min-width: 0; }
     .module-card-name { font-size: 0.88rem; font-weight: 600; color: #f1f5f9; }
@@ -574,6 +587,119 @@
     .settings-action-btn { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 5px 13px; font-size: 0.72rem; font-weight: 600; color: #94a3b8; cursor: pointer; white-space: nowrap; transition: all 0.2s; flex-shrink: 0; }
     .settings-action-btn:hover { background: rgba(255,255,255,0.1); color: #e2e8f0; }
     .settings-action-btn.active { background: rgba(99,102,241,0.2); border-color: rgba(99,102,241,0.4); color: #a5b4fc; }
+    .code-result-box { font-family: 'SF Mono', Consolas, monospace; font-size: 1rem; font-weight: 700; letter-spacing: 0.05em; color: #34d399; background: rgba(16,185,129,0.08); border: 1px solid rgba(16,185,129,0.25); border-radius: 10px; padding: 0.7rem 0.9rem; text-align: center; margin-bottom: 0.6rem; word-break: break-all; }
+
+    /* Seller Console — premium admin theme (champagne-gold accent) */
+    .seller-modal { border-color: rgba(251,191,36,0.18); box-shadow: 0 0 60px rgba(251,191,36,0.07), 0 20px 60px rgba(0,0,0,0.5); background: linear-gradient(180deg, rgba(251,191,36,0.06), transparent 22%), #111; }
+    .seller-modal-icon { width: 52px; height: 52px; margin: 0 auto; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; background: linear-gradient(135deg, rgba(253,230,138,0.25), rgba(180,83,9,0.12)); border: 1px solid rgba(251,191,36,0.3); box-shadow: 0 4px 18px rgba(251,191,36,0.15); color: #fde68a; }
+    .seller-modal .modal-title { display: flex; align-items: center; justify-content: center; gap: 0.45rem; }
+    .seller-title-text { background: linear-gradient(135deg,#fde68a,#d4a017); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; color: transparent; }
+    .seller-admin-badge { font-size: 0.55rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.12em; background: linear-gradient(135deg,#fde68a,#d4a017); color: #2a1a04; border-radius: 20px; padding: 2px 8px; line-height: 1.6; }
+
+    /* Tabs */
+    .seller-tabs { display: flex; gap: 0.3rem; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 14px; padding: 0.3rem; margin-bottom: 0.25rem; }
+    .seller-tab { flex: 1; display: flex; align-items: center; justify-content: center; gap: 0.35rem; padding: 8px 0; border-radius: 10px; border: none; background: transparent; color: #64748b; font-size: 0.78rem; font-weight: 700; cursor: pointer; transition: all 0.15s; font-family: inherit; }
+    .seller-tab.active { background: linear-gradient(135deg,#fde68a,#b8860b); color: #2a1a04; box-shadow: 0 4px 14px rgba(240,180,41,0.3); }
+    .seller-tab:not(.active):hover { color: #fbbf24; }
+
+    /* Generate action cards */
+    .seller-action-card { border: 1px solid rgba(251,191,36,0.12); border-radius: 14px; padding: 1rem; background: linear-gradient(135deg, rgba(251,191,36,0.05), rgba(255,255,255,0.015)); margin-top: 0.75rem; display: flex; flex-direction: column; gap: 0.7rem; }
+    .seller-action-head { display: flex; align-items: flex-start; gap: 0.7rem; }
+    .seller-action-icon { width: 38px; height: 38px; border-radius: 10px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 1.05rem; background: linear-gradient(135deg, rgba(251,191,36,0.22), rgba(180,83,9,0.12)); border: 1px solid rgba(251,191,36,0.25); color: #fbbf24; }
+    .seller-action-info { flex: 1; min-width: 0; }
+    .seller-action-title { font-size: 0.85rem; font-weight: 700; color: #f1f5f9; }
+    .seller-action-desc { font-size: 0.7rem; color: #64748b; margin-top: 0.2rem; line-height: 1.5; }
+
+    /* Primary CTA */
+    .seller-cta-btn { display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem; width: 100%; padding: 11px 0; border: none; border-radius: 12px; background: linear-gradient(135deg, #fde68a 0%, #f0b429 55%, #b8860b 100%); color: #2a1a04; font-weight: 800; font-size: 0.85rem; letter-spacing: 0.02em; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 16px rgba(240,180,41,0.25); font-family: inherit; }
+    .seller-cta-btn:hover { transform: translateY(-1px); box-shadow: 0 8px 24px rgba(240,180,41,0.4); filter: brightness(1.04); }
+    .seller-cta-btn:active { transform: translateY(0); }
+
+    /* Generated-code result */
+    .seller-result { margin-top: 0.75rem; }
+    .seller-result-label { display: flex; align-items: center; gap: 0.35rem; font-size: 0.66rem; font-weight: 700; color: #34d399; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 0.4rem; }
+    .seller-result-box { display: flex; align-items: center; gap: 0.6rem; background: rgba(251,191,36,0.07); border: 1px solid rgba(251,191,36,0.28); border-radius: 12px; padding: 0.7rem 0.9rem; }
+    .seller-result-code { flex: 1; font-family: 'SF Mono', Consolas, monospace; font-size: 0.92rem; font-weight: 800; color: #fde68a; letter-spacing: 0.04em; word-break: break-all; }
+
+    /* Stats */
+    .seller-stats { display: grid; grid-template-columns: repeat(4,1fr); gap: 0.5rem; margin-bottom: 0.75rem; }
+    .seller-stat { background: rgba(251,191,36,0.04); border: 1px solid rgba(251,191,36,0.12); border-radius: 12px; padding: 0.6rem 0.3rem; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 0.25rem; }
+    .seller-stat-icon { font-size: 0.85rem; color: #fbbf24; opacity: 0.85; }
+    .seller-stat-num { font-size: 1.1rem; font-weight: 800; color: #fde68a; }
+    .seller-stat-label { font-size: 0.56rem; color: #64748b; text-transform: uppercase; letter-spacing: 0.06em; }
+
+    /* Search row */
+    .seller-search-row { display: flex; gap: 0.5rem; margin-bottom: 0.6rem; }
+    .seller-search-row .form-input { flex: 1; }
+    .seller-refresh-btn { width: 42px; height: auto; flex-shrink: 0; }
+
+    /* Code list */
+    .seller-history-list { display: flex; flex-direction: column; gap: 0.5rem; max-height: 320px; overflow-y: auto; }
+    .seller-code-row { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.07); border-radius: 12px; padding: 0.7rem 0.85rem; transition: border-color 0.15s; }
+    .seller-code-row:hover { border-color: rgba(251,191,36,0.22); }
+    .seller-code-top { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; }
+    .seller-code-id { display: flex; align-items: center; gap: 0.4rem; font-family: 'SF Mono', Consolas, monospace; font-size: 0.74rem; font-weight: 700; color: #e2e8f0; letter-spacing: 0.02em; word-break: break-all; }
+    .seller-code-id i { color: #fbbf24; font-size: 0.85rem; flex-shrink: 0; }
+    .seller-code-bottom { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; margin-top: 0.45rem; }
+    .seller-code-meta { font-size: 0.65rem; color: #64748b; line-height: 1.5; }
+
+    /* Status badges */
+    .seller-badge { font-size: 0.6rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; border-radius: 20px; padding: 2px 8px; white-space: nowrap; flex-shrink: 0; border: 1px solid transparent; }
+    .seller-badge.ok { background: rgba(52,211,153,0.12); color: #34d399; border-color: rgba(52,211,153,0.25); }
+    .seller-badge.used { background: rgba(99,102,241,0.15); color: #818cf8; border-color: rgba(99,102,241,0.25); }
+    .seller-badge.warn { background: rgba(251,191,36,0.12); color: #fbbf24; border-color: rgba(251,191,36,0.25); }
+    .seller-badge.off { background: rgba(248,113,113,0.12); color: #f87171; border-color: rgba(248,113,113,0.25); }
+
+    /* Compact icon buttons (copy / revoke / refresh) */
+    .seller-code-actions { display: flex; gap: 0.35rem; flex-shrink: 0; }
+    .seller-icon-btn { width: 26px; height: 26px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.04); color: #94a3b8; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 0.78rem; transition: all 0.15s; flex-shrink: 0; font-family: inherit; }
+    .seller-icon-btn:hover { background: rgba(251,191,36,0.12); color: #fbbf24; border-color: rgba(251,191,36,0.25); }
+    .seller-icon-btn.danger:hover { background: rgba(248,113,113,0.12); color: #f87171; border-color: rgba(248,113,113,0.25); }
+
+    .seller-modal .form-input:focus, .seller-modal input:focus { border-color: rgba(251,191,36,0.45); }
+
+    /* ── User Guide modal ────────────────────────────────── */
+    .guide-modal-icon { background: linear-gradient(135deg, rgba(251,191,36,0.18), rgba(251,191,36,0.04)); border-radius: 16px; width: 52px; height: 52px; display: flex; align-items: center; justify-content: center; margin: 0 auto 0.6rem; }
+    .guide-toolbar { display: flex; align-items: center; gap: 0.5rem; margin: 0.9rem 0 0.7rem; }
+    .guide-search-wrap { position: relative; flex: 1; min-width: 0; }
+    .guide-search-wrap i { position: absolute; left: 13px; top: 50%; transform: translateY(-50%); color: #64748b; font-size: 0.85rem; pointer-events: none; }
+    .guide-search { width: 100%; padding: 9px 12px 9px 34px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.08); background: rgba(255,255,255,0.03); color: #e2e8f0; font-size: 0.8rem; font-family: inherit; transition: border-color 0.15s, background 0.15s; }
+    .guide-search:focus { outline: none; border-color: rgba(251,191,36,0.4); background: rgba(255,255,255,0.05); }
+    .guide-search::placeholder { color: #64748b; }
+    .guide-toggle-all { flex: 0 0 auto; padding: 9px 13px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.08); background: rgba(255,255,255,0.03); color: #94a3b8; font-size: 0.72rem; font-weight: 700; cursor: pointer; font-family: inherit; white-space: nowrap; transition: all 0.15s; }
+    .guide-toggle-all:hover { color: #f1f5f9; border-color: rgba(255,255,255,0.2); background: rgba(255,255,255,0.06); }
+
+    .guide-body { flex: 1 1 auto; min-height: 0; max-height: 62vh; overflow-y: auto; padding-right: 0.25rem; display: flex; flex-direction: column; gap: 0.5rem; }
+
+    .guide-acc-item { border: 1px solid rgba(255,255,255,0.07); border-radius: 14px; background: rgba(255,255,255,0.025); overflow: hidden; transition: border-color 0.2s, background 0.2s, box-shadow 0.2s; }
+    .guide-acc-item.open { border-color: rgba(255,255,255,0.13); background: rgba(255,255,255,0.045); box-shadow: 0 6px 18px -8px rgba(0,0,0,0.5); }
+    .guide-acc-item.guide-hidden { display: none; }
+
+    .guide-acc-header { all: unset; box-sizing: border-box; display: flex; align-items: center; gap: 0.7rem; width: 100%; padding: 0.7rem 0.85rem; cursor: pointer; }
+    .guide-acc-header:hover { background: rgba(255,255,255,0.03); }
+
+    .guide-acc-icon { flex: 0 0 40px; width: 40px; height: 40px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; box-shadow: inset 0 0 0 1px rgba(255,255,255,0.07); }
+
+    .guide-acc-title { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 0.15rem; font-size: 0.86rem; font-weight: 800; color: #f1f5f9; line-height: 1.25; }
+    .guide-acc-sub { font-size: 0.71rem; font-weight: 600; color: #64748b; text-transform: none; letter-spacing: normal; }
+
+    .guide-acc-chevron { flex: 0 0 auto; font-size: 0.8rem; color: #64748b; transition: transform 0.25s ease, color 0.25s ease; }
+    .guide-acc-item.open .guide-acc-chevron { transform: rotate(180deg); color: #fbbf24; }
+
+    .guide-acc-content { max-height: 0; overflow: hidden; transition: max-height 0.35s ease; }
+    .guide-acc-inner { padding: 0.1rem 0.85rem 1rem; border-top: 1px solid rgba(255,255,255,0.05); margin-top: 0.1rem; }
+
+    .guide-intro { font-size: 0.82rem; color: #94a3b8; line-height: 1.6; margin: 0.85rem 0; }
+    .guide-h3 { font-size: 0.68rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; color: #64748b; margin: 1.1rem 0 0.4rem; }
+    .guide-h3:first-of-type { margin-top: 0; }
+    .guide-item { display: flex; gap: 0.65rem; padding: 0.55rem 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
+    .guide-item:last-child { border-bottom: none; }
+    .guide-item-icon { flex: 0 0 30px; width: 30px; height: 30px; border-radius: 9px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.06); display: flex; align-items: center; justify-content: center; font-size: 1rem; }
+    .guide-item-body { flex: 1; min-width: 0; }
+    .guide-item-title { font-size: 0.82rem; font-weight: 700; color: #e2e8f0; margin-bottom: 0.15rem; }
+    .guide-item-desc { font-size: 0.76rem; color: #94a3b8; line-height: 1.55; }
+    .guide-tip { background: rgba(245,158,11,0.08); border: 1px solid rgba(245,158,11,0.2); border-radius: 10px; padding: 0.65rem 0.8rem; font-size: 0.76rem; color: #fbbf24; margin-top: 0.85rem; line-height: 1.55; }
+    .guide-tip b { color: #fde68a; }
 
     /* Budget Planner Panel */
     .panel-budget {
@@ -821,6 +947,47 @@
     .wp-group-add-btn:hover { color:#fb7185; border-color:rgba(244,63,94,0.3); background:rgba(244,63,94,0.06); }
     .wp-check-group-sel { padding:0.28rem 0.45rem; border-radius:7px; border:1px solid rgba(244,63,94,0.16); background:rgba(244,63,94,0.04); color:#64748b; font-size:0.72rem; cursor:pointer; font-family:inherit; outline:none; flex-shrink:0; max-width:110px; }
     .wp-check-group-sel option { background:#0f172a; color:#f1f5f9; }
+
+    /* ── Study Planner ── */
+    .panel-study { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.07); border-radius: 16px; display: flex; flex-direction: column; overflow: hidden; }
+    .sp-scroll { flex:1; overflow-y:auto; padding:0.75rem 1rem 1.25rem; }
+    .sp-scroll::-webkit-scrollbar { width:4px; }
+    .sp-scroll::-webkit-scrollbar-thumb { background:rgba(255,255,255,0.1); border-radius:4px; }
+    .sp-summary-bar { padding:0.75rem 1rem; border-top:1px solid rgba(255,255,255,0.06); flex-shrink:0; }
+    .sp-summary-txt { font-size:0.74rem; color:#94a3b8; font-weight:600; margin-bottom:0.4rem; }
+    .sp-summary-bar-wrap { height:6px; background:rgba(255,255,255,0.06); border-radius:99px; overflow:hidden; }
+    .sp-summary-bar-fill { height:100%; border-radius:99px; background:linear-gradient(90deg,#06b6d4,#22d3ee); transition:width 0.5s cubic-bezier(0.4,0,0.2,1); }
+
+    /* Task card */
+    .sp-card { background:rgba(6,182,212,0.04); border:1px solid rgba(6,182,212,0.14); border-radius:16px; padding:1.1rem 1.15rem; margin-bottom:0.7rem; transition:border-color 0.2s, background 0.2s; }
+    .sp-card:hover { border-color:rgba(6,182,212,0.28); background:rgba(6,182,212,0.065); }
+    .sp-card-top { display:flex; align-items:flex-start; justify-content:space-between; gap:0.5rem; }
+    .sp-card-left { display:flex; align-items:flex-start; gap:0.65rem; flex:1; min-width:0; }
+    .sp-card-name { font-size:0.95rem; font-weight:700; color:#f1f5f9; letter-spacing:-0.01em; word-break:break-word; }
+    .sp-card-name.done { text-decoration:line-through; color:#475569; }
+    .sp-card-meta { display:flex; align-items:center; gap:0.4rem; margin-top:0.35rem; flex-wrap:wrap; }
+    .sp-card-actions { display:flex; align-items:center; gap:0.2rem; flex-shrink:0; }
+    .sp-due { font-size:0.71rem; color:#64748b; margin-top:0.55rem; }
+    .sp-note { font-size:0.71rem; color:#475569; margin:0.35rem 0 0 2.4rem; line-height:1.45; font-style:italic; }
+
+    /* Type badges */
+    .sp-type-badge { font-size:0.6rem; font-weight:700; padding:2px 8px; border-radius:20px; text-transform:uppercase; letter-spacing:0.04em; flex-shrink:0; }
+    .sp-type-assignment { background:rgba(6,182,212,0.12); color:#22d3ee; border:1px solid rgba(6,182,212,0.3); }
+    .sp-type-exam       { background:rgba(239,68,68,0.12); color:#f87171; border:1px solid rgba(239,68,68,0.3); }
+    .sp-type-quiz       { background:rgba(234,179,8,0.12); color:#fbbf24; border:1px solid rgba(234,179,8,0.3); }
+    .sp-type-project    { background:rgba(167,139,250,0.12); color:#c4b5fd; border:1px solid rgba(167,139,250,0.3); }
+    .sp-subject-chip { font-size:0.66rem; color:#64748b; padding:2px 8px; border-radius:20px; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.07); flex-shrink:0; }
+
+    /* Subjects pane reuses .wp-check-* / .wp-group-* with cyan accent overrides */
+    .panel-study .wp-check-filter-btn.active { border-color:rgba(6,182,212,0.4); background:rgba(6,182,212,0.1); color:#22d3ee; }
+    .panel-study .wp-check-box { border-color:rgba(6,182,212,0.35); background:rgba(6,182,212,0.05); }
+    .panel-study .wp-check-box:hover { border-color:rgba(6,182,212,0.65); background:rgba(6,182,212,0.12); }
+    .panel-study .wp-check-add-inp { border-color:rgba(6,182,212,0.18); background:rgba(6,182,212,0.04); }
+    .panel-study .wp-check-add-inp:focus { border-color:rgba(6,182,212,0.45); background:rgba(6,182,212,0.08); }
+    .panel-study .wp-check-add-btn { border-color:rgba(6,182,212,0.28); background:rgba(6,182,212,0.09); color:#22d3ee; }
+    .panel-study .wp-check-add-btn:hover { background:rgba(6,182,212,0.18); border-color:rgba(6,182,212,0.5); }
+    .panel-study .wp-group-add-btn:hover { color:#22d3ee; border-color:rgba(6,182,212,0.3); background:rgba(6,182,212,0.06); }
+    .panel-study .wp-check-group-sel { border-color:rgba(6,182,212,0.16); background:rgba(6,182,212,0.04); }
     .debt-body { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
     .debt-summary { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.4rem; padding: 0.6rem 1rem; flex-shrink: 0; border-bottom: 1px solid rgba(255,255,255,0.06); }
     .debt-sum-card { background: rgba(255,255,255,0.04); border-radius: 10px; padding: 0.55rem 0.4rem; text-align: center; }
@@ -1024,6 +1191,13 @@
       display: none; align-items: center; justify-content: center;
     }
     .modal-overlay.open { display: flex; }
+    /* When access is locked (no valid license / expired trial / revoked key),
+       hide the entire app — only the lock overlay itself remains visible.
+       Re-enforced by a MutationObserver so it can't be bypassed by deleting
+       the overlay element or removing this class in DevTools. */
+    body.access-locked > *:not(#licenseGateOverlay):not(#licenseRevokedOverlay):not(#trialEndedOverlay) {
+      display: none !important;
+    }
     .modal {
       background: #111; border: 1px solid rgba(255,255,255,0.1);
       border-radius: 20px; padding: 2rem; width: 360px; max-width: 95vw;
@@ -1315,7 +1489,7 @@
       .logo-wordmark-sub { display: none; }
 
       /* ─ Fix panels: allow natural height expansion ─ */
-      .panel-a, .panel-b, .panel-commit, .panel-debt, .panel-ot, .panel-budget, .panel-wedding {
+      .panel-a, .panel-b, .panel-commit, .panel-debt, .panel-ot, .panel-budget, .panel-wedding, .panel-study {
         overflow: visible !important;
       }
 
@@ -1467,7 +1641,7 @@
       .dash-card  { min-width: calc(33.33% - 0.4rem); flex: none; }
 
       /* ─ Fix panels: allow natural height expansion ─ */
-      .panel-a, .panel-b, .panel-commit, .panel-debt, .panel-ot, .panel-budget, .panel-wedding {
+      .panel-a, .panel-b, .panel-commit, .panel-debt, .panel-ot, .panel-budget, .panel-wedding, .panel-study {
         overflow: visible !important;
       }
 
@@ -1505,6 +1679,7 @@
       .modal-overlay { align-items: center; }
       .modal { border-radius: 20px; max-width: 520px; width: auto !important; padding: 2rem 1.75rem; }
       .hist-modal { border-radius: 20px; max-height: 85vh; max-width: 680px; width: 92vw; }
+      #userGuideModal .modal { width: 92vw !important; max-width: 760px; max-height: 88vh; }
 
       /* Calendar popup: fixed centred */
       .cal-popup { position: fixed; top: calc(72px + env(safe-area-inset-top, 0px)); left: 50%; transform: translateX(-50%); right: auto; z-index: 100; }
@@ -1543,6 +1718,7 @@
     /* ── Profile Picker Overlay ───────────────────────────── */
     @keyframes profFadeUp { from { opacity:0; transform:translateY(22px); } to { opacity:1; transform:translateY(0); } }
     @keyframes profGlow { 0%,100%{opacity:0.5} 50%{opacity:1} }
+    #licenseGateOverlay { z-index: 10000; }
     #profileOverlay {
       position: fixed; inset: 0; z-index: 9999;
       background: #06060a;
@@ -2010,7 +2186,52 @@
 <body>
 
 <!-- Live sync toast -->
-<div id="liveSyncToast">&#x2714; Partner synced</div>
+<div id="liveSyncToast">&#x2714; Synced</div>
+
+<!-- License Activation Gate (shown only for brand-new installs) -->
+<div class="modal-overlay" id="licenseGateOverlay">
+  <div class="modal" style="max-width:380px;">
+    <div class="modal-icon">&#x1F511;</div>
+    <div class="modal-title" id="licenseGateTitle">Activate OpmusDigital</div>
+    <div class="modal-sub" id="licenseGateSub">Enter the license key from your Shopee order to get started.</div>
+    <input type="text" id="licenseKeyInput" class="form-input" placeholder="e.g. OPMUS-BASE-XXXX-XXXX" autocomplete="off" style="text-align:center;text-transform:uppercase;letter-spacing:0.05em;" onkeydown="if(event.key==='Enter')activateLicense()" />
+    <div id="licenseKeyError" style="color:#f87171;font-size:0.75rem;margin-top:0.5rem;min-height:1em;text-align:center;"></div>
+    <button class="modal-btn primary" onclick="activateLicense()" style="margin-top:0.75rem;">Activate</button>
+
+    <div style="display:flex;align-items:center;gap:0.6rem;margin:0.9rem 0;">
+      <div style="flex:1;height:1px;background:rgba(255,255,255,0.08);"></div>
+      <span style="font-size:0.7rem;color:#475569;text-transform:uppercase;letter-spacing:0.08em;">or</span>
+      <div style="flex:1;height:1px;background:rgba(255,255,255,0.08);"></div>
+    </div>
+    <button class="modal-btn secondary" id="trialCodeToggleBtn" onclick="toggleTrialCodeInput()">Have a trial code?</button>
+    <div id="licenseGateTrialFields" style="display:none;margin-top:0.6rem;">
+      <input type="text" id="trialCodeInput" class="form-input" placeholder="e.g. GIFT-XXXX-XXXX" autocomplete="off" style="text-align:center;text-transform:uppercase;letter-spacing:0.05em;" onkeydown="if(event.key==='Enter')redeemTrialCode()" />
+      <div id="trialCodeError" style="color:#f87171;font-size:0.75rem;margin-top:0.5rem;min-height:1em;text-align:center;"></div>
+      <button class="modal-btn primary" onclick="redeemTrialCode()" style="margin-top:0.5rem;">Start Free Trial</button>
+    </div>
+  </div>
+</div>
+
+<!-- License Revoked Lock (shown if the seller deactivates this device's license key) -->
+<div class="modal-overlay" id="licenseRevokedOverlay" style="z-index:10001;">
+  <div class="modal" style="max-width:380px;">
+    <div class="modal-icon" style="color:#f87171;"><i class="ph-fill ph-warning-circle"></i></div>
+    <div class="modal-title">License Deactivated</div>
+    <div class="modal-sub">Your license key has been deactivated by the seller — this usually happens if a key is found to be shared or used outside its terms.</div>
+    <div class="modal-sub" style="margin-top:0.5rem;">Please contact us via Shopee chat to appeal or to purchase a new license key.</div>
+  </div>
+</div>
+
+<!-- Trial Ended (shown when a trial gift code's access period expires) -->
+<div class="modal-overlay" id="trialEndedOverlay" style="z-index:10001;">
+  <div class="modal" style="max-width:380px;">
+    <div class="modal-icon" style="color:#f59e0b;"><i class="ph-fill ph-clock-countdown"></i></div>
+    <div class="modal-title">Trial Ended</div>
+    <div class="modal-sub" id="trialEndedMsg">Your trial access has ended.</div>
+    <div class="modal-sub" style="margin-top:0.5rem;">Contact us via Shopee chat to purchase the full version and keep access.</div>
+    <button class="modal-btn primary" onclick="closeTrialEndedOverlay()" style="margin-top:0.75rem;">Got it</button>
+  </div>
+</div>
 
 <!-- ── Profile Picker Overlay ───────────────────────────── -->
 <div id="profileOverlay">
@@ -2028,7 +2249,7 @@
 </div>
 
 <!-- Cloud Sync Modal -->
-<div class="sync-overlay hidden" id="syncOverlay" onclick="if(event.target===this)closeSyncModal()">
+<div class="sync-overlay hidden" id="syncOverlay">
   <div class="sync-box">
     <div style="display:flex;align-items:center;justify-content:space-between;">
       <div class="sync-title">&#x2601; Cloud Sync</div>
@@ -2108,6 +2329,7 @@
   <div class="header-right">
     <span id="headerShiftChip" class="header-chip" style="display:none;"></span>
     <span id="headerSalChip"   class="header-chip" style="display:none;"></span>
+    <span id="trialCountdownChip" class="header-chip header-chip-trial" style="display:none;" onclick="openAppLibrary()" title=""></span>
     <div style="position:relative;">
       <span class="month-pill" id="headerMonth" onclick="toggleCalendarPopup()" style="cursor:pointer;" title="View calendar"></span>
       <div id="calendarPopup" class="cal-popup">
@@ -2165,6 +2387,12 @@
       <span class="prof-drop-icon">☁</span>
       <span>Cloud Sync</span>
     </div>
+
+    <div class="prof-drop-section" style="margin-top:0.45rem;">Help</div>
+    <div class="prof-drop-item" onclick="openUserGuide()">
+      <span class="prof-drop-icon">📖</span>
+      <span>User Guide</span>
+    </div>
   </div>
   <div class="prof-drop-footer">
     <div class="prof-drop-item danger" onclick="switchProfile()">
@@ -2178,7 +2406,7 @@
 <button id="layoutDoneBar" onclick="toggleLayoutEdit()">✓ Done Customizing</button>
 
 <!-- Settings Modal -->
-<div class="modal-overlay" id="settingsModal" onclick="if(event.target===this)closeSettings()">
+<div class="modal-overlay" id="settingsModal">
   <div class="modal" style="max-width:400px;">
     <button class="modal-close" onclick="closeSettings()">✕</button>
     <div class="modal-icon">⚙</div>
@@ -2284,17 +2512,730 @@
         <button class="settings-action-btn" onclick="closeSettings();openCalCfg()">&#9998; Edit</button>
       </div>
     </div>
+
+    <div class="settings-section">
+      <div class="settings-section-title">Notifications</div>
+      <div class="settings-row" style="border-bottom:none;">
+        <div>
+          <div class="settings-row-label">Enable Reminders</div>
+          <div class="settings-row-sub">Get notified about upcoming payments, salary day &amp; wedding deadlines</div>
+        </div>
+        <button class="settings-action-btn" id="btnNotifEnabled" onclick="toggleNotifications()">○ Off</button>
+      </div>
+    </div>
+
+    <div class="settings-section" id="sellerToolsSection" style="display:none;">
+      <div class="settings-section-title">Seller Tools</div>
+      <div class="settings-row" style="border-bottom:none;">
+        <div>
+          <div class="settings-row-label">Generate License / Gift Codes</div>
+          <div class="settings-row-sub">Admin only — create codes to send buyers</div>
+        </div>
+        <button class="settings-action-btn" onclick="closeSettings();showAdminPrompt('seller', openSellerTools)">&#x1F6E0; Open</button>
+      </div>
+    </div>
   </div>
 </div>
 
 <!-- App Library Modal -->
-<div class="modal-overlay" id="appLibraryModal" onclick="if(event.target===this)closeAppLibrary()">
+<div class="modal-overlay" id="appLibraryModal">
   <div class="modal" style="width:700px;max-width:96vw;">
     <button class="modal-close" onclick="closeAppLibrary()">✕</button>
     <div class="modal-icon"><i class="ph-fill ph-squares-four" style="font-size:1.6rem;color:#a5b4fc;"></i></div>
     <div class="modal-title">App Library</div>
     <div class="modal-sub">Choose which modules appear on your dashboard</div>
     <div id="appLibraryBody"></div>
+  </div>
+</div>
+
+<!-- User Guide Modal -->
+<div class="modal-overlay" id="userGuideModal">
+  <div class="modal" style="width:760px;max-width:96vw;">
+    <button class="modal-close" onclick="closeUserGuide()">✕</button>
+    <div class="modal-icon guide-modal-icon"><i class="ph-fill ph-book-open-text" style="font-size:1.6rem;color:#fbbf24;"></i></div>
+    <div class="modal-title">User Guide</div>
+    <div class="modal-sub">How to use every module &amp; what each button does</div>
+
+    <div class="guide-toolbar">
+      <div class="guide-search-wrap">
+        <i class="ph-bold ph-magnifying-glass"></i>
+        <input type="text" class="guide-search" id="guideSearchInput" placeholder="Search the guide…" oninput="filterGuide(this.value)">
+      </div>
+      <button class="guide-toggle-all" onclick="expandAllGuide()">Expand all</button>
+      <button class="guide-toggle-all" onclick="collapseAllGuide()">Collapse all</button>
+    </div>
+
+    <div class="guide-body" id="guideAccordion">
+
+      <div class="guide-acc-item" data-guide-id="start">
+        <button class="guide-acc-header" onclick="toggleGuideSection('start')">
+          <span class="guide-acc-icon" style="background:rgba(251,191,36,0.14); color:#fbbf24;">🚀</span>
+          <span class="guide-acc-title">Getting Started<span class="guide-acc-sub">Setup &amp; navigating your dashboard</span></span>
+          <span class="guide-acc-chevron">⌄</span>
+        </button>
+        <div class="guide-acc-content" id="guideContent-start">
+          <div class="guide-acc-inner">
+        <div class="guide-intro">Welcome to OpmusDigital Financial Tracker! This guide explains every screen and button so you can use the app with confidence. Tap a tab above to jump to a specific module.</div>
+
+        <div class="guide-h3">First-Time Setup</div>
+        <div class="guide-item">
+          <div class="guide-item-icon">👤</div>
+          <div class="guide-item-body">
+            <div class="guide-item-title">Create your profile</div>
+            <div class="guide-item-desc">When you first open the app, enter your name to create a profile. Each profile has its own data, so family members can share one app without mixing up their money.</div>
+          </div>
+        </div>
+        <div class="guide-item">
+          <div class="guide-item-icon">💰</div>
+          <div class="guide-item-body">
+            <div class="guide-item-title">Set up your salary</div>
+            <div class="guide-item-desc">Tap the "Salary Day" chip at the top of the screen, or the Nett Income card on the dashboard, to enter your basic pay and monthly deductions (EPF, SOCSO, PCB, etc). This lets the app calculate your take-home pay automatically.</div>
+          </div>
+        </div>
+        <div class="guide-item">
+          <div class="guide-item-icon">📅</div>
+          <div class="guide-item-body">
+            <div class="guide-item-title">Set your pay day, shift pattern &amp; cycle start date</div>
+            <div class="guide-item-desc">Go to <b>Settings → Roster &amp; Pay Day</b> to set which day you get paid, your work shift schedule (powers the Off Day/Rest Day chip and the OT Estimator), and which date your financial "month" starts — useful if your month runs from payday to payday instead of the 1st.</div>
+          </div>
+        </div>
+
+        <div class="guide-h3">Finding Your Way Around</div>
+        <div class="guide-item">
+          <div class="guide-item-icon">🧩</div>
+          <div class="guide-item-body">
+            <div class="guide-item-title">Dashboard panels</div>
+            <div class="guide-item-desc">Each module (Expenses, Budget, Goals, etc.) is its own panel/box on your dashboard. Use the 📦 Apps button (or Settings → Apps → Manage Dashboard Apps) to turn modules on or off.</div>
+          </div>
+        </div>
+        <div class="guide-item">
+          <div class="guide-item-icon">⠿</div>
+          <div class="guide-item-body">
+            <div class="guide-item-title">Move &amp; resize panels</div>
+            <div class="guide-item-desc">Tap <b>Settings → Layout → Customize</b> to enter editing mode. Drag a panel by its ⠿ handle to move it, or drag the edges/corners to resize it. Turn on <b>Snap to Edge</b> so panels line up neatly, and use <b>Reset Layout</b> if things get messy.</div>
+          </div>
+        </div>
+        <div class="guide-item">
+          <div class="guide-item-icon">👁</div>
+          <div class="guide-item-body">
+            <div class="guide-item-title">Hide/show amounts</div>
+            <div class="guide-item-desc">The eye icon in the header blurs every RM amount across the whole app — handy if someone is looking over your shoulder.</div>
+          </div>
+        </div>
+        <div class="guide-item">
+          <div class="guide-item-icon">🔔</div>
+          <div class="guide-item-body">
+            <div class="guide-item-title">Reminders &amp; due alerts</div>
+            <div class="guide-item-desc">The bell icon shows a list of upcoming bills, salary day and deadlines. Turn on <b>Settings → Notifications → Enable Reminders</b> to also get phone notifications.</div>
+          </div>
+        </div>
+
+        <div class="guide-tip">💡 <b>Tip:</b> Use <b>Cloud Sync</b> (profile menu → ☁ Cloud Sync) to access your data on your phone and laptop with the same account. Add-on modules like Wedding Planner and Study Planner can be unlocked anytime with a gift code from <b>📦 Apps</b>.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="guide-acc-item" data-guide-id="expenses">
+        <button class="guide-acc-header" onclick="toggleGuideSection('expenses')">
+          <span class="guide-acc-icon" style="background:rgba(251,146,60,0.14); color:#fb923c;">💸</span>
+          <span class="guide-acc-title">Expense Tracker<span class="guide-acc-sub">Log spending &amp; money received</span></span>
+          <span class="guide-acc-chevron">⌄</span>
+        </button>
+        <div class="guide-acc-content" id="guideContent-expenses">
+          <div class="guide-acc-inner">
+        <div class="guide-intro">The Expense Tracker is where you log your daily spending, and separately track any extra cash you receive.</div>
+
+        <div class="guide-h3">Adding an Expense</div>
+        <div class="guide-item">
+          <div class="guide-item-icon">➕</div>
+          <div class="guide-item-body">
+            <div class="guide-item-title">+ button</div>
+            <div class="guide-item-desc">Opens the Add Expense form. Fill in the date, a short description and the amount, pick a category from the colourful icon grid, then tap <b>Save</b>.</div>
+          </div>
+        </div>
+        <div class="guide-item">
+          <div class="guide-item-icon">⚡</div>
+          <div class="guide-item-body">
+            <div class="guide-item-title">⚡ Templates button</div>
+            <div class="guide-item-desc">Create shortcuts for expenses you log often (e.g. "Lunch — RM10"). Once created, they appear as quick-tap chips above your expense list, so you can add them in one tap instead of filling the whole form.</div>
+          </div>
+        </div>
+
+        <div class="guide-h3">Viewing Your Spending</div>
+        <div class="guide-item">
+          <div class="guide-item-icon">📋</div>
+          <div class="guide-item-body">
+            <div class="guide-item-title">List view</div>
+            <div class="guide-item-desc">Shows every expense grouped by date with a daily total. Tap ✎ to edit or ✕ to delete an entry.</div>
+          </div>
+        </div>
+        <div class="guide-item">
+          <div class="guide-item-icon">🥧</div>
+          <div class="guide-item-body">
+            <div class="guide-item-title">Chart view</div>
+            <div class="guide-item-desc">Switch to the pie-chart view to see how your spending is split across categories. Tap a category in the legend to expand it and see the individual expenses behind that slice.</div>
+          </div>
+        </div>
+
+        <div class="guide-h3">Money Received Tab</div>
+        <div class="guide-item">
+          <div class="guide-item-icon">💚</div>
+          <div class="guide-item-body">
+            <div class="guide-item-title">Money Received</div>
+            <div class="guide-item-desc">Switch to this tab to log cash you receive that isn't your salary — side income, money owed back to you, ang pow, etc. Tap <b>+ Add</b>, fill in the date/description/amount, and it appears as a positive (+) entry. "Total Received This Month" adds these up for the current calendar month and is shown alongside your salary on the Dashboard.</div>
+          </div>
+        </div>
+
+        <div class="guide-tip">💡 <b>Tip:</b> Expenses you log here automatically count towards your Budget Planner categories and your Dashboard's "Total Money Spend" — no need to enter anything twice.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="guide-acc-item" data-guide-id="budget">
+        <button class="guide-acc-header" onclick="toggleGuideSection('budget')">
+          <span class="guide-acc-icon" style="background:rgba(239,68,68,0.14); color:#ef4444;">📊</span>
+          <span class="guide-acc-title">Budget Planner<span class="guide-acc-sub">Set monthly limits per category</span></span>
+          <span class="guide-acc-chevron">⌄</span>
+        </button>
+        <div class="guide-acc-content" id="guideContent-budget">
+          <div class="guide-acc-inner">
+        <div class="guide-intro">The Budget Planner lets you set a monthly spending limit for each expense category, and warns you as you get close to (or go over) it.</div>
+
+        <div class="guide-h3">Setting Your Budgets</div>
+        <div class="guide-item">
+          <div class="guide-item-icon">⚙</div>
+          <div class="guide-item-body">
+            <div class="guide-item-title">⚙ Settings button</div>
+            <div class="guide-item-desc">Opens Budget Settings, where you type a monthly limit (in RM) for each category — Food, Transport, Entertainment, Utilities, Health, Personal, Others. Leave a category blank if you don't want a limit for it (it won't appear on the panel). Tap <b>Save</b>.</div>
+          </div>
+        </div>
+
+        <div class="guide-h3">Reading the Budget List</div>
+        <div class="guide-item">
+          <div class="guide-item-icon">🟢</div>
+          <div class="guide-item-body">
+            <div class="guide-item-title">Progress bar colours</div>
+            <div class="guide-item-desc">Each category shows a bar: <b>green</b> means you're under 75% of your budget, <b>yellow</b> means 75-99%, and <b>red</b> means you've hit or gone over your limit (100%+).</div>
+          </div>
+        </div>
+        <div class="guide-item">
+          <div class="guide-item-icon">▾</div>
+          <div class="guide-item-body">
+            <div class="guide-item-title">Expand a category</div>
+            <div class="guide-item-desc">Tap anywhere on a category row to expand it and see every expense logged under that category this month, newest first.</div>
+          </div>
+        </div>
+
+        <div class="guide-tip">💡 <b>Tip:</b> Budgets only track the <b>current month's</b> expenses and reset automatically when the month changes. Any expense you add under a budgeted category instantly updates its progress bar.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="guide-acc-item" data-guide-id="commit">
+        <button class="guide-acc-header" onclick="toggleGuideSection('commit')">
+          <span class="guide-acc-icon" style="background:rgba(248,113,113,0.14); color:#f87171;">📅</span>
+          <span class="guide-acc-title">Commitments<span class="guide-acc-sub">Recurring bills &amp; subscriptions</span></span>
+          <span class="guide-acc-chevron">⌄</span>
+        </button>
+        <div class="guide-acc-content" id="guideContent-commit">
+          <div class="guide-acc-inner">
+        <div class="guide-intro">Commitments are your recurring monthly payments — rent, subscriptions, loan instalments, insurance and so on. Use this module to keep track of what's due and tick them off each month.</div>
+
+        <div class="guide-h3">Adding a Commitment</div>
+        <div class="guide-item">
+          <div class="guide-item-icon">➕</div>
+          <div class="guide-item-body">
+            <div class="guide-item-title">+ button</div>
+            <div class="guide-item-desc">Opens the Add Commitment form. Enter a Name and Amount, and optionally a Due Day (1-31) so it appears in your reminders. If the amount changes every month (e.g. an electricity bill), tick <b>Variable</b> — this lets you enter a different amount for each month.</div>
+          </div>
+        </div>
+
+        <div class="guide-h3">List &amp; Payments Tabs</div>
+        <div class="guide-item">
+          <div class="guide-item-icon">📋</div>
+          <div class="guide-item-body">
+            <div class="guide-item-title">List tab</div>
+            <div class="guide-item-desc">Shows all your commitments with their amounts and your "Monthly Fixed" total. Tap ✎ to edit a commitment or 🗑 to delete it.</div>
+          </div>
+        </div>
+        <div class="guide-item">
+          <div class="guide-item-icon">✓</div>
+          <div class="guide-item-body">
+            <div class="guide-item-title">Payments tab</div>
+            <div class="guide-item-desc">Shows this month's progress (Total to Pay / Paid / Left) split into Unpaid and Paid sections. Tap <b>✓ Paid</b> next to an item once you've made the payment — for Variable commitments it will ask you to enter the actual amount you paid. Once everything is marked paid, you'll see a 💚 "All clear" message.</div>
+          </div>
+        </div>
+
+        <div class="guide-h3">Debt-Linked Commitments</div>
+        <div class="guide-item">
+          <div class="guide-item-icon">💳</div>
+          <div class="guide-item-body">
+            <div class="guide-item-title">💳 Debt badge</div>
+            <div class="guide-item-desc">A pink 💳 Debt badge means this commitment is linked to an entry in your Debt Tracker (created automatically when you set a "Monthly Payment" on a debt). It can't be deleted directly here — edit or delete the linked debt instead.</div>
+          </div>
+        </div>
+
+        <div class="guide-tip">💡 <b>Tip:</b> "Paid" status is per payment cycle — you'll need to tap ✓ Paid again next month for recurring bills. This keeps your "Left to pay" total accurate throughout the month.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="guide-acc-item" data-guide-id="goals">
+        <button class="guide-acc-header" onclick="toggleGuideSection('goals')">
+          <span class="guide-acc-icon" style="background:rgba(34,197,94,0.14); color:#22c55e;">🎯</span>
+          <span class="guide-acc-title">Savings Goals<span class="guide-acc-sub">Targets &amp; contributions</span></span>
+          <span class="guide-acc-chevron">⌄</span>
+        </button>
+        <div class="guide-acc-content" id="guideContent-goals">
+          <div class="guide-acc-inner">
+        <div class="guide-intro">Savings Goals help you save towards something specific — an emergency fund, a holiday, a gadget — by logging contributions over time.</div>
+
+        <div class="guide-h3">Creating a Goal</div>
+        <div class="guide-item">
+          <div class="guide-item-icon">➕</div>
+          <div class="guide-item-body">
+            <div class="guide-item-title">+ button</div>
+            <div class="guide-item-desc">Opens the Add Goal form. Give it a name, set your Target Amount, and optionally pick a Deadline date if you're saving towards a specific date (e.g. a trip).</div>
+          </div>
+        </div>
+
+        <div class="guide-h3">Tracking Progress</div>
+        <div class="guide-item">
+          <div class="guide-item-icon">📊</div>
+          <div class="guide-item-body">
+            <div class="guide-item-title">Progress bar &amp; %</div>
+            <div class="guide-item-desc">Each goal card shows a progress bar and percentage saved — green under 50%, yellow 50-75%, pink 75%+. "RM X saved of RM Y" shows your total contributions so far against your target. If you've saved more than your target, it shows "+RM extra".</div>
+          </div>
+        </div>
+        <div class="guide-item">
+          <div class="guide-item-icon">➕</div>
+          <div class="guide-item-body">
+            <div class="guide-item-title">+ Add Contribution</div>
+            <div class="guide-item-desc">Every time you put money aside for this goal, tap the + button on the goal card and log the amount, date, and an optional note (e.g. "Bonus from work"). Tap <b>Show contributions</b> to see or delete past entries.</div>
+          </div>
+        </div>
+        <div class="guide-item">
+          <div class="guide-item-icon">💡</div>
+          <div class="guide-item-body">
+            <div class="guide-item-title">💡 Savings Advice</div>
+            <div class="guide-item-desc">If you've set a deadline, tap 💡 to see how much more you need, how many days are left, and a suggested saving plan broken down by day, week, month or per-paycheck.</div>
+          </div>
+        </div>
+        <div class="guide-item">
+          <div class="guide-item-icon">🗑</div>
+          <div class="guide-item-body">
+            <div class="guide-item-title">✎ Edit / 🗑 Delete</div>
+            <div class="guide-item-desc">Edit changes the goal's name, target or deadline. Delete removes the goal <b>and all of its contribution history</b> — this can't be undone.</div>
+          </div>
+        </div>
+
+        <div class="guide-tip">💡 <b>Tip:</b> The "Total Saved" bar at the bottom of the panel adds up contributions across <b>all</b> your goals. Contributions are manual — saving money in a goal doesn't remove it from your expense totals.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="guide-acc-item" data-guide-id="ot">
+        <button class="guide-acc-header" onclick="toggleGuideSection('ot')">
+          <span class="guide-acc-icon" style="background:rgba(59,130,246,0.14); color:#3b82f6;">⏱</span>
+          <span class="guide-acc-title">OT Estimator<span class="guide-acc-sub">Overtime pay &amp; recommendations</span></span>
+          <span class="guide-acc-chevron">⌄</span>
+        </button>
+        <div class="guide-acc-content" id="guideContent-ot">
+          <div class="guide-acc-inner">
+        <div class="guide-intro">The OT (Overtime) Estimator lets you log overtime hours and automatically calculates how much extra you'll earn — and how much OT you'd need to hit an income target.</div>
+
+        <div class="guide-h3">Setting Up Your Rates (do this first)</div>
+        <div class="guide-item">
+          <div class="guide-item-icon">⚙</div>
+          <div class="guide-item-body">
+            <div class="guide-item-title">⚙ OT Settings</div>
+            <div class="guide-item-desc">Enter your <b>Base Hourly Rate</b>, then set up your OT Types (e.g. "Normal Day", "Rest Day", "Public Holiday") — each with a <b>Multiplier</b> (e.g. 1.5x, 2x, 3x), an optional <b>Flat Bonus</b>, and an optional <b>"After X Hours"</b> threshold for when the bonus kicks in. Tap <b>+ Add Type</b> to create more, or ✕ to remove one.</div>
+          </div>
+        </div>
+
+        <div class="guide-h3">Logging Overtime</div>
+        <div class="guide-item">
+          <div class="guide-item-icon">➕</div>
+          <div class="guide-item-body">
+            <div class="guide-item-title">+ button</div>
+            <div class="guide-item-desc">Opens the Add OT Log form. Pick the date, choose an OT Type from your settings, enter the hours worked (decimals like 2.5 are fine), and an optional description. Pay is calculated automatically as (base rate × multiplier × hours) + bonus if you hit the threshold.</div>
+          </div>
+        </div>
+        <div class="guide-item">
+          <div class="guide-item-icon">◀▶</div>
+          <div class="guide-item-body">
+            <div class="guide-item-title">Month navigation</div>
+            <div class="guide-item-desc">Use the &lt; and &gt; arrows to look at OT logged in past months (marked "Past") or the current month. You can't navigate into future months.</div>
+          </div>
+        </div>
+
+        <div class="guide-h3">OT Recommendation</div>
+        <div class="guide-item">
+          <div class="guide-item-icon">💡</div>
+          <div class="guide-item-body">
+            <div class="guide-item-title">💡 OT Recommendation</div>
+            <div class="guide-item-desc">Tap the lightbulb to see whether your salary will cover next month's fixed commitments. If there's a shortfall, it shows exactly how many OT hours (and of which type) you'd need to cover the gap. If you're already covered, it shows your surplus instead. Make sure your salary and OT rate are set up first.</div>
+          </div>
+        </div>
+
+        <div class="guide-tip">💡 <b>Tip:</b> Your OT base rate is separate from your salary's basic pay — set both for the most accurate numbers. The "Total OT" bar at the bottom shows your total hours and pay for the month you're viewing.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="guide-acc-item" data-guide-id="debt">
+        <button class="guide-acc-header" onclick="toggleGuideSection('debt')">
+          <span class="guide-acc-icon" style="background:rgba(244,114,182,0.14); color:#f472b6;">💳</span>
+          <span class="guide-acc-title">Debt Tracker<span class="guide-acc-sub">Loans, cards &amp; payoff progress</span></span>
+          <span class="guide-acc-chevron">⌄</span>
+        </button>
+        <div class="guide-acc-content" id="guideContent-debt">
+          <div class="guide-acc-inner">
+        <div class="guide-intro">The Debt Tracker keeps tabs on loans, credit cards, BNPL (Buy Now Pay Later) or any money you owe, and shows your payoff progress.</div>
+
+        <div class="guide-h3">Adding a Debt</div>
+        <div class="guide-item">
+          <div class="guide-item-icon">➕</div>
+          <div class="guide-item-body">
+            <div class="guide-item-title">+ button — Fixed debt</div>
+            <div class="guide-item-desc">The default type, for loans with a set instalment. Enter the Name, Total amount, Remaining balance, and optionally a Monthly Payment and Due Day. There's also a built-in <b>Loan Calculator</b> — enter Principal, Interest Rate % and Tenure (months), tap Calculate, then Apply to auto-fill the totals and monthly payment.</div>
+          </div>
+        </div>
+        <div class="guide-item">
+          <div class="guide-item-icon">🔁</div>
+          <div class="guide-item-body">
+            <div class="guide-item-title">Variable debt toggle</div>
+            <div class="guide-item-desc">For debts where the bill changes each month, like a credit card. Switch on "Variable" to get a 24-month grid where you enter each month's bill amount; months you've already paid get locked/greyed out.</div>
+          </div>
+        </div>
+
+        <div class="guide-h3">Tracking Progress</div>
+        <div class="guide-item">
+          <div class="guide-item-icon">📋</div>
+          <div class="guide-item-body">
+            <div class="guide-item-title">List view</div>
+            <div class="guide-item-desc">Each debt shows a progress bar, the remaining balance, "% paid off" of the total, and its monthly payment/due day if set. Tap ✎ to edit or ✕ to delete a debt.</div>
+          </div>
+        </div>
+        <div class="guide-item">
+          <div class="guide-item-icon">🍩</div>
+          <div class="guide-item-body">
+            <div class="guide-item-title">Graph view</div>
+            <div class="guide-item-desc">Shows a donut chart of your overall payoff progress across all debts, plus a "Payoff Projection" bar for each debt estimating how long it'll take to clear based on its monthly payment.</div>
+          </div>
+        </div>
+        <div class="guide-item">
+          <div class="guide-item-icon">💡</div>
+          <div class="guide-item-body">
+            <div class="guide-item-title">💡 Payoff advice</div>
+            <div class="guide-item-desc">If a debt has no monthly payment set, tap 💡 to see suggested monthly amounts to clear it in 6 months, 1 year, or 2 years.</div>
+          </div>
+        </div>
+
+        <div class="guide-tip">💡 <b>Tip:</b> If you set a Monthly Payment on a debt, the app automatically creates (and keeps in sync) a matching entry in your Commitments list with a 💳 Debt badge — so it shows up in your monthly bills too.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="guide-acc-item" data-guide-id="wedding">
+        <button class="guide-acc-header" onclick="toggleGuideSection('wedding')">
+          <span class="guide-acc-icon" style="background:rgba(244,63,94,0.14); color:#f43f5e;">💍</span>
+          <span class="guide-acc-title">Wedding Planner<span class="guide-acc-sub">Add-on · Vendor payments &amp; checklist</span></span>
+          <span class="guide-acc-chevron">⌄</span>
+        </button>
+        <div class="guide-acc-content" id="guideContent-wedding">
+          <div class="guide-acc-inner">
+        <div class="guide-intro">💍 <b>Wedding Planner is an add-on module</b> — unlock it with a gift code from <b>📦 Apps</b>. It helps you track vendor payments and wedding to-do tasks in one place.</div>
+
+        <div class="guide-h3">Payments Tab</div>
+        <div class="guide-item">
+          <div class="guide-item-icon">➕</div>
+          <div class="guide-item-body">
+            <div class="guide-item-title">+ button — Add Item</div>
+            <div class="guide-item-desc">While on the Payments tab, the + button opens "Add Wedding Item" — enter the vendor/item name (e.g. "Catering"), its Total Cost, and an optional payment Deadline.</div>
+          </div>
+        </div>
+        <div class="guide-item">
+          <div class="guide-item-icon">📅</div>
+          <div class="guide-item-body">
+            <div class="guide-item-title">Sort dropdown</div>
+            <div class="guide-item-desc">Sort your items by 📅 Due Date (soonest first) or 💰 Biggest Remaining (largest unpaid amount first).</div>
+          </div>
+        </div>
+        <div class="guide-item">
+          <div class="guide-item-icon">💰</div>
+          <div class="guide-item-body">
+            <div class="guide-item-title">+ Log Payment</div>
+            <div class="guide-item-desc">On any item card, tap "Show Payments" then "+ Log Payment" to record a deposit or instalment — enter the Amount Paid, Date, and an optional Note (e.g. "Deposit"). The progress bar updates automatically, and shows "✓ Fully paid!" once you've covered the total.</div>
+          </div>
+        </div>
+        <div class="guide-item">
+          <div class="guide-item-icon">🍩</div>
+          <div class="guide-item-body">
+            <div class="guide-item-title">Summary donut chart</div>
+            <div class="guide-item-desc">At the top of the Payments tab, the donut chart shows Total Paid (green), Still to Pay (red), and your Grand Total across every wedding item, with the overall % paid shown in the centre.</div>
+          </div>
+        </div>
+
+        <div class="guide-h3">Checklist Tab</div>
+        <div class="guide-item">
+          <div class="guide-item-icon">➕</div>
+          <div class="guide-item-body">
+            <div class="guide-item-title">+ Group &amp; adding tasks</div>
+            <div class="guide-item-desc">Tap <b>+ Group</b> to create a category (e.g. "Venue", "Catering", "Attire"). To add a task, pick a group from the dropdown, type the task, and tap the + button (or press Enter).</div>
+          </div>
+        </div>
+        <div class="guide-item">
+          <div class="guide-item-icon">☑</div>
+          <div class="guide-item-body">
+            <div class="guide-item-title">Checking off tasks &amp; filters</div>
+            <div class="guide-item-desc">Tap the checkbox next to a task to mark it done — the "X of Y done" counter updates at the top. Use the All / To-do / Done filters to focus on what's left. Tap ✎ to edit a task's text/group, or 🗑 to delete it.</div>
+          </div>
+        </div>
+
+        <div class="guide-tip">💡 <b>Tip:</b> Deleting a wedding item also deletes its entire payment history — this can't be undone. Deleting a checklist group does <b>not</b> delete its tasks; they move to "Other" instead.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="guide-acc-item" data-guide-id="study">
+        <button class="guide-acc-header" onclick="toggleGuideSection('study')">
+          <span class="guide-acc-icon" style="background:rgba(6,182,212,0.14); color:#06b6d4;">📚</span>
+          <span class="guide-acc-title">Study Planner<span class="guide-acc-sub">Add-on · Tasks &amp; subjects</span></span>
+          <span class="guide-acc-chevron">⌄</span>
+        </button>
+        <div class="guide-acc-content" id="guideContent-study">
+          <div class="guide-acc-inner">
+        <div class="guide-intro">📚 <b>Study Planner is an add-on module</b> — unlock it with a gift code from <b>📦 Apps</b>. It helps you keep track of assignments, exams and study goals by subject.</div>
+
+        <div class="guide-h3">Tasks Tab</div>
+        <div class="guide-item">
+          <div class="guide-item-icon">➕</div>
+          <div class="guide-item-body">
+            <div class="guide-item-title">+ button — New Task</div>
+            <div class="guide-item-desc">While on the Tasks tab, the + button opens "New Task" — enter a Title, optionally a Subject (e.g. "Maths"), pick a Type (Assignment, Exam, Quiz or Project), an optional Due Date, and optional Notes.</div>
+          </div>
+        </div>
+        <div class="guide-item">
+          <div class="guide-item-icon">⏰</div>
+          <div class="guide-item-body">
+            <div class="guide-item-title">Due date labels</div>
+            <div class="guide-item-desc">Each task shows a coloured due-date hint: red "Overdue by X day(s)", yellow "Due today!" / "Due tomorrow" / "Due in X days", or grey "No due date set" if you didn't pick one.</div>
+          </div>
+        </div>
+        <div class="guide-item">
+          <div class="guide-item-icon">☑</div>
+          <div class="guide-item-body">
+            <div class="guide-item-title">Marking tasks done</div>
+            <div class="guide-item-desc">Tick the checkbox on a task once it's complete. The summary bar at the top ("X of Y tasks done") tracks your overall progress. Tap ✎ to edit a task or 🗑 to delete it.</div>
+          </div>
+        </div>
+
+        <div class="guide-h3">Subjects Tab</div>
+        <div class="guide-item">
+          <div class="guide-item-icon">➕</div>
+          <div class="guide-item-body">
+            <div class="guide-item-title">+ Subject &amp; goals</div>
+            <div class="guide-item-desc">Tap <b>+ Subject</b> to create a subject (e.g. "Biology"). To add a semester goal under it, pick the subject from the dropdown, type the goal, and tap + (or press Enter). Use the All / To-do / Done filters and check off goals as you complete them.</div>
+          </div>
+        </div>
+
+        <div class="guide-tip">💡 <b>Tip:</b> If you've enabled Reminders in Settings, the app will notify you on your phone as tasks get close to their due date — even with the browser closed.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="guide-acc-item" data-guide-id="apps">
+        <button class="guide-acc-header" onclick="toggleGuideSection('apps')">
+          <span class="guide-acc-icon" style="background:rgba(165,180,252,0.14); color:#a5b4fc;">📦</span>
+          <span class="guide-acc-title">App Library &amp; Gift Codes<span class="guide-acc-sub">Manage modules &amp; redeem codes</span></span>
+          <span class="guide-acc-chevron">⌄</span>
+        </button>
+        <div class="guide-acc-content" id="guideContent-apps">
+          <div class="guide-acc-inner">
+        <div class="guide-intro">The App Library (📦 Apps button, or Settings → Apps → Manage Dashboard Apps) is where you turn modules on/off and unlock add-ons with gift codes.</div>
+
+        <div class="guide-h3">Redeeming a Gift Code</div>
+        <div class="guide-item">
+          <div class="guide-item-icon">🎁</div>
+          <div class="guide-item-body">
+            <div class="guide-item-title">"Have a gift code?" box</div>
+            <div class="guide-item-desc">Type your gift code into the box and tap <b>Redeem</b>. Codes are not case-sensitive. A success message confirms the module is unlocked (or that a trial has started); an error message means the code is invalid or already used.</div>
+          </div>
+        </div>
+
+        <div class="guide-h3">Base App</div>
+        <div class="guide-item">
+          <div class="guide-item-icon">✅</div>
+          <div class="guide-item-body">
+            <div class="guide-item-title">Base App grid</div>
+            <div class="guide-item-desc">Your 6 core modules — Budget Planner, Commitments, Expense Tracker, Savings Goals, Debt Tracker, OT Estimator. Each card has a toggle: <b>"✓ On"</b> means it's showing on your dashboard (tap to remove it), <b>"+ Add"</b> means it's hidden (tap to add it back).</div>
+          </div>
+        </div>
+
+        <div class="guide-h3">Add-on Modules</div>
+        <div class="guide-item">
+          <div class="guide-item-icon">🔒</div>
+          <div class="guide-item-body">
+            <div class="guide-item-title">Locked / Trial / Unlocked</div>
+            <div class="guide-item-desc">Add-on modules (Wedding Planner, Study Planner) show a status badge: <b>🔒 "Gift code required"</b> means you need a code to unlock it (tapping it jumps you to the redeem box); <b>⏳ "Trial · X left"</b> means you're in a free trial with a countdown; once unlocked it behaves like the Base App's "✓ On" / "+ Add" toggle.</div>
+          </div>
+        </div>
+
+        <div class="guide-h3">Coming Soon</div>
+        <div class="guide-item">
+          <div class="guide-item-icon">🚧</div>
+          <div class="guide-item-body">
+            <div class="guide-item-title">Coming Soon modules</div>
+            <div class="guide-item-desc">Modules shown here are a preview of what's coming next — they can't be added yet, but let you know what's on the way.</div>
+          </div>
+        </div>
+
+        <div class="guide-tip">💡 <b>Tip:</b> Turning a module "Off" only hides its panel from your dashboard — it doesn't delete any of its data. Turn it back "On" anytime and your information will still be there. If a trial expires, the module re-locks but your data is kept in case you decide to unlock the full version later.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="guide-acc-item" data-guide-id="settings">
+        <button class="guide-acc-header" onclick="toggleGuideSection('settings')">
+          <span class="guide-acc-icon" style="background:rgba(148,163,184,0.14); color:#94a3b8;">⚙</span>
+          <span class="guide-acc-title">Settings &amp; Profile<span class="guide-acc-sub">Layout, display &amp; account</span></span>
+          <span class="guide-acc-chevron">⌄</span>
+        </button>
+        <div class="guide-acc-content" id="guideContent-settings">
+          <div class="guide-acc-inner">
+        <div class="guide-intro">Settings (and the profile menu) is where you control how the app looks, behaves, and is set up for your routine.</div>
+
+        <div class="guide-h3">Layout</div>
+        <div class="guide-item">
+          <div class="guide-item-icon">⊞</div>
+          <div class="guide-item-body">
+            <div class="guide-item-title">Customize / Snap / Reset Layout</div>
+            <div class="guide-item-desc"><b>Customize</b> turns on drag-and-resize mode for your dashboard panels. <b>Snap to Edge</b> (on by default) makes panels align neatly to each other while you drag. <b>Reset Layout to Default</b> puts every panel back to its original position and size.</div>
+          </div>
+        </div>
+
+        <div class="guide-h3">Display</div>
+        <div class="guide-item">
+          <div class="guide-item-icon">💵</div>
+          <div class="guide-item-body">
+            <div class="guide-item-title">Est. Income Card</div>
+            <div class="guide-item-desc">Turn this on to add a card to your Dashboard showing your projected take-home pay — basic salary minus deductions, plus OT earned so far this month.</div>
+          </div>
+        </div>
+        <div class="guide-item">
+          <div class="guide-item-icon">🌐</div>
+          <div class="guide-item-body">
+            <div class="guide-item-title">Currency</div>
+            <div class="guide-item-desc">Choose your currency from the dropdown (defaults to RM). Pick "✏ Custom…" to type your own currency symbol if yours isn't listed.</div>
+          </div>
+        </div>
+
+        <div class="guide-h3">Roster &amp; Pay Day</div>
+        <div class="guide-item">
+          <div class="guide-item-icon">🗓</div>
+          <div class="guide-item-body">
+            <div class="guide-item-title">Shift Pattern / Pay Day / Cycle Start Date</div>
+            <div class="guide-item-desc">All three open the same Calendar Setup screen. <b>Shift Pattern</b> sets your work schedule (so the header can show "Off Day"/"Rest Day" and the OT Estimator knows your work days). <b>Pay Day</b> sets which date your salary lands (powers the "Xd to salary" chip). <b>Cycle Start Date</b> sets which day your financial "month" begins, if it's not the 1st.</div>
+          </div>
+        </div>
+
+        <div class="guide-h3">Notifications</div>
+        <div class="guide-item">
+          <div class="guide-item-icon">🔔</div>
+          <div class="guide-item-body">
+            <div class="guide-item-title">Enable Reminders</div>
+            <div class="guide-item-desc">Turns on phone/browser notifications for upcoming commitment due dates, salary day, and (if unlocked) Wedding/Study deadlines. Your browser may ask for notification permission the first time.</div>
+          </div>
+        </div>
+
+        <div class="guide-h3">Profile Menu</div>
+        <div class="guide-item">
+          <div class="guide-item-icon">⇄</div>
+          <div class="guide-item-body">
+            <div class="guide-item-title">Switch Profile / Manage Profiles</div>
+            <div class="guide-item-desc">Tap your avatar (top-right) to open the profile menu. <b>Switch Profile</b> lets another family member log in with their own profile. <b>Manage Profiles</b> (PIN protected) lets you create, rename or remove profiles.</div>
+          </div>
+        </div>
+        <div class="guide-item">
+          <div class="guide-item-icon">🎨</div>
+          <div class="guide-item-body">
+            <div class="guide-item-title">Appearance</div>
+            <div class="guide-item-desc">Change the app's colour theme to whatever suits you.</div>
+          </div>
+        </div>
+        <div class="guide-item">
+          <div class="guide-item-icon">☁</div>
+          <div class="guide-item-body">
+            <div class="guide-item-title">Cloud Sync</div>
+            <div class="guide-item-desc">Link your profile to the cloud so your data follows you across your phone, tablet and laptop.</div>
+          </div>
+        </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- Seller Tools Modal (admin only) -->
+<div class="modal-overlay" id="sellerToolsModal">
+  <div class="modal seller-modal" style="width:440px;max-width:95vw;">
+    <button class="modal-close" onclick="closeSellerTools()">✕</button>
+    <div class="modal-icon seller-modal-icon"><i class="ph-fill ph-crown"></i></div>
+    <div class="modal-title"><span class="seller-title-text">Seller Console</span> <span class="seller-admin-badge">Admin</span></div>
+    <div class="modal-sub">Generate &amp; manage license keys and gift codes</div>
+
+    <div class="seller-tabs">
+      <button class="seller-tab active" id="sellerTabGen" onclick="switchSellerTab('generate')"><i class="ph-bold ph-sparkle"></i> Generate</button>
+      <button class="seller-tab" id="sellerTabHist" onclick="switchSellerTab('history')"><i class="ph-bold ph-list-bullets"></i> All Codes</button>
+    </div>
+
+    <div id="sellerGenPane">
+      <div class="seller-action-card">
+        <div class="seller-action-head">
+          <div class="seller-action-icon"><i class="ph-fill ph-key"></i></div>
+          <div class="seller-action-info">
+            <div class="seller-action-title">Generate Code</div>
+            <div class="seller-action-desc">Pick Base App or a module, then generate a permanent code — or tick Trial for a time-limited code.</div>
+          </div>
+        </div>
+        <select id="genCodeType" class="form-input">
+          <option value="base">Base App (License Key)</option>
+          <option value="wedding">Wedding Planner</option>
+          <option value="study">Study Planner</option>
+        </select>
+        <label style="display:flex;align-items:center;gap:0.55rem;cursor:pointer;margin:0.65rem 0;">
+          <input type="checkbox" id="genCodeTrialToggle" style="width:16px;height:16px;accent-color:#06b6d4;" onchange="toggleGenCodeTrialFields()" />
+          <span style="font-size:0.82rem;color:#94a3b8;">Trial (temporary access)</span>
+        </label>
+        <div id="genCodeTrialFields" style="display:none;margin-bottom:0.65rem;">
+          <label style="display:block;font-size:0.78rem;font-weight:600;color:#e2e8f0;margin-bottom:0.3rem;">Trial length</label>
+          <div style="display:flex;gap:0.5rem;">
+            <input type="number" id="genCodeTrialValue" class="form-input" value="7" min="1" style="flex:1;" />
+            <select id="genCodeTrialUnit" class="form-input" style="flex:1;">
+              <option value="days">Days</option>
+              <option value="hours">Hours</option>
+              <option value="minutes">Minutes</option>
+              <option value="seconds">Seconds</option>
+            </select>
+          </div>
+        </div>
+        <button class="seller-cta-btn" onclick="genCode()"><i class="ph-bold ph-plus-circle"></i> Generate Code</button>
+      </div>
+
+      <div id="sellerToolsResult"></div>
+    </div>
+
+    <div id="sellerHistPane" style="display:none;">
+      <div class="seller-stats" id="sellerStats"></div>
+      <div class="seller-search-row">
+        <input type="text" id="sellerSearchInput" class="form-input" placeholder="Search by code…" oninput="renderSellerHistory()" />
+        <button class="seller-icon-btn seller-refresh-btn" onclick="loadSellerHistory()" title="Refresh"><i class="ph-bold ph-arrows-clockwise"></i></button>
+      </div>
+      <div id="sellerHistoryList" class="seller-history-list"></div>
+    </div>
   </div>
 </div>
 
@@ -2376,6 +3317,10 @@
     <div class="mpanel-tab-grp" data-mpanel="wedding">
       <button class="mpanel-tab-lbl" onclick="switchMPanel('wedding')">💍 Wedding</button>
       <button class="mpanel-tab-add" onclick="openAddWpItem()">+</button>
+    </div>
+    <div class="mpanel-tab-grp" data-mpanel="study">
+      <button class="mpanel-tab-lbl" onclick="switchMPanel('study')">📚 Study</button>
+      <button class="mpanel-tab-add" onclick="onSpPlusBtn()">+</button>
     </div>
   </div>
 
@@ -2638,6 +3583,60 @@
       <div class="resize-handle rh-sw" data-dir="sw"></div>
     </div>
 
+    <div class="panel-study" data-panel="study">
+      <div class="panel-header">
+        <span class="drag-handle" title="Drag to move">⠿</span>
+        <div class="panel-label">
+          <div class="panel-badge"><i class="ph-fill ph-book-open-text"></i></div>
+          <span class="panel-name">Study Planner</span>
+        </div>
+        <div class="panel-actions">
+          <button class="icon-btn red" onclick="onSpPlusBtn()" title="Add">+</button>
+        </div>
+      </div>
+      <div class="panel-subtabs">
+        <button class="subtab active" id="spTabTasks" onclick="switchSpTab('tasks')">Tasks</button>
+        <button class="subtab" id="spTabSubjects" onclick="switchSpTab('subjects')">&#9745; Subjects</button>
+      </div>
+      <!-- Tasks tab content -->
+      <div id="spTasksWrap" style="display:flex;flex-direction:column;flex:1;overflow:hidden;">
+        <div class="sp-scroll" id="spBody"></div>
+        <div class="sp-summary-bar" id="spSummaryBar" style="display:none;">
+          <div class="sp-summary-txt" id="spSummaryTxt">0 of 0 tasks done</div>
+          <div class="sp-summary-bar-wrap"><div class="sp-summary-bar-fill" id="spSummaryFill" style="width:0%;"></div></div>
+        </div>
+      </div><!-- end spTasksWrap -->
+      <!-- Subjects tab content -->
+      <div class="wp-checklist-wrap" id="spChecklistWrap" style="display:none;">
+        <div class="wp-check-hdr">
+          <span class="wp-check-progress-txt" id="spCheckProgressTxt">0 of 0 done</span>
+          <div class="wp-check-filters">
+            <button class="wp-check-filter-btn active" id="spCkAll" onclick="spSetFilter('all')">All</button>
+            <button class="wp-check-filter-btn" id="spCkTodo" onclick="spSetFilter('todo')">To do</button>
+            <button class="wp-check-filter-btn" id="spCkDone" onclick="spSetFilter('done')">Done</button>
+          </div>
+          <button class="wp-group-add-btn" onclick="openSpAddSubject()">+ Subject</button>
+        </div>
+        <div class="wp-check-scroll" id="spCheckBody"></div>
+        <div class="wp-check-add-row">
+          <select class="wp-check-group-sel" id="spCheckGroupSel">
+            <option value="">No subject</option>
+          </select>
+          <input class="wp-check-add-inp" type="text" id="spCheckInput" placeholder="Add a goal… press Enter"
+            maxlength="100" onkeydown="if(event.key==='Enter')addSpSubjectGoal()" />
+          <button class="wp-check-add-btn" onclick="addSpSubjectGoal()">+</button>
+        </div>
+      </div>
+      <div class="resize-handle rh-n"  data-dir="n"></div>
+      <div class="resize-handle rh-s"  data-dir="s"></div>
+      <div class="resize-handle rh-e"  data-dir="e"></div>
+      <div class="resize-handle rh-w"  data-dir="w"></div>
+      <div class="resize-handle rh-ne" data-dir="ne"></div>
+      <div class="resize-handle rh-nw" data-dir="nw"></div>
+      <div class="resize-handle rh-se" data-dir="se"></div>
+      <div class="resize-handle rh-sw" data-dir="sw"></div>
+    </div>
+
   </div><!-- end panels canvas -->
 </div>
 
@@ -2646,7 +3645,7 @@
 ══════════════════════════════════════════════════════ -->
 
 <!-- Salary / Nett Income Modal -->
-<div class="modal-overlay" id="salaryModal" onclick="if(event.target===this)closeSalaryModal()">
+<div class="modal-overlay" id="salaryModal">
   <div class="modal" style="max-width:420px;">
     <button class="modal-close" onclick="closeSalaryModal()">✕</button>
     <div class="modal-icon">💼</div>
@@ -2676,7 +3675,7 @@
 </div>
 
 <!-- Add Expense Modal -->
-<div class="modal-overlay" id="addExpenseModal" onclick="if(event.target===this)closeAddExpense()">
+<div class="modal-overlay" id="addExpenseModal">
   <div class="modal">
     <button class="modal-close" onclick="closeAddExpense()">✕</button>
     <div class="modal-icon">💸</div>
@@ -2709,7 +3708,7 @@
 </div>
 
 <!-- Category Editor Overlay -->
-<div class="cat-editor-overlay" id="catEditorOverlay" style="display:none;" onclick="if(event.target===this)closeCatEditor()">
+<div class="cat-editor-overlay" id="catEditorOverlay" style="display:none;">
   <div class="cat-editor-panel">
     <div class="cat-editor-title" id="catEditorTitle">New Category</div>
     <input class="cat-editor-input" id="catEditorInp" type="text" placeholder="e.g. Gym, Petrol, Groceries" maxlength="24"
@@ -2742,7 +3741,7 @@
 </div>
 
 <!-- Category Manager Overlay -->
-<div class="cat-manager-overlay" id="catManagerOverlay" style="display:none;" onclick="if(event.target===this)closeCatManager()">
+<div class="cat-manager-overlay" id="catManagerOverlay" style="display:none;">
   <div class="cat-manager-panel">
     <div class="cat-manager-head">
       <span class="cat-manager-ttl">My Categories</span>
@@ -2756,7 +3755,7 @@
 </div>
 
 <!-- Add / Edit Commitment Modal -->
-<div class="modal-overlay" id="addCommitModal" onclick="if(event.target===this)closeAddCommitment()">
+<div class="modal-overlay" id="addCommitModal">
   <div class="modal" style="max-width:380px;">
     <button class="modal-close" onclick="closeAddCommitment()">✕</button>
     <div class="modal-icon"><i class="ph-fill ph-calendar-check" style="font-size:1.4rem;color:var(--th-accent);"></i></div>
@@ -2794,7 +3793,7 @@
 </div>
 
 <!-- Variable Bill Actual Amount Modal -->
-<div class="modal-overlay" id="varAmtModal" onclick="if(event.target===this)closeVarAmtModal()">
+<div class="modal-overlay" id="varAmtModal">
   <div class="modal" style="max-width:320px;">
     <button class="modal-close" onclick="closeVarAmtModal()">✕</button>
     <div class="modal-icon">💡</div>
@@ -2812,7 +3811,7 @@
 </div>
 
 <!-- Add / Edit Goal Modal -->
-<div class="modal-overlay" id="addGoalModal" onclick="if(event.target===this)closeAddGoal()">
+<div class="modal-overlay" id="addGoalModal">
   <div class="modal" style="max-width:420px;">
     <button class="modal-close" onclick="closeAddGoal()">✕</button>
     <div class="modal-icon">🎯</div>
@@ -2842,7 +3841,7 @@
 </div>
 
 <!-- Log Contribution Modal -->
-<div class="modal-overlay" id="addContribModal" onclick="if(event.target===this)closeAddContrib()">
+<div class="modal-overlay" id="addContribModal">
   <div class="modal" style="max-width:420px;">
     <button class="modal-close" onclick="closeAddContrib()">✕</button>
     <div class="modal-icon">💰</div>
@@ -2876,7 +3875,7 @@
 </div>
 
 <!-- Wedding Checklist — Edit Task Modal -->
-<div class="modal-overlay" id="wpCheckEditModal" onclick="if(event.target===this)closeWpCheckEdit()">
+<div class="modal-overlay" id="wpCheckEditModal">
   <div class="modal" style="max-width:400px;">
     <button class="modal-close" onclick="closeWpCheckEdit()">✕</button>
     <div class="modal-icon">&#9998;</div>
@@ -2903,7 +3902,7 @@
 </div>
 
 <!-- Wedding Checklist — Add Group Modal -->
-<div class="modal-overlay" id="wpAddGroupModal" onclick="if(event.target===this)closeWpAddGroup()">
+<div class="modal-overlay" id="wpAddGroupModal">
   <div class="modal" style="max-width:360px;">
     <button class="modal-close" onclick="closeWpAddGroup()">✕</button>
     <div class="modal-icon">&#128198;</div>
@@ -2921,7 +3920,7 @@
 </div>
 
 <!-- Wedding Planner — Add/Edit Item Modal -->
-<div class="modal-overlay" id="wpAddItemModal" onclick="if(event.target===this)closeWpItem()">
+<div class="modal-overlay" id="wpAddItemModal">
   <div class="modal" style="max-width:420px;">
     <button class="modal-close" onclick="closeWpItem()">✕</button>
     <div class="modal-icon">💍</div>
@@ -2951,7 +3950,7 @@
 </div>
 
 <!-- Wedding Planner — Log Payment Modal -->
-<div class="modal-overlay" id="wpAddPaymentModal" onclick="if(event.target===this)closeWpPayment()">
+<div class="modal-overlay" id="wpAddPaymentModal">
   <div class="modal" style="max-width:420px;">
     <button class="modal-close" onclick="closeWpPayment()">✕</button>
     <div class="modal-icon">💸</div>
@@ -2983,8 +3982,61 @@
   </div>
 </div>
 
+<!-- Study Planner — Add/Edit Task Modal -->
+<div class="modal-overlay" id="spAddTaskModal">
+  <div class="modal" style="max-width:420px;">
+    <button class="modal-close" onclick="closeSpTask()">✕</button>
+    <div class="modal-icon">📚</div>
+    <div class="modal-title" id="spTaskModalTitle">New Task</div>
+
+    <div class="field-label">Title</div>
+    <input type="text" id="spTaskTitle" placeholder="e.g. Database Assignment 2, Final Exam…" maxlength="80"
+      onkeydown="if(event.key==='Enter')document.getElementById('spTaskSubject').focus()" />
+
+    <div class="field-label">Subject <span style="color:#475569;font-weight:400;">(optional)</span></div>
+    <input type="text" id="spTaskSubject" placeholder="e.g. Database Systems" maxlength="40" />
+
+    <div class="field-label">Type</div>
+    <select id="spTaskType">
+      <option value="assignment">Assignment</option>
+      <option value="exam">Exam</option>
+      <option value="quiz">Quiz</option>
+      <option value="project">Project</option>
+    </select>
+
+    <div class="field-label">Due Date <span style="color:#475569;font-weight:400;">(optional)</span></div>
+    <input type="date" id="spTaskDue" class="cfg-date-inp" style="width:100%;" />
+
+    <div class="field-label">Notes <span style="color:#475569;font-weight:400;">(optional)</span></div>
+    <textarea id="spTaskNotes" maxlength="300" rows="3"
+      style="width:100%;padding:0.6rem 0.8rem;border-radius:10px;border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.05);color:#f1f5f9;font-size:0.85rem;font-family:inherit;outline:none;resize:vertical;"
+      placeholder="Add a note, requirements, or reminder…"></textarea>
+
+    <button class="modal-btn primary" id="spTaskSaveBtn" onclick="saveSpTask()">Create Task</button>
+    <button class="modal-btn secondary" onclick="closeSpTask()">Cancel</button>
+  </div>
+</div>
+
+<!-- Study Planner — Add Subject Modal -->
+<div class="modal-overlay" id="spAddSubjectModal">
+  <div class="modal" style="max-width:360px;">
+    <button class="modal-close" onclick="closeSpAddSubject()">✕</button>
+    <div class="modal-icon">📖</div>
+    <div class="modal-title">New Subject</div>
+    <div class="modal-sub">Track progress &amp; goals per subject</div>
+
+    <div class="field-label">Subject Name</div>
+    <input type="text" id="spSubjectNameInput" maxlength="40"
+      placeholder="e.g. Database Systems, Calculus II…"
+      onkeydown="if(event.key==='Enter')saveSpSubject()" />
+
+    <button class="modal-btn primary" onclick="saveSpSubject()">Create Subject</button>
+    <button class="modal-btn secondary" onclick="closeSpAddSubject()">Cancel</button>
+  </div>
+</div>
+
 <!-- Quick Templates Modal -->
-<div class="modal-overlay" id="templatesModal" onclick="if(event.target===this)closeTemplatesModal()">
+<div class="modal-overlay" id="templatesModal">
   <div class="modal" style="max-width:440px;">
     <button class="modal-close" onclick="closeTemplatesModal()">✕</button>
     <div class="modal-icon">⚡</div>
@@ -3007,7 +4059,7 @@
 </div>
 
 <!-- Expanded Calendar Modal -->
-<div class="cal-modal-overlay" id="calExpandModal" onclick="if(event.target===this)closeExpandedCal()">
+<div class="cal-modal-overlay" id="calExpandModal">
   <div class="cal-modal-box" style="min-width:340px;max-width:760px;width:100%;">
     <div class="cal-modal-header">
       <button class="cal-nav-btn" onclick="shiftCalMonth(-1)">&#8249;</button>
@@ -3027,7 +4079,7 @@
 </div>
 
 <!-- Shift & Pay Config Modal -->
-<div class="modal-overlay" id="calCfgOverlay" onclick="if(event.target===this)closeCalCfg()" style="z-index:420;">
+<div class="modal-overlay" id="calCfgOverlay" style="z-index:420;">
   <div class="modal" style="max-width:420px;">
     <button class="modal-close" onclick="closeCalCfg()">&#10005;</button>
 
@@ -3129,7 +4181,7 @@
 </div>
 
 <!-- Add / Edit Debt Modal -->
-<div class="modal-overlay" id="addDebtModal" onclick="if(event.target===this)closeAddDebt()">
+<div class="modal-overlay" id="addDebtModal">
   <div class="modal">
     <button class="modal-close" onclick="closeAddDebt()">✕</button>
     <div class="modal-icon">💳</div>
@@ -3222,7 +4274,7 @@
 </div>
 
 <!-- Log Monthly Bill Modal (for variable debts) -->
-<div class="modal-overlay" id="logBillModal" onclick="if(event.target===this)closeLogBill()">
+<div class="modal-overlay" id="logBillModal">
   <div class="modal" style="max-width:380px;">
     <button class="modal-close" onclick="closeLogBill()">✕</button>
     <div class="modal-icon">🧾</div>
@@ -3253,7 +4305,7 @@
 </div>
 
 <!-- Est. Income Setup Modal -->
-<div class="modal-overlay" id="estIncomeModal" onclick="if(event.target===this)closeEstIncomeModal()">
+<div class="modal-overlay" id="estIncomeModal">
   <div class="modal" style="max-width:380px;">
     <button class="modal-close" onclick="closeEstIncomeModal()">✕</button>
     <div class="modal-icon"><span style="font-size:1.6rem;">💰</span></div>
@@ -3275,7 +4327,7 @@
 </div>
 
 <!-- OT Recommendation Modal -->
-<div class="modal-overlay" id="otRecoModal" onclick="if(event.target===this)closeOtReco()">
+<div class="modal-overlay" id="otRecoModal">
   <div class="modal" style="max-width:400px;">
     <button class="modal-close" onclick="closeOtReco()">✕</button>
     <div class="modal-icon">💡</div>
@@ -3285,7 +4337,7 @@
 </div>
 
 <!-- Add OT Modal -->
-<div class="modal-overlay" id="addOtModal" onclick="if(event.target===this)closeAddOT()">
+<div class="modal-overlay" id="addOtModal">
   <div class="modal">
     <button class="modal-close" onclick="closeAddOT()">✕</button>
     <div class="modal-icon">⏱️</div>
@@ -3328,7 +4380,7 @@
 </div>
 
 <!-- OT Settings Modal -->
-<div class="modal-overlay" id="otSettingsModal" onclick="if(event.target===this)closeOtSettings()">
+<div class="modal-overlay" id="otSettingsModal">
   <div class="modal" style="width:580px;max-width:96vw;">
     <button class="modal-close" onclick="closeOtSettings()">✕</button>
     <div class="modal-icon">⚙️</div>
@@ -3341,7 +4393,7 @@
 </div>
 
 <!-- Budget Settings Modal -->
-<div class="modal-overlay" id="budgetSettingsModal" onclick="if(event.target===this)closeBudgetSettings()">
+<div class="modal-overlay" id="budgetSettingsModal">
   <div class="modal" style="max-width:420px;">
     <button class="modal-close" onclick="closeBudgetSettings()">✕</button>
     <div class="modal-icon">🎯</div>
@@ -3354,7 +4406,7 @@
 </div>
 
 <!-- History Modal -->
-<div class="modal-overlay" id="historyModal" onclick="if(event.target===this)closeHistory()">
+<div class="modal-overlay" id="historyModal">
   <div class="modal hist-modal">
     <button class="modal-close" onclick="closeHistory()">✕</button>
     <div class="modal-icon">📊</div>
@@ -3370,7 +4422,7 @@
 </div>
 
 <!-- Edit Salary Modal (for history table) -->
-<div class="modal-overlay" id="editSalaryModal" onclick="if(event.target===this)closeEditSalary()">
+<div class="modal-overlay" id="editSalaryModal">
   <div class="modal">
     <button class="modal-close" onclick="closeEditSalary()">✕</button>
     <div class="modal-icon">✏️</div>
@@ -3384,7 +4436,7 @@
 </div>
 
 <!-- Add / Edit Received Money Modal -->
-<div class="modal-overlay" id="addReceivedModal" onclick="if(event.target===this)closeAddReceived()">
+<div class="modal-overlay" id="addReceivedModal">
   <div class="modal">
     <button class="modal-close" onclick="closeAddReceived()">✕</button>
     <div class="modal-icon">💚</div>
@@ -3480,6 +4532,23 @@ var _syncTimer    = null;
 var _lsSet    = Storage.prototype.setItem.bind(localStorage);
 var _lsRemove = Storage.prototype.removeItem.bind(localStorage);
 
+// ── Seller Mode (hides "Seller Tools" from buyers) ─────────
+// Devices connected to this exact cloud sync code see Seller Tools automatically.
+// As a fallback (e.g. this device's sync code hasn't been linked yet), visiting
+// once with ?seller=1 also reveals it — still requires the admin PIN to open.
+// Visiting with ?seller=0 removes that manual override again.
+var SELLER_SYNC_KEY = "mft-b04f8b07-a305-4030-a28e-0f513540cf5b";
+(function() {
+  var params = new URLSearchParams(window.location.search);
+  if (!params.has("seller")) return;
+  if (params.get("seller") === "0") _lsRemove("opmus_seller_mode");
+  else _lsSet("opmus_seller_mode", "1");
+})();
+function isSellerMode() {
+  return localStorage.getItem(SYNC_KEY_STORAGE) === SELLER_SYNC_KEY
+      || localStorage.getItem("opmus_seller_mode") === "1";
+}
+
 // Silent batch push — fallback when individual real-time writes fail (e.g. Safari/iPad)
 function _batchPush() {
   if (!_db || !_syncKey || _cloudSyncing) return;
@@ -3551,6 +4620,19 @@ function _genSyncKey() {
       return (c === "x" ? r : (r & 0x3 | 0x8)).toString(16);
     });
   }
+}
+
+// ── License key / gift code generator (Seller Tools) ─────
+// Distinct cloud sync codes that may activate one license key before it's
+// auto-blocked. Generous enough that a real household never hits it (each
+// device defaults to its own sync code until the buyer links them), but it
+// bounds how far a leaked/shared key can spread.
+var MAX_LICENSE_ACTIVATIONS = 3;
+function _genCode(prefix) {
+  var chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; // no 0/O/1/I
+  var s = "";
+  for (var i = 0; i < 8; i++) s += chars[Math.floor(Math.random() * chars.length)];
+  return "OPMUS-" + prefix + "-" + s.slice(0, 4) + "-" + s.slice(4);
 }
 // getSyncKey kept for any legacy references
 function getSyncKey() {
@@ -3633,7 +4715,7 @@ async function connectSyncCode() {
   stopLiveSync();
   startLiveSync();
   if (activeProfileId) {
-    syncDebtCommitments(); renderPanelA(); renderPanelB(); renderBudget(); renderCommitments(); renderOtPanel(); renderDebtPanel(); renderWeddingPanel();
+    syncDebtCommitments(); renderPanelA(); renderPanelB(); renderBudget(); renderCommitments(); renderOtPanel(); renderDebtPanel(); renderWeddingPanel(); renderStudyPanel();
   } else {
     closeSyncModal();
     renderPickerCards();
@@ -3654,7 +4736,7 @@ var _isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.maxTouch
 function _showSyncToast(msg) {
   var t = document.getElementById("liveSyncToast");
   if (!t) return;
-  t.textContent = msg || "✔ Partner synced";
+  t.textContent = msg || "✔ Synced";
   t.classList.add("visible");
   clearTimeout(_syncToastTimer);
   _syncToastTimer = setTimeout(function() { t.classList.remove("visible"); }, 2500);
@@ -3675,7 +4757,7 @@ function _scheduleRerender() {
       // iOS Safari often doesn't repaint after JS DOM changes — reload instead.
       // Safe to reload only if no input is focused and no modal is open.
       if (_safeToReload()) {
-        _showSyncToast("↻ Partner updated — refreshing…");
+        _showSyncToast("↻ Synced — refreshing…");
         setTimeout(function() { location.reload(); }, 900);
         return;
       }
@@ -3689,7 +4771,8 @@ function _scheduleRerender() {
     try { renderOtPanel();      } catch(e) {}
     try { renderDebtPanel();    } catch(e) {}
     try { renderWeddingPanel(); } catch(e) {}
-    _setSyncStatus("green", "Live — just updated from partner");
+    try { renderStudyPanel();   } catch(e) {}
+    _setSyncStatus("green", "Live — just synced");
     _showSyncToast();
   }, 300);
 }
@@ -3854,6 +4937,8 @@ const TEMPLATES_KEY        = profilePrefix + 'mft_templates';
 const GOALS_KEY            = profilePrefix + 'mft_goals';
 const WEDDING_KEY          = profilePrefix + 'mft_wedding';
 const WEDDING_CHECK_KEY    = profilePrefix + 'mft_wedding_checklist';
+const STUDY_TASKS_KEY      = profilePrefix + 'mft_study_tasks';
+const STUDY_SUBJECTS_KEY   = profilePrefix + 'mft_study_subjects';
 
 const CATEGORIES = {
   food:          { label: 'Food & Drink',   color: '#f97316' },
@@ -3877,9 +4962,9 @@ mergeCustomCats();
 
 // Pre-seed default values for active profile only
 if (activeProfileId) {
-  if (!localStorage.getItem(OT_RATE_OVERRIDE_KEY)) localStorage.setItem(OT_RATE_OVERRIDE_KEY, activeProfileId === 'haziq' ? '13.38' : '0');
-  if (!localStorage.getItem(BASIC_PAY_KEY))        localStorage.setItem(BASIC_PAY_KEY,  activeProfileId === 'haziq' ? '2500'   : '0');
-  if (!localStorage.getItem(DEDUCTIONS_KEY))       localStorage.setItem(DEDUCTIONS_KEY, activeProfileId === 'haziq' ? '308.25' : '0');
+  if (!localStorage.getItem(OT_RATE_OVERRIDE_KEY)) localStorage.setItem(OT_RATE_OVERRIDE_KEY, '0');
+  if (!localStorage.getItem(BASIC_PAY_KEY))        localStorage.setItem(BASIC_PAY_KEY, '0');
+  if (!localStorage.getItem(DEDUCTIONS_KEY))       localStorage.setItem(DEDUCTIONS_KEY, '0');
 }
 
 
@@ -3900,6 +4985,7 @@ function setCurrency(sym) {
   renderOtPanel();
   renderDebtPanel();
   renderWeddingPanel();
+  renderStudyPanel();
 }
 function fmt(n) {
   var sym = _currency;
@@ -6262,19 +7348,78 @@ var MODULES = {
   expenses: { id:'expenses', name:'Expense Tracker',  icon:'ph-receipt',         desc:'Log and categorise every expense you make', color:'#fb923c' },
   goals:    { id:'goals',    name:'Savings Goals',    icon:'ph-crosshair',       desc:'Set targets and track your savings progress', color:'#22c55e' },
   ot:       { id:'ot',      name:'OT Estimator',     icon:'ph-timer',            desc:'Log overtime hours and calculate OT pay',       color:'#3b82f6' },
-  wedding:  { id:'wedding', name:'Wedding Planner',  icon:'ph-heart',            desc:'Track every wedding expense and payment deadline', color:'#f43f5e' }
+  wedding:  { id:'wedding', name:'Wedding Planner',  icon:'ph-heart',            desc:'Track every wedding expense and payment deadline', color:'#f43f5e' },
+  study:    { id:'study',   name:'Study Planner',    icon:'ph-book-open-text',  desc:'Assignments, exams & deadline reminders',          color:'#06b6d4' }
 };
 var UPCOMING_MODULES = [
-  { id:'bills',    name:'Recurring Bills', icon:'ph-lightning',      desc:'Track utility bills, subscriptions & due dates',     color:'#818cf8' },
-  { id:'networth', name:'Net Worth',       icon:'ph-trend-up',       desc:'Assets minus liabilities — your financial snapshot', color:'#34d399' }
+  { id:'bills',      name:'Recurring Bills',    icon:'ph-lightning',       desc:'Track utility bills, subscriptions & due dates',     color:'#818cf8' },
+  { id:'networth',   name:'Net Worth',          icon:'ph-trend-up',        desc:'Assets minus liabilities — your financial snapshot', color:'#34d399' },
+  { id:'renovation', name:'Renovation Tracker', icon:'ph-hammer',          desc:'Track your home renovation budget & milestones',     color:'#f59e0b' },
+  { id:'ramadan',    name:'Ramadan Planner',    icon:'ph-moon-stars',      desc:'Ibadah tracker, sahur/iftar times & Ramadan goals',   color:'#10b981' }
 ];
 var ACTIVE_MODULES_KEY = (activeProfileId ? activeProfileId + '__' : '') + 'mft_active_modules';
-var DEFAULT_MODULES = ['budget','commit','expenses','goals','debt','ot','wedding'];
+var DEFAULT_MODULES = ['budget','commit','expenses','goals','debt','ot'];
 var _activeModules  = DEFAULT_MODULES.slice();
+
+// ── Premium module entitlement (gift-code redemption) ─────
+var PREMIUM_MODULES = ["wedding", "study"];
+
+// "base" is a pseudo-module id used only by trial gift codes to grant
+// temporary full access to the Base App itself (see checkBaseTrialStatus).
+function _trialItemName(id) {
+  if (id === "base") return "Base App";
+  return (MODULES[id] && MODULES[id].name) || id;
+}
+
+var TRIAL_UNIT_MS = { days: 86400000, hours: 3600000, minutes: 60000, seconds: 1000 };
+
+function _fmtDuration(ms) {
+  if (ms % 86400000 === 0) return (ms / 86400000) + "d";
+  if (ms % 3600000 === 0) return (ms / 3600000) + "h";
+  if (ms % 60000 === 0) return (ms / 60000) + "m";
+  return Math.round(ms / 1000) + "s";
+}
+var UNLOCKED_MODULES_KEY = (activeProfileId ? activeProfileId + "__" : "") + "mft_unlocked_modules";
+var TRIAL_EXPIRY_KEY = (activeProfileId ? activeProfileId + "__" : "") + "mft_trial_expiry";
+
+function getUnlockedModules() {
+  var saved = localStorage.getItem(UNLOCKED_MODULES_KEY);
+  return saved ? JSON.parse(saved) : [];
+}
+
+function saveUnlockedModules(list) {
+  localStorage.setItem(UNLOCKED_MODULES_KEY, JSON.stringify(list));
+}
+
+function getTrialExpiry() {
+  var saved = localStorage.getItem(TRIAL_EXPIRY_KEY);
+  return saved ? JSON.parse(saved) : {};
+}
+
+function saveTrialExpiry(obj) {
+  localStorage.setItem(TRIAL_EXPIRY_KEY, JSON.stringify(obj));
+}
+
+function isModuleUnlocked(id) {
+  if (PREMIUM_MODULES.indexOf(id) === -1) return true;
+  if (getUnlockedModules().indexOf(id) === -1) return false;
+  var expiry = getTrialExpiry()[id];
+  if (expiry && Date.now() >= expiry) return false;
+  return true;
+}
 
 function loadActiveModules() {
   var saved = localStorage.getItem(ACTIVE_MODULES_KEY);
   _activeModules = saved ? JSON.parse(saved) : DEFAULT_MODULES.slice();
+  // Grandfather: profiles that already had Wedding active before the
+  // gift-code system existed keep access without needing a code.
+  if (_activeModules.indexOf("wedding") >= 0) {
+    var unlocked = getUnlockedModules();
+    if (unlocked.indexOf("wedding") === -1) {
+      unlocked.push("wedding");
+      saveUnlockedModules(unlocked);
+    }
+  }
 }
 
 function saveActiveModules() {
@@ -6286,7 +7431,7 @@ function applyModuleVisibility() {
   Object.keys(MODULES).forEach(function(id) {
     var el = document.querySelector('[data-panel="' + id + '"]');
     if (!el) return;
-    var on = _activeModules.indexOf(id) >= 0;
+    var on = _activeModules.indexOf(id) >= 0 && isModuleUnlocked(id);
     if (!isMobile) el.style.display = on ? '' : 'none';
   });
   if (isMobile) _initMobilePanels();
@@ -6333,21 +7478,104 @@ function removeModule(id) {
 }
 
 function toggleModule(id) {
-  if (_activeModules.indexOf(id) >= 0) { removeModule(id); } else { addModule(id); }
+  if (_activeModules.indexOf(id) >= 0) { removeModule(id); renderAppLibrary(); return; }
+  if (!isModuleUnlocked(id)) {
+    showToast("🔒 Redeem a gift code to unlock " + MODULES[id].name);
+    focusRedeemInput();
+    return;
+  }
+  addModule(id);
   renderAppLibrary();
+}
+
+async function redeemGiftCode() {
+  var inp = document.getElementById("redeemCodeInput");
+  var msg = document.getElementById("redeemCodeMsg");
+  var code = inp ? inp.value.trim().toUpperCase() : "";
+  if (!code) { msg.textContent = "Enter a gift code."; return; }
+  if (!_db)  { msg.textContent = "No internet connection — try again later."; return; }
+  msg.textContent = "Checking…";
+  try {
+    var ref = _db.ref("giftcodes/" + code);
+    var snap = await ref.once("value");
+    var data = snap.val();
+    if (!data || data.valid !== true || data.redeemed === true) {
+      msg.textContent = "Invalid or already-used code.";
+      return;
+    }
+    await ref.update({ redeemed: true, redeemedAt: Date.now(), redeemedBySyncKey: getSyncKey() });
+    var unlocked = getUnlockedModules();
+    if (data.trial === true) {
+      var trialExpiry = getTrialExpiry();
+      var expiresAt = Date.now() + data.trialMs;
+      (data.modules || []).forEach(function(m) {
+        if (m === "base") return; // base-trial is only meaningful via the license gate
+        if (unlocked.indexOf(m) === -1) unlocked.push(m);
+        trialExpiry[m] = expiresAt;
+        addModule(m);
+      });
+      saveUnlockedModules(unlocked);
+      saveTrialExpiry(trialExpiry);
+      renderAppLibrary();
+      applyModuleVisibility();
+      showToast("🎉 Trial activated for " + _fmtDuration(data.trialMs) + "!");
+    } else {
+      if (unlocked.indexOf(data.module) === -1) unlocked.push(data.module);
+      saveUnlockedModules(unlocked);
+      addModule(data.module);
+      renderAppLibrary();
+      applyModuleVisibility();
+      showToast("🎉 " + (MODULES[data.module] ? MODULES[data.module].name : data.module) + " unlocked!");
+    }
+    inp.value = "";
+    msg.textContent = "";
+  } catch(e) {
+    msg.textContent = "Could not verify code. Try again.";
+  }
+}
+
+function focusRedeemInput() {
+  var el = document.getElementById("redeemCodeInput");
+  if (el) { el.focus(); el.scrollIntoView({ behavior: "smooth", block: "center" }); }
+}
+
+function _renderModuleCard(m) {
+  var on = _activeModules.indexOf(m.id) >= 0;
+  var locked = !isModuleUnlocked(m.id);
+  var trialExpiry = getTrialExpiry()[m.id];
+  var inTrial = !locked && trialExpiry && trialExpiry > Date.now();
+  var html = '<div class="module-card' + (on ? ' active' : '') + (locked ? ' locked' : '') + '">';
+  html += '<div class="module-card-icon" style="background:linear-gradient(135deg,' + m.color + '33,' + m.color + '18);"><i class="ph-fill ' + m.icon + '" style="color:' + m.color + ';font-size:1.15rem;"></i></div>';
+  html += '<div class="module-card-info"><div class="module-card-name">' + m.name + '</div><div class="module-card-desc">' + m.desc + '</div>';
+  if (locked) html += '<span class="module-card-badge locked-badge">🔒 Gift code required</span>';
+  else if (inTrial) html += '<span class="module-card-badge trial-badge">⏳ Trial · ' + _fmtTimeLeft(trialExpiry - Date.now()) + ' left</span>';
+  html += '</div>';
+  if (locked) {
+    html += '<button class="module-toggle-btn off" onclick="focusRedeemInput()" title="Redeem a gift code to unlock">🔒</button>';
+  } else {
+    html += '<button class="module-toggle-btn ' + (on ? 'on' : 'off') + '" onclick="toggleModule(\'' + m.id + '\')">' + (on ? '✓ On' : '+ Add') + '</button>';
+  }
+  html += '</div>';
+  return html;
 }
 
 function renderAppLibrary() {
   var el = document.getElementById('appLibraryBody');
   if (!el) return;
-  var html = '<div class="module-section-title">Active Modules</div><div class="module-grid">';
+  var html =
+    '<div class="redeem-row">'
+  + '<input type="text" id="redeemCodeInput" class="form-input" placeholder="Have a gift code? Enter it here" onkeydown="if(event.key===\'Enter\')redeemGiftCode()" />'
+  + '<button class="modal-btn primary" onclick="redeemGiftCode()">Redeem</button>'
+  + '</div><div id="redeemCodeMsg" class="redeem-msg"></div>';
+  html += '<div class="module-section-title">Base App</div><div class="module-grid">';
   Object.values(MODULES).forEach(function(m) {
-    var on = _activeModules.indexOf(m.id) >= 0;
-    html += '<div class="module-card' + (on ? ' active' : '') + '">';
-    html += '<div class="module-card-icon" style="background:linear-gradient(135deg,' + m.color + '33,' + m.color + '18);"><i class="ph-fill ' + m.icon + '" style="color:' + m.color + ';font-size:1.15rem;"></i></div>';
-    html += '<div class="module-card-info"><div class="module-card-name">' + m.name + '</div><div class="module-card-desc">' + m.desc + '</div></div>';
-    html += '<button class="module-toggle-btn ' + (on ? 'on' : 'off') + '" onclick="toggleModule(\'' + m.id + '\')">' + (on ? '✓ On' : '+ Add') + '</button>';
-    html += '</div>';
+    if (PREMIUM_MODULES.indexOf(m.id) >= 0) return;
+    html += _renderModuleCard(m);
+  });
+  html += '</div><div class="module-section-title" style="margin-top:1.1rem;">Add-on Modules</div><div class="module-grid">';
+  Object.values(MODULES).forEach(function(m) {
+    if (PREMIUM_MODULES.indexOf(m.id) === -1) return;
+    html += _renderModuleCard(m);
   });
   html += '</div><div class="module-section-title" style="margin-top:1.1rem;">Coming Soon</div><div class="module-grid">';
   UPCOMING_MODULES.forEach(function(m) {
@@ -6368,6 +7596,297 @@ function openAppLibrary() {
 
 function closeAppLibrary() {
   document.getElementById('appLibraryModal').classList.remove('open');
+}
+
+// ── User Guide ─────────────────────────────────────────────
+function openUserGuide() {
+  var dd = document.getElementById('profileDropdown');
+  if (dd) dd.classList.remove('open');
+  document.getElementById('userGuideModal').classList.add('open');
+  var search = document.getElementById('guideSearchInput');
+  if (search) search.value = '';
+  var items = document.querySelectorAll('.guide-acc-item');
+  items.forEach(function(el, i) {
+    el.classList.remove('guide-hidden');
+    setGuideItemOpen(el, i === 0);
+  });
+  var body = document.querySelector('#userGuideModal .guide-body');
+  if (body) body.scrollTop = 0;
+}
+
+function closeUserGuide() {
+  document.getElementById('userGuideModal').classList.remove('open');
+}
+
+function setGuideItemOpen(item, open) {
+  var content = item.querySelector('.guide-acc-content');
+  item.classList.toggle('open', open);
+  content.style.maxHeight = open ? content.scrollHeight + 'px' : '0px';
+}
+
+function toggleGuideSection(id) {
+  var item = document.querySelector('.guide-acc-item[data-guide-id="' + id + '"]');
+  if (!item) return;
+  setGuideItemOpen(item, !item.classList.contains('open'));
+}
+
+function expandAllGuide() {
+  document.querySelectorAll('.guide-acc-item:not(.guide-hidden)').forEach(function(el) {
+    setGuideItemOpen(el, true);
+  });
+}
+
+function collapseAllGuide() {
+  document.querySelectorAll('.guide-acc-item').forEach(function(el) {
+    setGuideItemOpen(el, false);
+  });
+}
+
+function filterGuide(query) {
+  query = (query || '').trim().toLowerCase();
+  var items = document.querySelectorAll('.guide-acc-item');
+  if (!query) {
+    items.forEach(function(el, i) {
+      el.classList.remove('guide-hidden');
+      setGuideItemOpen(el, i === 0);
+    });
+    return;
+  }
+  items.forEach(function(el) {
+    var match = el.textContent.toLowerCase().indexOf(query) !== -1;
+    el.classList.toggle('guide-hidden', !match);
+    if (match) setGuideItemOpen(el, true);
+  });
+}
+
+// ── Seller Tools (admin) ──────────────────────────────────
+var _sellerCodes = null; // cached { licenses:{...}, gifts:{...} } from Firebase
+
+function openSellerTools() {
+  hideProfilePicker();
+  document.getElementById("sellerToolsResult").innerHTML = "";
+  switchSellerTab("generate");
+  document.getElementById("sellerToolsModal").classList.add("open");
+}
+
+function closeSellerTools() {
+  document.getElementById("sellerToolsModal").classList.remove("open");
+}
+
+function switchSellerTab(tab) {
+  var gen  = document.getElementById("sellerGenPane");
+  var hist = document.getElementById("sellerHistPane");
+  var tabGen  = document.getElementById("sellerTabGen");
+  var tabHist = document.getElementById("sellerTabHist");
+  if (tab === "history") {
+    gen.style.display = "none"; hist.style.display = "";
+    tabGen.classList.remove("active"); tabHist.classList.add("active");
+    loadSellerHistory();
+  } else {
+    gen.style.display = ""; hist.style.display = "none";
+    tabGen.classList.add("active"); tabHist.classList.remove("active");
+  }
+}
+
+function _showSellerResult(label, code) {
+  var el = document.getElementById("sellerToolsResult");
+  if (!el) return;
+  el.innerHTML =
+    '<div class="seller-result">'
+  + '<div class="seller-result-label"><i class="ph-fill ph-check-circle"></i> ' + label + ' generated</div>'
+  + '<div class="seller-result-box">'
+  + '<span class="seller-result-code">' + code + '</span>'
+  + '<button class="seller-icon-btn" title="Copy" onclick="_copySellerCode(\'' + code + '\')"><i class="ph-bold ph-copy"></i></button>'
+  + '</div></div>';
+}
+
+function _copySellerCode(code) {
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(code).then(function() { showToast("Copied!"); }).catch(function() { showToast(code); });
+  } else {
+    showToast(code);
+  }
+}
+
+function toggleGenCodeTrialFields() {
+  var toggle = document.getElementById("genCodeTrialToggle");
+  var fields = document.getElementById("genCodeTrialFields");
+  if (fields) fields.style.display = (toggle && toggle.checked) ? "" : "none";
+}
+
+async function genCode() {
+  if (!_db) { showToast("Firebase not connected"); return; }
+  var type = (document.getElementById("genCodeType") || {}).value || "base";
+  var trialToggle = document.getElementById("genCodeTrialToggle");
+  var isTrial = trialToggle && trialToggle.checked;
+  var code;
+  try {
+    if (isTrial) {
+      var val  = parseFloat((document.getElementById("genCodeTrialValue") || {}).value);
+      var unit = (document.getElementById("genCodeTrialUnit") || {}).value || "days";
+      if (!val || val <= 0) { showToast("Enter a valid trial length"); return; }
+      var trialMs = val * TRIAL_UNIT_MS[unit];
+      code = _genCode("TRIAL");
+      await _db.ref("giftcodes/" + code).set({ valid: true, redeemed: false, createdAt: Date.now(), trial: true, modules: [type], trialMs: trialMs });
+      _showSellerResult("Trial Code (" + _fmtDuration(trialMs) + ") — " + _trialItemName(type), code);
+    } else if (type === "base") {
+      code = _genCode("BASE");
+      await _db.ref("licenses/" + code).set({ valid: true, product: "base", createdAt: Date.now(), maxActivations: MAX_LICENSE_ACTIVATIONS });
+      _showSellerResult("License Key", code);
+    } else {
+      code = _genCode("GIFT");
+      await _db.ref("giftcodes/" + code).set({ valid: true, module: type, redeemed: false, createdAt: Date.now() });
+      var name = (MODULES[type] && MODULES[type].name) || type;
+      _showSellerResult("Gift Code — " + name, code);
+    }
+    _sellerCodes = null;
+  } catch(e) {
+    showToast("Failed to generate code: " + e.message);
+  }
+}
+
+// ── Seller Console: code history, stats & revoke ──────────
+async function loadSellerHistory() {
+  var listEl = document.getElementById("sellerHistoryList");
+  if (!_db) { listEl.innerHTML = '<div class="empty-state"><div class="msg">Firebase not connected</div></div>'; return; }
+  listEl.innerHTML = '<div class="empty-state"><div class="msg">Loading…</div></div>';
+  try {
+    var licSnap  = await _db.ref("licenses").once("value");
+    var giftSnap = await _db.ref("giftcodes").once("value");
+    _sellerCodes = { licenses: licSnap.val() || {}, gifts: giftSnap.val() || {} };
+    renderSellerStats();
+    renderSellerHistory();
+  } catch(e) {
+    listEl.innerHTML = '<div class="empty-state"><div class="msg">Failed to load: ' + e.message + '</div></div>';
+  }
+}
+
+function renderSellerStats() {
+  var el = document.getElementById("sellerStats");
+  if (!el || !_sellerCodes) return;
+  var lic = _sellerCodes.licenses, gift = _sellerCodes.gifts;
+  var licKeys = Object.keys(lic);
+  var giftKeys = Object.keys(gift);
+  var licActivated = licKeys.filter(function(k) {
+    return lic[k].activatedSyncKeys && Object.keys(lic[k].activatedSyncKeys).length > 0;
+  }).length;
+  var giftRedeemed = giftKeys.filter(function(k) { return gift[k].redeemed === true; }).length;
+  el.innerHTML =
+    '<div class="seller-stat"><i class="ph-bold ph-key seller-stat-icon"></i><div class="seller-stat-num">' + licKeys.length + '</div><div class="seller-stat-label">License Keys</div></div>'
+  + '<div class="seller-stat"><i class="ph-bold ph-shield-check seller-stat-icon"></i><div class="seller-stat-num">' + licActivated + '</div><div class="seller-stat-label">Activated</div></div>'
+  + '<div class="seller-stat"><i class="ph-bold ph-gift seller-stat-icon"></i><div class="seller-stat-num">' + giftKeys.length + '</div><div class="seller-stat-label">Gift Codes</div></div>'
+  + '<div class="seller-stat"><i class="ph-bold ph-check-circle seller-stat-icon"></i><div class="seller-stat-num">' + giftRedeemed + '</div><div class="seller-stat-label">Redeemed</div></div>';
+}
+
+function _fmtSellerDate(ts) {
+  if (!ts) return "—";
+  var d = new Date(ts);
+  return d.getDate() + "/" + (d.getMonth() + 1) + "/" + d.getFullYear();
+}
+
+function _renderLicenseRow(code, d) {
+  var activations = d.activatedSyncKeys ? Object.keys(d.activatedSyncKeys) : [];
+  var max = d.maxActivations || MAX_LICENSE_ACTIVATIONS;
+  var revoked = d.valid === false;
+  var badge = revoked
+    ? '<span class="seller-badge off">Revoked</span>'
+    : activations.length > 0
+      ? '<span class="seller-badge ok">' + activations.length + '/' + max + ' households</span>'
+      : '<span class="seller-badge warn">Unused</span>';
+  return '<div class="seller-code-row">'
+    + '<div class="seller-code-top"><span class="seller-code-id"><i class="ph-fill ph-key"></i>' + code + '</span>' + badge + '</div>'
+    + '<div class="seller-code-bottom">'
+    + '<div class="seller-code-meta">Base App · Created ' + _fmtSellerDate(d.createdAt) + (d.lastActivatedAt ? ' · Last used ' + _fmtSellerDate(d.lastActivatedAt) : '') + '</div>'
+    + '<div class="seller-code-actions">'
+    + '<button class="seller-icon-btn" title="Copy" onclick="_copySellerCode(\'' + code + '\')"><i class="ph-bold ph-copy"></i></button>'
+    + '<button class="seller-icon-btn' + (revoked ? '' : ' danger') + '" title="' + (revoked ? 'Restore' : 'Revoke') + '" onclick="_toggleCodeValid(\'licenses\',\'' + code + '\',' + (revoked ? 'true' : 'false') + ')"><i class="ph-bold ph-' + (revoked ? 'arrow-counter-clockwise' : 'prohibit') + '"></i></button>'
+    + '<button class="seller-icon-btn danger" title="Delete" onclick="_deleteSellerCode(\'licenses\',\'' + code + '\')"><i class="ph-bold ph-trash"></i></button>'
+    + '</div></div></div>';
+}
+
+function _renderGiftRow(code, d) {
+  var revoked = d.valid === false;
+  var isTrial = d.trial === true;
+  var moduleName;
+  if (isTrial) {
+    var names = (d.modules || []).map(function(m) { return _trialItemName(m); });
+    moduleName = "Trial · " + _fmtDuration(d.trialMs) + " · " + names.join(", ");
+  } else {
+    moduleName = (MODULES[d.module] && MODULES[d.module].name) || d.module || "—";
+  }
+  var badge = revoked
+    ? '<span class="seller-badge off">Revoked</span>'
+    : d.redeemed
+      ? '<span class="seller-badge used">Redeemed</span>'
+      : '<span class="seller-badge ok">Available</span>';
+  var expiresStr = '';
+  if (isTrial && d.redeemedAt) {
+    var expiresAt = d.redeemedAt + d.trialMs;
+    var remaining = expiresAt - Date.now();
+    expiresStr = ' · Expires ~' + _fmtSellerDate(expiresAt) + ' (' + (remaining > 0 ? _fmtTimeLeft(remaining) + ' left' : 'Expired') + ')';
+  }
+  return '<div class="seller-code-row">'
+    + '<div class="seller-code-top"><span class="seller-code-id"><i class="ph-fill ph-gift"></i>' + code + '</span>' + badge + '</div>'
+    + '<div class="seller-code-bottom">'
+    + '<div class="seller-code-meta">' + moduleName + ' · Created ' + _fmtSellerDate(d.createdAt) + (d.redeemedAt ? ' · Redeemed ' + _fmtSellerDate(d.redeemedAt) : '') + expiresStr + '</div>'
+    + '<div class="seller-code-actions">'
+    + '<button class="seller-icon-btn" title="Copy" onclick="_copySellerCode(\'' + code + '\')"><i class="ph-bold ph-copy"></i></button>'
+    + '<button class="seller-icon-btn' + (revoked ? '' : ' danger') + '" title="' + (revoked ? 'Restore' : 'Revoke') + '" onclick="_toggleCodeValid(\'giftcodes\',\'' + code + '\',' + (revoked ? 'true' : 'false') + ')"><i class="ph-bold ph-' + (revoked ? 'arrow-counter-clockwise' : 'prohibit') + '"></i></button>'
+    + '<button class="seller-icon-btn danger" title="Delete" onclick="_deleteSellerCode(\'giftcodes\',\'' + code + '\')"><i class="ph-bold ph-trash"></i></button>'
+    + '</div></div></div>';
+}
+
+function renderSellerHistory() {
+  var el = document.getElementById("sellerHistoryList");
+  if (!el || !_sellerCodes) return;
+  var qInput = document.getElementById("sellerSearchInput");
+  var q = qInput ? qInput.value.trim().toUpperCase() : "";
+  var rows = [];
+
+  Object.keys(_sellerCodes.licenses).forEach(function(code) {
+    var d = _sellerCodes.licenses[code] || {};
+    rows.push({ code: code, sortKey: d.createdAt || 0, html: _renderLicenseRow(code, d) });
+  });
+  Object.keys(_sellerCodes.gifts).forEach(function(code) {
+    var d = _sellerCodes.gifts[code] || {};
+    rows.push({ code: code, sortKey: d.createdAt || 0, html: _renderGiftRow(code, d) });
+  });
+
+  if (q) rows = rows.filter(function(r) { return r.code.indexOf(q) !== -1; });
+  rows.sort(function(a, b) { return b.sortKey - a.sortKey; });
+
+  el.innerHTML = rows.length
+    ? rows.map(function(r) { return r.html; }).join("")
+    : '<div class="empty-state"><div class="msg">No codes yet</div></div>';
+}
+
+async function _toggleCodeValid(path, code, newVal) {
+  if (!_db || !_sellerCodes) return;
+  try {
+    await _db.ref(path + "/" + code).update({ valid: newVal });
+    var bucket = path === "licenses" ? _sellerCodes.licenses : _sellerCodes.gifts;
+    if (bucket[code]) bucket[code].valid = newVal;
+    renderSellerStats();
+    renderSellerHistory();
+    showToast(newVal ? "Code restored" : "Code revoked");
+  } catch(e) {
+    showToast("Failed: " + e.message);
+  }
+}
+
+async function _deleteSellerCode(path, code) {
+  if (!_db || !_sellerCodes) return;
+  if (!confirm("Permanently delete this code? This cannot be undone.")) return;
+  try {
+    await _db.ref(path + "/" + code).remove();
+    var bucket = path === "licenses" ? _sellerCodes.licenses : _sellerCodes.gifts;
+    delete bucket[code];
+    renderSellerStats();
+    renderSellerHistory();
+    showToast("Code deleted");
+  } catch(e) {
+    showToast("Failed: " + e.message);
+  }
 }
 
 function initModuleRemoveButtons() {
@@ -7995,8 +9514,372 @@ function deleteWpGroup(groupId) {
   renderWpChecklist();
 }
 
+// ══ Study Planner ══════════════════════════════════════
+
+var SP_TYPE_LABELS = { assignment: "Assignment", exam: "Exam", quiz: "Quiz", project: "Project" };
+
+function loadSpTasks() {
+  try { return JSON.parse(localStorage.getItem(STUDY_TASKS_KEY)) || []; } catch(e) { return []; }
+}
+function saveSpTasks(arr) { localStorage.setItem(STUDY_TASKS_KEY, JSON.stringify(arr)); }
+
+function spDueStr(dueDate) {
+  if (!dueDate) return "<span style=\"color:#475569;\">No due date set</span>";
+  var days = _daysUntil(dueDate);
+  if (days === null) return "";
+  var parts  = dueDate.split("-");
+  var target = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
+  var label  = target.toLocaleDateString("en-GB", {day:"numeric", month:"short", year:"numeric"});
+  if (days < 0)   return "<span style=\"color:#ef4444;\">&#9888; Overdue by " + Math.abs(days) + " day" + (Math.abs(days) === 1 ? "" : "s") + "</span>";
+  if (days === 0) return "<span style=\"color:#eab308;\">&#9203; Due today!</span>";
+  if (days === 1) return "<span style=\"color:#eab308;\">&#9203; Due tomorrow</span>";
+  if (days <= 7)  return "<span style=\"color:#eab308;\">&#9203; Due in " + days + " days</span>";
+  return "<span style=\"color:#64748b;\">&#128197; Due " + label + "</span>";
+}
+
+function spSortedTasks(tasks) {
+  var arr = tasks.slice();
+  arr.sort(function(a, b) {
+    if (!!a.done !== !!b.done) return a.done ? 1 : -1;
+    var da = a.dueDate || "9999-99-99";
+    var db = b.dueDate || "9999-99-99";
+    return da.localeCompare(db);
+  });
+  return arr;
+}
+
+function renderStudyPanel() {
+  var tasks  = loadSpTasks();
+  var body   = document.getElementById("spBody");
+  var sumBar = document.getElementById("spSummaryBar");
+  if (!body) return;
+
+  var doneCount = tasks.filter(function(t) { return t.done; }).length;
+  var hasTasks  = tasks.length > 0;
+
+  if (sumBar) sumBar.style.display = hasTasks ? "" : "none";
+  if (hasTasks) {
+    var txt  = document.getElementById("spSummaryTxt");
+    var fill = document.getElementById("spSummaryFill");
+    if (txt)  txt.textContent  = doneCount + " of " + tasks.length + " tasks done";
+    if (fill) fill.style.width = ((doneCount / tasks.length) * 100).toFixed(1) + "%";
+  }
+
+  if (!hasTasks) {
+    body.innerHTML = "<div class=\"empty-state\"><div class=\"big\">&#128218;</div><div class=\"msg\">No tasks yet.<br>Tap <strong>+</strong> to add your first assignment or exam.</div></div>";
+    return;
+  }
+
+  var sorted = spSortedTasks(tasks);
+  body.innerHTML = sorted.map(function(task) {
+    var type = SP_TYPE_LABELS[task.type] ? task.type : "assignment";
+
+    var h = "<div class=\"sp-card\">";
+    h += "<div class=\"sp-card-top\">";
+    h += "<div class=\"sp-card-left\">";
+    h += "<div class=\"wp-check-box" + (task.done ? " done" : "") + "\" onclick=\"toggleSpTaskDone('" + task.id + "')\">";
+    if (task.done) h += "<span class=\"wp-check-tick\">&#10003;</span>";
+    h += "</div>";
+    h += "<div style=\"flex:1;min-width:0;\">";
+    h += "<div class=\"sp-card-name" + (task.done ? " done" : "") + "\">" + escHtml(task.title) + "</div>";
+    h += "<div class=\"sp-card-meta\">";
+    h += "<span class=\"sp-type-badge sp-type-" + type + "\">" + SP_TYPE_LABELS[type] + "</span>";
+    if (task.subject) h += "<span class=\"sp-subject-chip\">" + escHtml(task.subject) + "</span>";
+    h += "</div></div>";
+    h += "</div>"; // end sp-card-left
+    h += "<div class=\"sp-card-actions\">";
+    h += "<button class=\"wp-card-btn\" onclick=\"openEditSpTask('" + task.id + "')\" title=\"Edit\">&#9998;</button>";
+    h += "<button class=\"wp-card-btn del\" onclick=\"deleteSpTask('" + task.id + "')\" title=\"Delete\">&#128465;</button>";
+    h += "</div>";
+    h += "</div>"; // end sp-card-top
+    h += "<div class=\"sp-due\">" + spDueStr(task.dueDate) + "</div>";
+    if (task.notes) h += "<div class=\"sp-note\">" + escHtml(task.notes) + "</div>";
+    h += "</div>";
+    return h;
+  }).join("");
+}
+
+// ── Add / Edit Study Task ──
+var _spEditTaskId = null;
+
+function openAddSpTask() {
+  _spEditTaskId = null;
+  document.getElementById("spTaskModalTitle").textContent = "New Task";
+  document.getElementById("spTaskSaveBtn").textContent    = "Create Task";
+  document.getElementById("spTaskTitle").value   = "";
+  document.getElementById("spTaskSubject").value = "";
+  document.getElementById("spTaskType").value    = "assignment";
+  document.getElementById("spTaskDue").value     = "";
+  document.getElementById("spTaskNotes").value   = "";
+  document.getElementById("spAddTaskModal").classList.add("open");
+  setTimeout(function() { document.getElementById("spTaskTitle").focus(); }, 100);
+}
+
+function openEditSpTask(id) {
+  var task = loadSpTasks().find(function(x) { return x.id === id; });
+  if (!task) return;
+  _spEditTaskId = id;
+  document.getElementById("spTaskModalTitle").textContent = "Edit Task";
+  document.getElementById("spTaskSaveBtn").textContent    = "Save Changes";
+  document.getElementById("spTaskTitle").value   = task.title   || "";
+  document.getElementById("spTaskSubject").value = task.subject || "";
+  document.getElementById("spTaskType").value    = task.type    || "assignment";
+  document.getElementById("spTaskDue").value     = task.dueDate || "";
+  document.getElementById("spTaskNotes").value   = task.notes   || "";
+  document.getElementById("spAddTaskModal").classList.add("open");
+}
+
+function closeSpTask() {
+  document.getElementById("spAddTaskModal").classList.remove("open");
+}
+
+function saveSpTask() {
+  var title = (document.getElementById("spTaskTitle").value || "").trim();
+  if (!title) { showToast("Enter a task title"); return; }
+  var subject = (document.getElementById("spTaskSubject").value || "").trim();
+  var type    = document.getElementById("spTaskType").value || "assignment";
+  var dueDate = document.getElementById("spTaskDue").value || "";
+  var notes   = (document.getElementById("spTaskNotes").value || "").trim();
+  var tasks = loadSpTasks();
+  if (_spEditTaskId) {
+    tasks = tasks.map(function(t) {
+      if (t.id !== _spEditTaskId) return t;
+      return Object.assign({}, t, {title: title, subject: subject, type: type, dueDate: dueDate, notes: notes});
+    });
+    showToast("Task updated");
+  } else {
+    tasks.push({id: uid(), title: title, subject: subject, type: type, dueDate: dueDate, notes: notes, done: false});
+    showToast("Added: " + title);
+  }
+  saveSpTasks(tasks);
+  closeSpTask();
+  renderStudyPanel();
+}
+
+function deleteSpTask(id) {
+  if (!confirm("Delete this task?")) return;
+  saveSpTasks(loadSpTasks().filter(function(t) { return t.id !== id; }));
+  renderStudyPanel();
+  showToast("Task deleted");
+}
+
+function toggleSpTaskDone(id) {
+  var tasks = loadSpTasks().map(function(t) {
+    if (t.id !== id) return t;
+    return Object.assign({}, t, {done: !t.done});
+  });
+  saveSpTasks(tasks);
+  renderStudyPanel();
+}
+
+// ── Study Planner tab switching ──
+var _spTab = "tasks";
+
+function switchSpTab(tab) {
+  _spTab = tab;
+  var tasksWrap    = document.getElementById("spTasksWrap");
+  var subjectsWrap = document.getElementById("spChecklistWrap");
+  var tabTasks     = document.getElementById("spTabTasks");
+  var tabSubjects  = document.getElementById("spTabSubjects");
+  if (tasksWrap)    tasksWrap.style.display    = tab === "tasks"    ? "flex" : "none";
+  if (subjectsWrap) subjectsWrap.style.display = tab === "subjects" ? "flex" : "none";
+  if (tabTasks)     tabTasks.classList.toggle("active",    tab === "tasks");
+  if (tabSubjects)  tabSubjects.classList.toggle("active", tab === "subjects");
+  if (tab === "subjects") renderSpSubjects();
+  if (tab === "tasks")    renderStudyPanel();
+}
+
+function onSpPlusBtn() {
+  if (_spTab === "subjects") {
+    var inp = document.getElementById("spCheckInput");
+    if (inp) inp.focus();
+  } else {
+    openAddSpTask();
+  }
+}
+
+// ── Study Subjects (subject progress + semester goals) ──
+function loadSpSubjects() {
+  try { return JSON.parse(localStorage.getItem(STUDY_SUBJECTS_KEY)) || { groups: [], items: [] }; } catch(e) { return { groups: [], items: [] }; }
+}
+function saveSpSubjects(data) { localStorage.setItem(STUDY_SUBJECTS_KEY, JSON.stringify(data)); }
+
+var _spCheckFilter    = "all";
+var _spGroupCollapsed = {};
+
+function spSetFilter(f) {
+  _spCheckFilter = f;
+  var map = { all:"spCkAll", todo:"spCkTodo", done:"spCkDone" };
+  ["spCkAll","spCkTodo","spCkDone"].forEach(function(id) {
+    var btn = document.getElementById(id);
+    if (btn) btn.classList.toggle("active", id === map[f]);
+  });
+  renderSpSubjects();
+}
+
+function spToggleGroup(groupId) {
+  _spGroupCollapsed[groupId] = !_spGroupCollapsed[groupId];
+  renderSpSubjects();
+}
+
+function updateSpGroupSelect() {
+  var data = loadSpSubjects();
+  var opts = "<option value=\"\">No subject</option>" +
+    (data.groups || []).map(function(g) {
+      return "<option value=\"" + g.id + "\">" + escHtml(g.name) + "</option>";
+    }).join("");
+  var strip = document.getElementById("spCheckGroupSel");
+  if (strip) { var prev = strip.value; strip.innerHTML = opts; strip.value = prev; }
+}
+
+function renderSpSubjects() {
+  var data   = loadSpSubjects();
+  var groups = data.groups || [];
+  var items  = data.items  || [];
+  var body   = document.getElementById("spCheckBody");
+  var prog   = document.getElementById("spCheckProgressTxt");
+  if (!body) return;
+
+  updateSpGroupSelect();
+
+  var doneCount = items.filter(function(i) { return i.done; }).length;
+  if (prog) prog.textContent = doneCount + " of " + items.length + " done";
+
+  var visible = items;
+  if (_spCheckFilter === "todo") visible = items.filter(function(i) { return !i.done; });
+  if (_spCheckFilter === "done") visible = items.filter(function(i) { return i.done;  });
+
+  function renderItem(item) {
+    var h = "<div class=\"wp-check-item\">";
+    h += "<div class=\"wp-check-box" + (item.done ? " done" : "") + "\" onclick=\"toggleSpGoal('" + item.id + "')\">";
+    if (item.done) h += "<span class=\"wp-check-tick\">&#10003;</span>";
+    h += "</div>";
+    h += "<span class=\"wp-check-text" + (item.done ? " done" : "") + "\">" + escHtml(item.text) + "</span>";
+    h += "<button class=\"wp-check-del\" onclick=\"deleteSpGoal('" + item.id + "')\" title=\"Remove\">&#10005;</button>";
+    h += "</div>";
+    return h;
+  }
+
+  var html = "";
+
+  groups.forEach(function(group) {
+    var allInGroup  = items.filter(function(i)   { return i.groupId === group.id; });
+    var visInGroup  = visible.filter(function(i)  { return i.groupId === group.id; });
+    var doneCnt     = allInGroup.filter(function(i) { return i.done; }).length;
+    var isCollapsed = _spGroupCollapsed[group.id];
+    var arrow       = isCollapsed ? "&#9654;" : "&#9660;";
+
+    html += "<div class=\"wp-group-section\">";
+    html += "<div class=\"wp-group-hdr\">";
+    html += "<button class=\"wp-group-toggle\" onclick=\"spToggleGroup('" + group.id + "')\">" + arrow + "</button>";
+    html += "<span class=\"wp-group-name\">" + escHtml(group.name) + "</span>";
+    html += "<span class=\"wp-group-meta\">" + doneCnt + "/" + allInGroup.length + " done</span>";
+    html += "<button class=\"wp-group-del\" onclick=\"deleteSpSubject('" + group.id + "')\" title=\"Delete subject\">&#10005;</button>";
+    html += "</div>";
+    if (!isCollapsed) {
+      if (visInGroup.length === 0) {
+        html += "<div style=\"font-size:0.72rem;color:#334155;padding:0.3rem 0 0.3rem 1.5rem;\">" + (_spCheckFilter === "done" ? "None done yet in this subject." : _spCheckFilter === "todo" ? "All done in this subject!" : "No goals yet.") + "</div>";
+      } else {
+        visInGroup.forEach(function(item) { html += renderItem(item); });
+      }
+    }
+    html += "</div>";
+  });
+
+  var ungrouped = visible.filter(function(i) { return !i.groupId; });
+  if (ungrouped.length > 0) {
+    if (groups.length > 0) {
+      html += "<div class=\"wp-group-hdr\"><span class=\"wp-group-name\" style=\"color:#334155;\">Other</span></div>";
+    }
+    ungrouped.forEach(function(item) { html += renderItem(item); });
+  }
+
+  if (!html) {
+    var emptyMsg = _spCheckFilter === "done" ? "Nothing completed yet." : _spCheckFilter === "todo" ? "All goals done! &#127881;" : "No subjects yet.<br>Tap <strong>+ Subject</strong> to add one.";
+    html = "<div class=\"wp-check-empty\">" + emptyMsg + "</div>";
+  }
+
+  body.innerHTML = html;
+}
+
+function addSpSubjectGoal() {
+  var inp = document.getElementById("spCheckInput");
+  var sel = document.getElementById("spCheckGroupSel");
+  if (!inp) return;
+  var text = (inp.value || "").trim();
+  if (!text) { inp.focus(); return; }
+  var groupId = (sel && sel.value) ? sel.value : null;
+  var data    = loadSpSubjects();
+  data.items.push({ id: uid(), text: text, done: false, groupId: groupId });
+  saveSpSubjects(data);
+  inp.value = "";
+  inp.focus();
+  renderSpSubjects();
+}
+
+function toggleSpGoal(id) {
+  var data = loadSpSubjects();
+  data.items = data.items.map(function(i) {
+    if (i.id !== id) return i;
+    return Object.assign({}, i, { done: !i.done });
+  });
+  saveSpSubjects(data);
+  renderSpSubjects();
+}
+
+function deleteSpGoal(id) {
+  var data = loadSpSubjects();
+  data.items = data.items.filter(function(i) { return i.id !== id; });
+  saveSpSubjects(data);
+  renderSpSubjects();
+}
+
+// ── Subjects (groups) ──
+function openSpAddSubject() {
+  document.getElementById("spSubjectNameInput").value = "";
+  document.getElementById("spAddSubjectModal").classList.add("open");
+  setTimeout(function() { document.getElementById("spSubjectNameInput").focus(); }, 100);
+}
+
+function closeSpAddSubject() {
+  document.getElementById("spAddSubjectModal").classList.remove("open");
+}
+
+function saveSpSubject() {
+  var name = (document.getElementById("spSubjectNameInput").value || "").trim();
+  if (!name) { showToast("Enter a subject name"); return; }
+  var data = loadSpSubjects();
+  if ((data.groups || []).some(function(g) { return g.name.toLowerCase() === name.toLowerCase(); })) {
+    showToast("Subject already exists"); return;
+  }
+  data.groups.push({ id: uid(), name: name });
+  saveSpSubjects(data);
+  closeSpAddSubject();
+  renderSpSubjects();
+  showToast("Subject added: " + name);
+}
+
+function deleteSpSubject(groupId) {
+  var data  = loadSpSubjects();
+  var group = (data.groups || []).find(function(g) { return g.id === groupId; });
+  var count = (data.items  || []).filter(function(i) { return i.groupId === groupId; }).length;
+  var label = group ? group.name : "this subject";
+  var msg   = count > 0
+    ? "Delete \"" + label + "\"? Its " + count + " goal" + (count === 1 ? "" : "s") + " will become ungrouped."
+    : "Delete subject \"" + label + "\"?";
+  if (!confirm(msg)) return;
+  data.groups = (data.groups || []).filter(function(g) { return g.id !== groupId; });
+  data.items  = (data.items  || []).map(function(i) {
+    if (i.groupId !== groupId) return i;
+    return Object.assign({}, i, { groupId: null });
+  });
+  saveSpSubjects(data);
+  delete _spGroupCollapsed[groupId];
+  renderSpSubjects();
+}
+
 // ── Mobile panel switching ──
-var _MOBILE_PANELS = ["expenses", "goals", "commit", "ot", "debt", "budget", "wedding"];
+var _MOBILE_PANELS = ["expenses", "goals", "commit", "ot", "debt", "budget", "wedding", "study"];
 var _activeMPanel  = "expenses";
 
 function switchMPanel(name) {
@@ -8829,6 +10712,116 @@ document.addEventListener('click', function(e) {
   }
 });
 
+// ══ Local Notifications / Reminders ══════════════════════
+var NOTIF_ENABLED_KEY = profilePrefix + "mft_notif_enabled";
+
+function _todayStr() {
+  var d = new Date();
+  return d.getFullYear() + "-" + (d.getMonth() + 1) + "-" + d.getDate();
+}
+
+function _notifiedToday() {
+  try { return JSON.parse(localStorage.getItem("opmus_notified_" + _todayStr())) || []; } catch(e) { return []; }
+}
+
+function _daysUntil(dateStr) {
+  var parts = (dateStr || "").split("-");
+  if (parts.length !== 3) return null;
+  var target = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
+  var today  = new Date(); today.setHours(0, 0, 0, 0);
+  return Math.round((target - today) / 86400000);
+}
+
+function loadNotifPref() {
+  var btn = document.getElementById("btnNotifEnabled");
+  if (!btn) return;
+  var on = localStorage.getItem(NOTIF_ENABLED_KEY) === "1"
+    && typeof Notification !== "undefined" && Notification.permission === "granted";
+  btn.textContent = on ? "● On" : "○ Off";
+  btn.classList.toggle("active", on);
+}
+
+async function toggleNotifications() {
+  var btn = document.getElementById("btnNotifEnabled");
+  if (localStorage.getItem(NOTIF_ENABLED_KEY) === "1") {
+    localStorage.setItem(NOTIF_ENABLED_KEY, "0");
+    if (btn) { btn.textContent = "○ Off"; btn.classList.remove("active"); }
+    return;
+  }
+  if (typeof Notification === "undefined") {
+    showToast("Notifications aren't supported on this device.");
+    return;
+  }
+  var perm = await Notification.requestPermission();
+  if (perm !== "granted") {
+    showToast("Notification permission denied.");
+    return;
+  }
+  localStorage.setItem(NOTIF_ENABLED_KEY, "1");
+  if (btn) { btn.textContent = "● On"; btn.classList.add("active"); }
+  checkReminders();
+}
+
+// Scans existing due-items, wedding deadlines & salary day for anything
+// due today/tomorrow and fires a local notification (deduped per day via
+// opmus_notified_<date>, a device-local key that deliberately doesn't sync).
+function checkReminders() {
+  if (!activeProfileId) return;
+  if (localStorage.getItem(NOTIF_ENABLED_KEY) !== "1") return;
+  if (typeof Notification === "undefined" || Notification.permission !== "granted") return;
+  if (!("serviceWorker" in navigator)) return;
+
+  var notified = _notifiedToday();
+  var fired = false;
+
+  function fire(tag, title, body) {
+    if (notified.indexOf(tag) !== -1) return;
+    navigator.serviceWorker.ready.then(function(reg) {
+      reg.showNotification(title, { body: body, icon: "apple-touch-icon.png", tag: tag });
+    }).catch(function() {});
+    notified.push(tag);
+    fired = true;
+  }
+
+  _allDueItems().forEach(function(item) {
+    if (item.daysLeft > 1) return;
+    var when = item.daysLeft === 0 ? "today" : "tomorrow";
+    fire("due-" + item.id, "💰 Payment due " + when, item.name + " — " + fmt(item.amount));
+  });
+
+  if (isModuleUnlocked("wedding")) {
+    loadWpItems().forEach(function(item) {
+      var days = _daysUntil(item.deadline);
+      if (days !== 0 && days !== 1) return;
+      var when = days === 0 ? "today" : "tomorrow";
+      fire("wp-" + item.id, "💍 Wedding deadline " + when, item.name);
+    });
+  }
+
+  if (isModuleUnlocked("study")) {
+    loadSpTasks().forEach(function(task) {
+      if (task.done) return;
+      var days = _daysUntil(task.dueDate);
+      if (days !== 0 && days !== 1) return;
+      var when = days === 0 ? "today" : "tomorrow";
+      fire("sp-" + task.id, "📚 " + (SP_TYPE_LABELS[task.type] || "Task") + " due " + when, task.title);
+    });
+  }
+
+  var tomorrow = new Date(); tomorrow.setDate(tomorrow.getDate() + 1);
+  var salDay = getSalaryDate(tomorrow.getFullYear(), tomorrow.getMonth());
+  if (salDay === tomorrow.getDate()) {
+    fire("salary", "💵 Salary day tomorrow", "Don't forget to check your budget!");
+  }
+
+  if (fired) _lsSet("opmus_notified_" + _todayStr(), JSON.stringify(notified));
+}
+
+document.addEventListener("visibilitychange", function() {
+  if (document.visibilityState === "visible") checkReminders();
+});
+setInterval(checkReminders, 60 * 60 * 1000);
+
 // ── Popup toggle & outside-click close ───────────
 function toggleCalendarPopup() {
   const popup = document.getElementById('calendarPopup');
@@ -9509,7 +11502,7 @@ function _renderAddProfileForm() {
     '<div class="prof-setup-wrap">'
   + '<div class="prof-setup-title">New Profile</div>'
   + '<div class="prof-setup-label">Name</div>'
-  + '<input class="prof-setup-input" id="newProfName" placeholder="e.g. Partner, Alex..." maxlength="20" />'
+  + '<input class="prof-setup-input" id="newProfName" placeholder="e.g. Mom, Alex, Dad..." maxlength="20" />'
   + '<div class="prof-setup-label">Pick a colour</div>'
   + '<div class="color-picker-row" id="colorPickerRow">' + swatches + '</div>'
   + '<div class="prof-setup-label">PIN (optional)</div>'
@@ -9586,6 +11579,7 @@ function showAdminPrompt(action, onSuccess) {
   + '<button class="prof-btn secondary" onclick="profGoBack()">Cancel</button>'
   + '</div>';
   _adminSuccessCb = onSuccess;
+  showOverlay();
   setTimeout(function() { var inp = document.getElementById('adminPinInput'); if (inp) inp.focus(); }, 80);
 }
 
@@ -9805,7 +11799,7 @@ function submitOnboarding() {
 
   _closeOnboarding();
   if (salDay || salary) {
-    renderPanelA(); renderPanelB(); renderBudget(); renderCommitments(); renderOtPanel(); renderDebtPanel(); renderWeddingPanel(); renderOtPanel(); renderDashboard();
+    renderPanelA(); renderPanelB(); renderBudget(); renderCommitments(); renderOtPanel(); renderDebtPanel(); renderWeddingPanel(); renderStudyPanel(); renderOtPanel(); renderDashboard();
     showToast('All set — your tracker is ready!');
   }
 }
@@ -9921,7 +11915,7 @@ function submitFirstTimeSetup() {
 }
 
 // ── Initialise profile UI on load ────────────────────────
-(function initProfileSystem() {
+function continueProfileInit() {
   var profiles  = getProfiles();
   var adminHash = localStorage.getItem(ADMIN_HASH_KEY);
 
@@ -9947,12 +11941,306 @@ function submitFirstTimeSetup() {
   }
   applyProfileToUI(profile);
   hideProfilePicker();
+}
+
+// ── License gate ──────────────────────────────────────────
+// Existing installs (profiles or admin hash already present) are
+// grandfathered in automatically — only brand-new installs see the gate.
+function isLicensed() {
+  if (localStorage.getItem("opmus_license_active") === "1") return true;
+  if (getProfiles().length > 0 || localStorage.getItem(ADMIN_HASH_KEY)) {
+    _lsSet("opmus_license_active", "1");
+    return true;
+  }
+  return false;
+}
+
+async function activateLicense() {
+  var inp   = document.getElementById("licenseKeyInput");
+  var errEl = document.getElementById("licenseKeyError");
+  var key = inp ? inp.value.trim().toUpperCase() : "";
+  if (!key) { errEl.textContent = "Please enter your license key."; return; }
+  if (!_db)  { errEl.textContent = "Can't verify — check your internet connection."; return; }
+  errEl.textContent = "Checking…";
+  try {
+    var ref  = _db.ref("licenses/" + key);
+    var snap = await ref.once("value");
+    var data = snap.val();
+    if (!data || data.valid !== true) {
+      errEl.textContent = "Invalid license key. Please check and try again.";
+      return;
+    }
+    // Each distinct cloud sync code (~household) that activates this key is
+    // recorded. Once a key has been activated by maxActivations different
+    // households, further activations are blocked.
+    var mySyncKey  = getSyncKey();
+    var activated  = data.activatedSyncKeys || {};
+    var max        = data.maxActivations || MAX_LICENSE_ACTIVATIONS;
+    if (!activated[mySyncKey] && Object.keys(activated).length >= max) {
+      errEl.textContent = "This key has reached its device limit. Contact us via Shopee chat for help.";
+      return;
+    }
+    var updates = {};
+    updates["activatedSyncKeys/" + mySyncKey] = Date.now();
+    updates["lastActivatedAt"] = Date.now();
+    await ref.update(updates);
+    _lsSet("opmus_license_key", key);
+    _lsSet("opmus_license_active", "1");
+    errEl.textContent = "";
+    location.reload();
+  } catch(e) {
+    errEl.textContent = "Could not verify key. Check your connection and try again.";
+  }
+}
+
+var BASE_TRIAL_EXPIRY_KEY = "opmus_base_trial_expiry";
+var PENDING_TRIAL_KEY = "opmus_pending_trial";
+
+// True once the device's "base" trial window (granted via redeemTrialCode)
+// has passed and no real license key has been activated since.
+function _baseTrialExpired() {
+  var expiry = localStorage.getItem(BASE_TRIAL_EXPIRY_KEY);
+  if (!expiry) return false;
+  if (localStorage.getItem("opmus_license_key")) {
+    _lsRemove(BASE_TRIAL_EXPIRY_KEY);
+    return false;
+  }
+  return Date.now() >= Number(expiry);
+}
+
+// Locks out the entire app behind the given full-screen overlay. A
+// MutationObserver (below) keeps re-applying this lock if the overlay or
+// the lock class is removed/altered via DevTools, so deleting an element
+// can't reveal the app underneath.
+var _accessLocked = false;
+var _ACCESS_LOCK_OVERLAYS = ["licenseGateOverlay", "licenseRevokedOverlay"];
+function _lockApp(overlayId) {
+  _accessLocked = true;
+  document.body.classList.add("access-locked");
+  document.getElementById(overlayId).classList.add("open");
+}
+
+(function watchAccessLock() {
+  new MutationObserver(function() {
+    if (!_accessLocked) return;
+    var ok = document.body.classList.contains("access-locked") && _ACCESS_LOCK_OVERLAYS.some(function(id) {
+      var el = document.getElementById(id);
+      return el && el.classList.contains("open");
+    });
+    if (!ok) location.reload();
+  }).observe(document.body, { attributes: true, attributeFilter: ["class"], childList: true, subtree: true });
 })();
 
-// Init Firebase then pull cloud data before rendering
+function toggleTrialCodeInput() {
+  var fields = document.getElementById("licenseGateTrialFields");
+  var btn = document.getElementById("trialCodeToggleBtn");
+  if (!fields) return;
+  fields.style.display = "";
+  if (btn) btn.style.display = "none";
+  var inp = document.getElementById("trialCodeInput");
+  if (inp) inp.focus();
+}
+
+// Redeems a trial gift code from the license gate (for brand-new, unlicensed
+// installs). A "base" entry in data.modules grants temporary full Base App
+// access; any other entries (wedding/study) are stashed as a pending trial
+// to be applied once a profile exists (see init IIFE below).
+async function redeemTrialCode() {
+  var inp   = document.getElementById("trialCodeInput");
+  var errEl = document.getElementById("trialCodeError");
+  var code = inp ? inp.value.trim().toUpperCase() : "";
+  if (!code) { errEl.textContent = "Please enter your trial code."; return; }
+  if (!_db)  { errEl.textContent = "Can't verify — check your internet connection."; return; }
+  errEl.textContent = "Checking…";
+  try {
+    var ref  = _db.ref("giftcodes/" + code);
+    var snap = await ref.once("value");
+    var data = snap.val();
+    if (!data || data.valid !== true || data.redeemed === true || data.trial !== true) {
+      errEl.textContent = "Invalid or already-used trial code.";
+      return;
+    }
+    await ref.update({ redeemed: true, redeemedAt: Date.now(), redeemedBySyncKey: getSyncKey() });
+    var modules = data.modules || [];
+    if (modules.indexOf("base") !== -1) {
+      _lsSet(BASE_TRIAL_EXPIRY_KEY, String(Date.now() + data.trialMs));
+    }
+    var premiumModules = modules.filter(function(m) { return m !== "base"; });
+    if (premiumModules.length) {
+      _lsSet(PENDING_TRIAL_KEY, JSON.stringify({ modules: premiumModules, trialMs: data.trialMs }));
+    }
+    _lsSet("opmus_license_active", "1");
+    errEl.textContent = "";
+    location.reload();
+  } catch(e) {
+    errEl.textContent = "Could not verify code. Try again.";
+  }
+}
+
+// Re-lock the app when a "base" trial granted from the license gate expires
+// (unless a real license key was activated in the meantime).
+function checkBaseTrialStatus() {
+  if (!_baseTrialExpired()) return;
+  document.getElementById("licenseGateTitle").textContent = "Free Trial Ended";
+  document.getElementById("licenseGateSub").textContent = "Your free trial has ended. Enter a license key to continue, or contact us via Shopee chat to purchase one.";
+  _lockApp("licenseGateOverlay");
+}
+
+// Applies a premium-module trial stashed by redeemTrialCode() once a profile
+// (and therefore profile-scoped storage keys) exists.
+function applyPendingTrial() {
+  var raw = localStorage.getItem(PENDING_TRIAL_KEY);
+  if (!raw || !activeProfileId) return;
+  try {
+    var pending = JSON.parse(raw);
+    var unlocked = getUnlockedModules();
+    var trialExpiry = getTrialExpiry();
+    var expiresAt = Date.now() + pending.trialMs;
+    pending.modules.forEach(function(m) {
+      if (unlocked.indexOf(m) === -1) unlocked.push(m);
+      trialExpiry[m] = expiresAt;
+      addModule(m);
+    });
+    saveUnlockedModules(unlocked);
+    saveTrialExpiry(trialExpiry);
+    showToast("🎉 Trial activated for " + _fmtDuration(pending.trialMs) + "!");
+  } catch(e) {}
+  _lsRemove(PENDING_TRIAL_KEY);
+}
+
+// Re-check this device's license key against Firebase. If the seller has
+// revoked it (valid:false) since activation, lock the app with an appeal screen.
+// Fails open on offline/error — only an explicit valid:false locks the app.
+async function checkLicenseStatus() {
+  var key = localStorage.getItem("opmus_license_key");
+  if (!key || !_db) return;
+  try {
+    var snap = await _db.ref("licenses/" + key + "/valid").once("value");
+    if (snap.val() === false) {
+      _lockApp("licenseRevokedOverlay");
+    }
+  } catch(e) {}
+}
+
+// Re-lock any premium module whose trial period has ended and show a
+// dismissible "Trial Ended" overlay naming the affected module(s).
+function checkTrialStatus() {
+  var trialExpiry = getTrialExpiry();
+  var unlocked = getUnlockedModules();
+  var expiredNow = [];
+  Object.keys(trialExpiry).forEach(function(id) {
+    if (Date.now() >= trialExpiry[id]) {
+      delete trialExpiry[id];
+      var idx = unlocked.indexOf(id);
+      if (idx >= 0) unlocked.splice(idx, 1);
+      expiredNow.push(id);
+    }
+  });
+  if (expiredNow.length) {
+    saveTrialExpiry(trialExpiry);
+    saveUnlockedModules(unlocked);
+    renderAppLibrary();
+    applyModuleVisibility();
+    var names = expiredNow.map(function(id) { return (MODULES[id] && MODULES[id].name) || id; });
+    document.getElementById("trialEndedMsg").textContent = "Your trial access to " + names.join(", ") + " has ended.";
+    document.getElementById("trialEndedOverlay").classList.add("open");
+  }
+}
+
+function closeTrialEndedOverlay() {
+  document.getElementById("trialEndedOverlay").classList.remove("open");
+}
+
+function checkAccessStatus() {
+  checkLicenseStatus();
+  checkTrialStatus();
+  checkBaseTrialStatus();
+  _scheduleAccessRecheck();
+}
+
+// Arms a precise timer that fires the instant the soonest-expiring trial
+// (base app or any premium module) runs out, so access is revoked live —
+// not just on the next refresh or 30-minute poll.
+var _accessRecheckTimer = null;
+function _scheduleAccessRecheck() {
+  if (_accessRecheckTimer) { clearTimeout(_accessRecheckTimer); _accessRecheckTimer = null; }
+  if (_accessLocked) return;
+  var expiries = [];
+  var baseExpiry = localStorage.getItem(BASE_TRIAL_EXPIRY_KEY);
+  if (baseExpiry && !localStorage.getItem("opmus_license_key")) expiries.push(Number(baseExpiry));
+  var trialExpiry = getTrialExpiry();
+  Object.keys(trialExpiry).forEach(function(id) { expiries.push(trialExpiry[id]); });
+  if (!expiries.length) return;
+  var delay = Math.min.apply(null, expiries) - Date.now();
+  // Cap long waits so very long trials still get periodically re-armed.
+  delay = Math.min(Math.max(delay, 0), 24 * 60 * 60 * 1000);
+  _accessRecheckTimer = setTimeout(checkAccessStatus, delay + 250);
+}
+
+document.addEventListener("visibilitychange", function() {
+  if (document.visibilityState === "visible") checkAccessStatus();
+});
+setInterval(checkAccessStatus, 30 * 60 * 1000);
+
+// ── Trial countdown (buyer-facing) ────────────────────────
+function _fmtTimeLeft(ms) {
+  if (ms <= 0) return "0s";
+  var s = Math.floor(ms / 1000);
+  var d = Math.floor(s / 86400); s -= d * 86400;
+  var h = Math.floor(s / 3600); s -= h * 3600;
+  var m = Math.floor(s / 60); s -= m * 60;
+  if (d > 0) return d + "d " + h + "h";
+  if (h > 0) return h + "h " + m + "m";
+  if (m > 0) return m + "m " + s + "s";
+  return s + "s";
+}
+
+// Shows a live countdown chip in the header for the soonest-expiring trial
+// (base app or a premium module), with all active trials in its tooltip.
+function updateTrialCountdown() {
+  var chip = document.getElementById("trialCountdownChip");
+  if (!chip) return;
+  var entries = [];
+  var baseExpiry = localStorage.getItem(BASE_TRIAL_EXPIRY_KEY);
+  if (baseExpiry && !localStorage.getItem("opmus_license_key")) {
+    entries.push({ label: "Base App", expiry: Number(baseExpiry) });
+  }
+  var trialExpiry = getTrialExpiry();
+  Object.keys(trialExpiry).forEach(function(id) {
+    entries.push({ label: _trialItemName(id), expiry: trialExpiry[id] });
+  });
+  entries = entries.filter(function(e) { return e.expiry > Date.now(); });
+  if (!entries.length) { chip.style.display = "none"; return; }
+  entries.sort(function(a, b) { return a.expiry - b.expiry; });
+  chip.style.display = "";
+  chip.textContent = "⏳ " + entries[0].label + " trial: " + _fmtTimeLeft(entries[0].expiry - Date.now());
+  chip.title = entries.map(function(e) {
+    return e.label + " trial — " + _fmtTimeLeft(e.expiry - Date.now()) + " left";
+  }).join("\n");
+}
+setInterval(updateTrialCountdown, 1000);
+
+// Init Firebase early so license verification can use it
 initFirebase();
 _syncKey = getSyncKey();
+
+(function initProfileSystem() {
+  if (!isLicensed() || _baseTrialExpired()) {
+    if (_baseTrialExpired()) {
+      document.getElementById("licenseGateTitle").textContent = "Free Trial Ended";
+      document.getElementById("licenseGateSub").textContent = "Your free trial has ended. Enter a license key to continue, or contact us via Shopee chat to purchase one.";
+    }
+    _lockApp("licenseGateOverlay");
+    return;
+  }
+  continueProfileInit();
+})();
+
+// Pull cloud data before rendering. Skipped entirely while access is locked
+// (no valid license / expired base trial) so no profile data is ever loaded
+// or rendered behind the lock overlay.
 (async function() {
+  if (!isLicensed() || _baseTrialExpired()) return;
   if (_fbConfigured()) await pullFromCloud();
   startLiveSync();
   loadCurrency();
@@ -9966,6 +12254,7 @@ _syncKey = getSyncKey();
     renderOtPanel();
     renderDebtPanel();
     renderWeddingPanel();
+    renderStudyPanel();
     renderDashboard();
     checkFirstTimeSetup();
   } else if (localStorage.getItem(ADMIN_HASH_KEY)) {
@@ -9973,12 +12262,20 @@ _syncKey = getSyncKey();
     // Only do this if setup has already been completed (admin hash exists)
     renderPickerCards();
   }
+  applyPendingTrial();
+  renderAppLibrary();
   applyModuleVisibility();
   initModuleRemoveButtons();
   applyLayout();
   _initMobilePanels();
   loadSnapPref();
   loadEstIncomePref();
+  loadNotifPref();
+  checkReminders();
+  checkAccessStatus();
+  updateTrialCountdown();
+  var sellerSection = document.getElementById("sellerToolsSection");
+  if (sellerSection && isSellerMode()) sellerSection.style.display = "";
   initSnapGuides();
   initDrag();
   initResize();
