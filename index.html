@@ -4474,30 +4474,6 @@
 <script>
 // ── Profile session ──────────────────────────────────────
 // sessionStorage clears on browser close, giving us "until browser closes" sessions.
-// ── Domain Lock ───────────────────────────────────────────
-// List every hostname allowed to run this app.
-// For clients: change to their GitHub Pages domain before handing over.
-var _ALLOWED_DOMAINS = [
-  'haziqov.github.io',
-  'localhost',
-  '127.0.0.1',
-  ''                            // allows opening as local file (file://)
-];
-(function() {
-  var host = window.location.hostname;
-  var ok = _ALLOWED_DOMAINS.some(function(d) { return host === d; });
-  if (!ok) {
-    document.body.style.cssText = 'margin:0;background:#080808;display:flex;align-items:center;justify-content:center;min-height:100vh;font-family:Inter,system-ui,sans-serif;';
-    document.body.innerHTML =
-      '<div style="text-align:center;padding:2rem;">'
-    + '<div style="font-size:3rem;margin-bottom:1rem;">🔒</div>'
-    + '<div style="font-size:1.3rem;font-weight:700;color:#f1f5f9;margin-bottom:0.5rem;">Access Restricted</div>'
-    + '<div style="font-size:0.85rem;color:#64748b;max-width:300px;line-height:1.6;">This app is not licensed to run on <strong style="color:#f87171;">' + host + '</strong>.<br>Please contact the developer to get a valid copy.</div>'
-    + '</div>';
-    throw new Error('Domain not authorised: ' + host);
-  }
-})();
-
 var activeProfileId = sessionStorage.getItem('mft_active_profile') || null;
 var profilePrefix   = activeProfileId ? activeProfileId + '__' : '';
 
