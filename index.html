@@ -21,6 +21,27 @@
 
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
+    /* ── Premium scrollbars (app-wide default) ───────────────
+       Slim, rounded, padded pill thumb with a soft gradient that
+       brightens on hover. The transparent border + background-clip
+       trick gives the thumb breathing room so it reads as a floating
+       pill rather than a flat bar. */
+    * { scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.16) transparent; }
+    ::-webkit-scrollbar { width: 10px; height: 10px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb {
+      background: linear-gradient(180deg, rgba(255,255,255,0.22), rgba(255,255,255,0.1));
+      border: 2px solid transparent;
+      background-clip: padding-box;
+      border-radius: 20px;
+      transition: background 0.2s;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: linear-gradient(180deg, rgba(255,255,255,0.34), rgba(255,255,255,0.18));
+      background-clip: padding-box;
+    }
+    ::-webkit-scrollbar-corner { background: transparent; }
+
     body {
       font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
       background: #080808;
@@ -658,48 +679,101 @@
 
     .seller-modal .form-input:focus, .seller-modal input:focus { border-color: rgba(251,191,36,0.45); }
 
-    /* ── User Guide modal ────────────────────────────────── */
+    /* ── Users tab cards ─────────────────────────────────── */
+    .user-card { display: flex; align-items: center; gap: 0.7rem; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.07); border-radius: 14px; padding: 0.65rem 0.8rem; transition: border-color 0.15s, background 0.15s; }
+    .user-card:hover { border-color: rgba(251,191,36,0.22); background: rgba(255,255,255,0.045); }
+    .user-card.online { border-color: rgba(34,197,94,0.28); background: rgba(34,197,94,0.04); }
+    .user-avatar { position: relative; width: 40px; height: 40px; border-radius: 12px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 0.92rem; font-weight: 800; color: #fff; text-transform: uppercase; box-shadow: 0 4px 12px rgba(0,0,0,0.35); }
+    .user-avatar-dot { position: absolute; bottom: -2px; right: -2px; width: 12px; height: 12px; border-radius: 50%; border: 2px solid #131313; }
+    .user-avatar-dot.on  { background: #22c55e; box-shadow: 0 0 7px #22c55e; }
+    .user-avatar-dot.off { background: #475569; }
+    .user-main { flex: 1; min-width: 0; }
+    .user-name-row { display: flex; align-items: center; gap: 0.4rem; }
+    .user-name { font-weight: 700; color: #f1f5f9; font-size: 0.86rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .user-meta { display: flex; flex-wrap: wrap; gap: 0.3rem 0.55rem; margin-top: 0.3rem; }
+    .user-chip { display: inline-flex; align-items: center; gap: 0.25rem; font-size: 0.64rem; color: #94a3b8; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.06); border-radius: 7px; padding: 1px 7px; max-width: 100%; }
+    .user-chip i { font-size: 0.72rem; color: #64748b; flex-shrink: 0; }
+    .user-chip.code { font-family: 'SF Mono', Consolas, monospace; color: #fcd34d; background: rgba(251,191,36,0.08); border-color: rgba(251,191,36,0.18); }
+    .user-chip.code i { color: #fbbf24; }
+    .user-chip span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .user-right { text-align: right; flex-shrink: 0; display: flex; flex-direction: column; align-items: flex-end; gap: 1px; }
+    .user-last { font-size: 0.74rem; font-weight: 700; color: #94a3b8; white-space: nowrap; }
+    .user-last.on { color: #22c55e; }
+    .user-last.never { color: #64748b; }
+    .user-last-lbl { font-size: 0.58rem; color: #475569; text-transform: uppercase; letter-spacing: 0.05em; }
+
+    /* ══ User Guide — premium two-pane docs ════════════════ */
+    #userGuideModal .modal { padding-bottom: 0; }
     .guide-modal-icon { background: linear-gradient(135deg, rgba(251,191,36,0.18), rgba(251,191,36,0.04)); border-radius: 16px; width: 52px; height: 52px; display: flex; align-items: center; justify-content: center; margin: 0 auto 0.6rem; }
-    .guide-toolbar { display: flex; align-items: center; gap: 0.5rem; margin: 0.9rem 0 0.7rem; }
-    .guide-search-wrap { position: relative; flex: 1; min-width: 0; }
-    .guide-search-wrap i { position: absolute; left: 13px; top: 50%; transform: translateY(-50%); color: #64748b; font-size: 0.85rem; pointer-events: none; }
-    .guide-search { width: 100%; padding: 9px 12px 9px 34px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.08); background: rgba(255,255,255,0.03); color: #e2e8f0; font-size: 0.8rem; font-family: inherit; transition: border-color 0.15s, background 0.15s; }
-    .guide-search:focus { outline: none; border-color: rgba(251,191,36,0.4); background: rgba(255,255,255,0.05); }
+
+    .guide-search-wrap { position: relative; margin: 0.9rem 0 0.85rem; }
+    .guide-search-wrap i { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: #64748b; font-size: 0.9rem; pointer-events: none; }
+    .guide-search { width: 100%; padding: 11px 14px 11px 38px; border-radius: 13px; border: 1px solid rgba(255,255,255,0.08); background: rgba(255,255,255,0.03); color: #e2e8f0; font-size: 0.82rem; font-family: inherit; transition: border-color 0.15s, background 0.15s, box-shadow 0.15s; }
+    .guide-search:focus { outline: none; border-color: rgba(251,191,36,0.4); background: rgba(255,255,255,0.05); box-shadow: 0 0 0 3px rgba(251,191,36,0.08); }
     .guide-search::placeholder { color: #64748b; }
-    .guide-toggle-all { flex: 0 0 auto; padding: 9px 13px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.08); background: rgba(255,255,255,0.03); color: #94a3b8; font-size: 0.72rem; font-weight: 700; cursor: pointer; font-family: inherit; white-space: nowrap; transition: all 0.15s; }
-    .guide-toggle-all:hover { color: #f1f5f9; border-color: rgba(255,255,255,0.2); background: rgba(255,255,255,0.06); }
 
-    .guide-body { flex: 1 1 auto; min-height: 0; max-height: 62vh; overflow-y: auto; padding-right: 0.25rem; display: flex; flex-direction: column; gap: 0.5rem; }
+    /* Layout: sidebar + content */
+    .guide-layout { display: flex; gap: 0; height: 64vh; max-height: 64vh; border: 1px solid rgba(255,255,255,0.07); border-radius: 16px; overflow: hidden; background: rgba(0,0,0,0.18); }
 
-    .guide-acc-item { border: 1px solid rgba(255,255,255,0.07); border-radius: 14px; background: rgba(255,255,255,0.025); overflow: hidden; transition: border-color 0.2s, background 0.2s, box-shadow 0.2s; }
-    .guide-acc-item.open { border-color: rgba(255,255,255,0.13); background: rgba(255,255,255,0.045); box-shadow: 0 6px 18px -8px rgba(0,0,0,0.5); }
-    .guide-acc-item.guide-hidden { display: none; }
+    .guide-sidebar { flex: 0 0 215px; width: 215px; overflow-y: auto; padding: 0.55rem; border-right: 1px solid rgba(255,255,255,0.06); background: linear-gradient(180deg, rgba(255,255,255,0.025), transparent); scrollbar-width: thin; }
+    .guide-sidebar::-webkit-scrollbar { width: 9px; }
+    .guide-sidebar::-webkit-scrollbar-thumb { background: linear-gradient(180deg, rgba(251,191,36,0.4), rgba(184,134,11,0.25)); border: 2px solid transparent; background-clip: padding-box; border-radius: 20px; }
+    .guide-sidebar::-webkit-scrollbar-thumb:hover { background: linear-gradient(180deg, rgba(253,224,107,0.6), rgba(184,134,11,0.4)); background-clip: padding-box; }
+    .guide-side-item { position: relative; display: flex; align-items: center; gap: 0.6rem; padding: 0.55rem 0.6rem; border-radius: 11px; cursor: pointer; transition: background 0.15s, color 0.15s; margin-bottom: 0.15rem; }
+    .guide-side-item:hover { background: rgba(255,255,255,0.045); }
+    .guide-side-item.active { background: linear-gradient(135deg, rgba(251,191,36,0.16), rgba(251,191,36,0.05)); }
+    .guide-side-item.active::before { content: ''; position: absolute; left: 0; top: 18%; bottom: 18%; width: 3px; border-radius: 0 3px 3px 0; background: linear-gradient(180deg,#fde68a,#b8860b); }
+    .guide-side-item.guide-hidden { display: none; }
+    .guide-side-ico { flex: 0 0 30px; width: 30px; height: 30px; border-radius: 9px; display: flex; align-items: center; justify-content: center; font-size: 1.02rem; background: rgba(255,255,255,0.05); box-shadow: inset 0 0 0 1px rgba(255,255,255,0.06); transition: transform 0.15s; }
+    .guide-side-item:hover .guide-side-ico { transform: scale(1.08); }
+    .guide-side-txt { min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+    .guide-side-name { font-size: 0.78rem; font-weight: 700; color: #cbd5e1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .guide-side-item.active .guide-side-name { color: #fde68a; }
+    .guide-side-sub { font-size: 0.62rem; color: #64748b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .guide-side-empty { padding: 1rem 0.6rem; font-size: 0.75rem; color: #64748b; text-align: center; }
 
-    .guide-acc-header { all: unset; box-sizing: border-box; display: flex; align-items: center; gap: 0.7rem; width: 100%; padding: 0.7rem 0.85rem; cursor: pointer; }
-    .guide-acc-header:hover { background: rgba(255,255,255,0.03); }
+    /* Content pane */
+    .guide-content { flex: 1; min-width: 0; overflow-y: auto; padding: 1.3rem 1.4rem 1.5rem; scroll-behavior: smooth; scrollbar-width: thin; }
+    .guide-content::-webkit-scrollbar { width: 11px; }
+    .guide-content::-webkit-scrollbar-thumb { background: linear-gradient(180deg, rgba(251,191,36,0.45), rgba(184,134,11,0.28)); border: 3px solid transparent; background-clip: padding-box; border-radius: 20px; }
+    .guide-content::-webkit-scrollbar-thumb:hover { background: linear-gradient(180deg, rgba(253,224,107,0.65), rgba(184,134,11,0.45)); background-clip: padding-box; }
+    .guide-content { scrollbar-color: rgba(251,191,36,0.4) transparent; }
 
-    .guide-acc-icon { flex: 0 0 40px; width: 40px; height: 40px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; box-shadow: inset 0 0 0 1px rgba(255,255,255,0.07); }
+    .guide-acc-item { display: none; animation: guideFade 0.28s ease; }
+    .guide-acc-item.active { display: block; }
+    .guide-acc-header { all: unset; box-sizing: border-box; display: flex; align-items: center; gap: 0.8rem; width: 100%; padding-bottom: 1rem; margin-bottom: 0.5rem; border-bottom: 1px solid rgba(255,255,255,0.07); cursor: default; }
+    .guide-acc-icon { flex: 0 0 46px; width: 46px; height: 46px; border-radius: 13px; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; box-shadow: inset 0 0 0 1px rgba(255,255,255,0.08); }
+    .guide-acc-title { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 0.2rem; font-size: 1.12rem; font-weight: 800; color: #f8fafc; line-height: 1.2; letter-spacing: -0.01em; }
+    .guide-acc-sub { font-size: 0.76rem; font-weight: 600; color: #64748b; text-transform: none; letter-spacing: normal; }
+    .guide-acc-chevron { display: none; }
+    .guide-acc-content { max-height: none !important; overflow: visible; }
+    .guide-acc-inner { padding: 0; }
 
-    .guide-acc-title { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 0.15rem; font-size: 0.86rem; font-weight: 800; color: #f1f5f9; line-height: 1.25; }
-    .guide-acc-sub { font-size: 0.71rem; font-weight: 600; color: #64748b; text-transform: none; letter-spacing: normal; }
+    @keyframes guideFade { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
 
-    .guide-acc-chevron { flex: 0 0 auto; font-size: 0.8rem; color: #64748b; transition: transform 0.25s ease, color 0.25s ease; }
-    .guide-acc-item.open .guide-acc-chevron { transform: rotate(180deg); color: #fbbf24; }
-
-    .guide-acc-content { max-height: 0; overflow: hidden; transition: max-height 0.35s ease; }
-    .guide-acc-inner { padding: 0.1rem 0.85rem 1rem; border-top: 1px solid rgba(255,255,255,0.05); margin-top: 0.1rem; }
-
-    .guide-intro { font-size: 0.82rem; color: #94a3b8; line-height: 1.6; margin: 0.85rem 0; }
-    .guide-h3 { font-size: 0.68rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; color: #64748b; margin: 1.1rem 0 0.4rem; }
+    .guide-intro { font-size: 0.86rem; color: #aeb9c8; line-height: 1.7; margin: 0 0 1.2rem; }
+    .guide-h3 { font-size: 0.7rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.11em; color: #fbbf24; margin: 1.5rem 0 0.6rem; padding-left: 0.6rem; border-left: 2px solid rgba(251,191,36,0.45); }
     .guide-h3:first-of-type { margin-top: 0; }
-    .guide-item { display: flex; gap: 0.65rem; padding: 0.55rem 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
-    .guide-item:last-child { border-bottom: none; }
-    .guide-item-icon { flex: 0 0 30px; width: 30px; height: 30px; border-radius: 9px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.06); display: flex; align-items: center; justify-content: center; font-size: 1rem; }
+    .guide-item { display: flex; gap: 0.8rem; padding: 0.7rem; border-radius: 12px; transition: background 0.15s; }
+    .guide-item:hover { background: rgba(255,255,255,0.03); }
+    .guide-item-icon { flex: 0 0 34px; width: 34px; height: 34px; border-radius: 10px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.06); display: flex; align-items: center; justify-content: center; font-size: 1.05rem; }
     .guide-item-body { flex: 1; min-width: 0; }
-    .guide-item-title { font-size: 0.82rem; font-weight: 700; color: #e2e8f0; margin-bottom: 0.15rem; }
-    .guide-item-desc { font-size: 0.76rem; color: #94a3b8; line-height: 1.55; }
-    .guide-tip { background: rgba(245,158,11,0.08); border: 1px solid rgba(245,158,11,0.2); border-radius: 10px; padding: 0.65rem 0.8rem; font-size: 0.76rem; color: #fbbf24; margin-top: 0.85rem; line-height: 1.55; }
+    .guide-item-title { font-size: 0.86rem; font-weight: 700; color: #f1f5f9; margin-bottom: 0.25rem; }
+    .guide-item-desc { font-size: 0.81rem; color: #9aa7b8; line-height: 1.65; }
+    .guide-item-desc b { color: #d8dee8; font-weight: 600; }
+    .guide-tip { background: linear-gradient(135deg, rgba(245,158,11,0.1), rgba(245,158,11,0.03)); border: 1px solid rgba(245,158,11,0.22); border-radius: 12px; padding: 0.8rem 0.95rem; font-size: 0.8rem; color: #fcd34d; margin-top: 1.2rem; line-height: 1.62; }
     .guide-tip b { color: #fde68a; }
+
+    /* Mobile / narrow: sidebar becomes a horizontal chip rail on top */
+    @media (max-width: 640px) {
+      .guide-layout { flex-direction: column; height: 70vh; max-height: 70vh; }
+      .guide-sidebar { flex: 0 0 auto; width: 100%; display: flex; gap: 0.4rem; overflow-x: auto; overflow-y: hidden; padding: 0.5rem; border-right: none; border-bottom: 1px solid rgba(255,255,255,0.06); -webkit-overflow-scrolling: touch; }
+      .guide-side-item { flex: 0 0 auto; margin-bottom: 0; padding: 0.45rem 0.7rem; border-radius: 20px; border: 1px solid rgba(255,255,255,0.07); }
+      .guide-side-item.active::before { display: none; }
+      .guide-side-txt { flex-direction: row; }
+      .guide-side-sub { display: none; }
+      .guide-content { padding: 1.1rem; }
+    }
 
     /* Budget Planner Panel */
     .panel-budget {
@@ -724,9 +798,9 @@
     #commitBody { flex: 1; overflow: hidden; display: flex; flex-direction: column; min-height: 0; }
     .commit-summary { flex-shrink: 0; }
     .commit-list { flex: 1; display: flex; flex-direction: column; padding: 0.4rem 1rem 0.6rem; gap: 0.35rem; overflow-y: auto; min-height: 0; }
-    .commit-list::-webkit-scrollbar { width: 4px; }
+    .commit-list::-webkit-scrollbar { width: 8px; }
     .commit-list::-webkit-scrollbar-track { background: transparent; }
-    .commit-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
+    .commit-list::-webkit-scrollbar-thumb { background: linear-gradient(180deg, rgba(255,255,255,0.28), rgba(255,255,255,0.12)); border-radius: 10px; }
     .commit-row { display: flex; align-items: center; gap: 0.4rem; }
     .commit-name { flex: 1; font-size: 0.78rem; color: #cbd5e1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .commit-amt { font-size: 0.78rem; font-weight: 700; color: #f87171; flex-shrink: 0; }
@@ -737,9 +811,9 @@
     .pay-tracker-amt { font-size:0.73rem; font-weight:600; color:#f87171; flex-shrink:0; }
     .pay-mark-btn { flex-shrink:0; padding:0.2rem 0.55rem; border-radius:5px; border:1px solid rgba(34,197,94,0.3); background:rgba(34,197,94,0.08); color:#4ade80; font-size:0.67rem; font-weight:700; cursor:pointer; white-space:nowrap; }
     .pay-undo-btn { flex-shrink:0; padding:0.2rem 0.45rem; border-radius:5px; border:1px solid rgba(255,255,255,0.08); background:transparent; color:#475569; font-size:0.65rem; font-weight:600; cursor:pointer; }
-    .budget-list::-webkit-scrollbar { width: 4px; }
+    .budget-list::-webkit-scrollbar { width: 8px; }
     .budget-list::-webkit-scrollbar-track { background: transparent; }
-    .budget-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
+    .budget-list::-webkit-scrollbar-thumb { background: linear-gradient(180deg, rgba(255,255,255,0.28), rgba(255,255,255,0.12)); border-radius: 10px; }
     .budget-row {
       display: flex; align-items: center; gap: 0.65rem;
       padding: 0.55rem 0.5rem; border-radius: 10px; transition: background 0.15s;
@@ -857,8 +931,8 @@
     .wp-sort-btn:hover { border-color:rgba(239,68,68,0.35); color:#fca5a5; }
     .wp-sort-btn.active { border-color:rgba(239,68,68,0.45); background:rgba(239,68,68,0.1); color:#fca5a5; }
     .wp-scroll { flex:1; overflow-y:auto; padding:0.75rem 1rem 1.25rem; }
-    .wp-scroll::-webkit-scrollbar { width:4px; }
-    .wp-scroll::-webkit-scrollbar-thumb { background:rgba(255,255,255,0.1); border-radius:4px; }
+    .wp-scroll::-webkit-scrollbar { width:8px; }
+    .wp-scroll::-webkit-scrollbar-thumb { background:linear-gradient(180deg, rgba(255,255,255,0.28), rgba(255,255,255,0.12)); border-radius:10px; }
     .wp-summary-bar { padding:0.75rem 1rem; border-top:1px solid rgba(255,255,255,0.06); display:flex; align-items:center; gap:0.9rem; flex-shrink:0; }
     .wp-chart-wrap { position:relative; width:76px; height:76px; flex-shrink:0; }
     .wp-chart-center { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; pointer-events:none; }
@@ -914,8 +988,8 @@
     .wp-check-filter-btn { padding:2px 9px; border-radius:20px; border:1px solid rgba(255,255,255,0.08); background:rgba(255,255,255,0.03); color:#64748b; font-size:0.65rem; font-weight:600; cursor:pointer; transition:all 0.15s; }
     .wp-check-filter-btn.active { border-color:rgba(244,63,94,0.4); background:rgba(244,63,94,0.1); color:#fb7185; }
     .wp-check-scroll { flex:1; overflow-y:auto; padding:0.4rem 1rem; }
-    .wp-check-scroll::-webkit-scrollbar { width:4px; }
-    .wp-check-scroll::-webkit-scrollbar-thumb { background:rgba(255,255,255,0.1); border-radius:4px; }
+    .wp-check-scroll::-webkit-scrollbar { width:8px; }
+    .wp-check-scroll::-webkit-scrollbar-thumb { background:linear-gradient(180deg, rgba(255,255,255,0.28), rgba(255,255,255,0.12)); border-radius:10px; }
     .wp-check-item { display:flex; align-items:center; gap:0.65rem; padding:0.55rem 0; border-bottom:1px solid rgba(255,255,255,0.04); }
     .wp-check-item:last-child { border-bottom:none; }
     .wp-check-box { width:20px; height:20px; border-radius:6px; border:1.5px solid rgba(244,63,94,0.35); background:rgba(244,63,94,0.05); cursor:pointer; flex-shrink:0; display:flex; align-items:center; justify-content:center; transition:all 0.15s; }
@@ -951,8 +1025,8 @@
     /* ── Study Planner ── */
     .panel-study { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.07); border-radius: 16px; display: flex; flex-direction: column; overflow: hidden; }
     .sp-scroll { flex:1; overflow-y:auto; padding:0.75rem 1rem 1.25rem; }
-    .sp-scroll::-webkit-scrollbar { width:4px; }
-    .sp-scroll::-webkit-scrollbar-thumb { background:rgba(255,255,255,0.1); border-radius:4px; }
+    .sp-scroll::-webkit-scrollbar { width:8px; }
+    .sp-scroll::-webkit-scrollbar-thumb { background:linear-gradient(180deg, rgba(255,255,255,0.28), rgba(255,255,255,0.12)); border-radius:10px; }
     .sp-summary-bar { padding:0.75rem 1rem; border-top:1px solid rgba(255,255,255,0.06); flex-shrink:0; }
     .sp-summary-txt { font-size:0.74rem; color:#94a3b8; font-weight:600; margin-bottom:0.4rem; }
     .sp-summary-bar-wrap { height:6px; background:rgba(255,255,255,0.06); border-radius:99px; overflow:hidden; }
@@ -994,7 +1068,7 @@
     .debt-sum-label { font-size: 0.68rem; color: #64748b; margin-bottom: 0.2rem; }
     .debt-sum-val { font-size: 0.88rem; font-weight: 700; color: #f1f5f9; }
     .debt-scroll { flex: 1; overflow-y: auto; padding: 0.6rem 0.75rem; display: flex; flex-direction: column; gap: 0.5rem; }
-    .debt-scroll::-webkit-scrollbar { width: 4px; } .debt-scroll::-webkit-scrollbar-track { background: transparent; } .debt-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
+    .debt-scroll::-webkit-scrollbar { width: 8px; } .debt-scroll::-webkit-scrollbar-track { background: transparent; } .debt-scroll::-webkit-scrollbar-thumb { background: linear-gradient(180deg, rgba(255,255,255,0.28), rgba(255,255,255,0.12)); border-radius: 10px; }
     .debt-card { background: rgba(255,255,255,0.04); border-radius: 10px; padding: 0.7rem 0.8rem; border: 1px solid rgba(255,255,255,0.06); }
     .debt-card-header { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.45rem; }
     .debt-card-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
@@ -1019,9 +1093,9 @@
     .ot-nav-label { font-size: 0.78rem; font-weight: 600; color: #e2e8f0; display: flex; align-items: center; gap: 6px; }
     .ot-past-badge { font-size: 0.62rem; color: #f59e0b; background: rgba(245,158,11,0.12); border: 1px solid rgba(245,158,11,0.25); border-radius: 5px; padding: 1px 6px; }
     .ot-scroll { flex: 1; overflow-y: auto; padding: 0.75rem 1rem; }
-    .ot-scroll::-webkit-scrollbar { width: 4px; }
+    .ot-scroll::-webkit-scrollbar { width: 8px; }
     .ot-scroll::-webkit-scrollbar-track { background: transparent; }
-    .ot-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
+    .ot-scroll::-webkit-scrollbar-thumb { background: linear-gradient(180deg, rgba(255,255,255,0.28), rgba(255,255,255,0.12)); border-radius: 10px; }
     .ot-summary-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.4rem; padding: 0.6rem 1rem; flex-shrink: 0; border-bottom: 1px solid rgba(255,255,255,0.06); }
     .ot-sum-card { background: rgba(255,255,255,0.04); border-radius: 10px; padding: 0.55rem 0.4rem; text-align: center; }
     .ot-sum-label { font-size: 0.6rem; color: #64748b; margin-bottom: 2px; }
@@ -1054,8 +1128,8 @@
       border-radius: 16px; display: flex; flex-direction: column; overflow: hidden;
     }
     .goals-scroll { flex: 1; overflow-y: auto; padding: 0.75rem 1rem 1.25rem; }
-    .goals-scroll::-webkit-scrollbar { width: 4px; }
-    .goals-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
+    .goals-scroll::-webkit-scrollbar { width: 8px; }
+    .goals-scroll::-webkit-scrollbar-thumb { background: linear-gradient(180deg, rgba(255,255,255,0.28), rgba(255,255,255,0.12)); border-radius: 10px; }
 
     .goal-card {
       background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.07);
@@ -1142,9 +1216,9 @@
     .expense-list {
       flex: 1; overflow-y: auto; padding: 0.75rem 1rem 1.25rem;
     }
-    .expense-list::-webkit-scrollbar { width: 4px; }
+    .expense-list::-webkit-scrollbar { width: 8px; }
     .expense-list::-webkit-scrollbar-track { background: transparent; }
-    .expense-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
+    .expense-list::-webkit-scrollbar-thumb { background: linear-gradient(180deg, rgba(255,255,255,0.28), rgba(255,255,255,0.12)); border-radius: 10px; }
 
     .exp-date-hdr { display:flex; align-items:center; justify-content:space-between; padding:0.5rem 0.5rem 0.18rem; margin-top:0.1rem; }
     .exp-date-hdr-lbl { font-size:0.6rem; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:#475569; }
@@ -1204,8 +1278,8 @@
       display: flex; flex-direction: column; gap: 1rem; position: relative;
       max-height: 90vh; overflow-y: auto;
     }
-    .modal::-webkit-scrollbar { width: 4px; }
-    .modal::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
+    .modal::-webkit-scrollbar { width: 8px; }
+    .modal::-webkit-scrollbar-thumb { background: linear-gradient(180deg, rgba(255,255,255,0.28), rgba(255,255,255,0.12)); border-radius: 10px; }
     .modal-icon { font-size: 2rem; text-align: center; }
     .modal-title { font-size: 1.1rem; font-weight: 700; text-align: center; color: #f1f5f9; }
     .modal-sub { font-size: 0.8rem; text-align: center; color: #64748b; }
@@ -1679,7 +1753,7 @@
       .modal-overlay { align-items: center; }
       .modal { border-radius: 20px; max-width: 520px; width: auto !important; padding: 2rem 1.75rem; }
       .hist-modal { border-radius: 20px; max-height: 85vh; max-width: 680px; width: 92vw; }
-      #userGuideModal .modal { width: 92vw !important; max-width: 760px; max-height: 88vh; }
+      #userGuideModal .modal { width: 94vw !important; max-width: 840px; max-height: 90vh; }
 
       /* Calendar popup: fixed centred */
       .cal-popup { position: fixed; top: calc(72px + env(safe-area-inset-top, 0px)); left: 50%; transform: translateX(-50%); right: auto; z-index: 100; }
@@ -2030,9 +2104,9 @@
       max-height: 88vh; overflow-y: auto;
       box-shadow: 0 50px 120px rgba(0,0,0,0.9), 0 0 0 1px rgba(255,255,255,0.04);
     }
-    .onboard-box::-webkit-scrollbar { width: 4px; }
+    .onboard-box::-webkit-scrollbar { width: 8px; }
     .onboard-box::-webkit-scrollbar-track { background: transparent; }
-    .onboard-box::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
+    .onboard-box::-webkit-scrollbar-thumb { background: linear-gradient(180deg, rgba(255,255,255,0.28), rgba(255,255,255,0.12)); border-radius: 10px; }
     .onboard-header {
       padding: 2rem 2rem 1.6rem;
       background: linear-gradient(135deg, rgba(239,68,68,0.07), transparent);
@@ -2581,22 +2655,20 @@
 
 <!-- User Guide Modal -->
 <div class="modal-overlay" id="userGuideModal">
-  <div class="modal" style="width:760px;max-width:96vw;">
+  <div class="modal" style="width:840px;max-width:96vw;">
     <button class="modal-close" onclick="closeUserGuide()">✕</button>
     <div class="modal-icon guide-modal-icon"><i class="ph-fill ph-book-open-text" style="font-size:1.6rem;color:#fbbf24;"></i></div>
     <div class="modal-title">User Guide</div>
     <div class="modal-sub">How to use every module &amp; what each button does</div>
 
-    <div class="guide-toolbar">
-      <div class="guide-search-wrap">
-        <i class="ph-bold ph-magnifying-glass"></i>
-        <input type="text" class="guide-search" id="guideSearchInput" placeholder="Search the guide…" oninput="filterGuide(this.value)">
-      </div>
-      <button class="guide-toggle-all" onclick="expandAllGuide()">Expand all</button>
-      <button class="guide-toggle-all" onclick="collapseAllGuide()">Collapse all</button>
+    <div class="guide-search-wrap">
+      <i class="ph-bold ph-magnifying-glass"></i>
+      <input type="text" class="guide-search" id="guideSearchInput" placeholder="Search the guide…" oninput="filterGuide(this.value)">
     </div>
 
-    <div class="guide-body" id="guideAccordion">
+    <div class="guide-layout">
+      <div class="guide-sidebar" id="guideSidebar"></div>
+      <div class="guide-content" id="guideAccordion">
 
       <div class="guide-acc-item" data-guide-id="start">
         <button class="guide-acc-header" onclick="toggleGuideSection('start')">
@@ -3206,7 +3278,8 @@
         </div>
       </div>
 
-    </div>
+      </div><!-- /guide-content -->
+    </div><!-- /guide-layout -->
   </div>
 </div>
 
@@ -3221,6 +3294,7 @@
     <div class="seller-tabs">
       <button class="seller-tab active" id="sellerTabGen" onclick="switchSellerTab('generate')"><i class="ph-bold ph-sparkle"></i> Generate</button>
       <button class="seller-tab" id="sellerTabHist" onclick="switchSellerTab('history')"><i class="ph-bold ph-list-bullets"></i> All Codes</button>
+      <button class="seller-tab" id="sellerTabUsers" onclick="switchSellerTab('users')"><i class="ph-bold ph-users-three"></i> Users</button>
     </div>
 
     <div id="sellerGenPane">
@@ -3266,6 +3340,15 @@
         <button class="seller-icon-btn seller-refresh-btn" onclick="loadSellerHistory()" title="Refresh"><i class="ph-bold ph-arrows-clockwise"></i></button>
       </div>
       <div id="sellerHistoryList" class="seller-history-list"></div>
+    </div>
+
+    <div id="sellerUsersPane" style="display:none;">
+      <div class="seller-stats" id="sellerUserStats"></div>
+      <div class="seller-search-row">
+        <input type="text" id="sellerUserSearch" class="form-input" placeholder="Search by name or paste a code…" oninput="renderSellerUsers()" />
+        <button class="seller-icon-btn seller-refresh-btn" onclick="loadSellerUsers()" title="Refresh"><i class="ph-bold ph-arrows-clockwise"></i></button>
+      </div>
+      <div id="sellerUsersList" class="seller-history-list"></div>
     </div>
   </div>
 </div>
@@ -4627,6 +4710,56 @@ function _genSyncKey() {
       return (c === "x" ? r : (r & 0x3 | 0x8)).toString(16);
     });
   }
+}
+
+// ── Presence / Active Users (admin analytics) ─────────────
+// Each install (sync key ≈ household) writes a lightweight heartbeat to
+// /presence/{syncKey} on load, every 60s while visible, and when the tab is
+// re-shown. The Seller Console "Users" tab reads this to show who's active and
+// when each install was last seen. Only minimal metadata is stored — no
+// financial data ever leaves through this path.
+var _presenceTimer = null;
+function _devicePlatform() {
+  var ua = navigator.userAgent || "";
+  if (/iPhone|iPad|iPod/.test(ua)) return "iOS";
+  if (/Android/.test(ua))          return "Android";
+  if (/Windows/.test(ua))          return "Windows";
+  if (/Macintosh|Mac OS/.test(ua)) return "Mac";
+  if (/Linux/.test(ua))            return "Linux";
+  return "Other";
+}
+function recordPresence() {
+  if (!_db || !_syncKey) return;
+  if (isSellerMode()) return; // don't count the admin's own device
+  try {
+    var info = { lastSeen: Date.now(), device: _devicePlatform() };
+    info.status = localStorage.getItem("opmus_license_key")
+      ? "licensed"
+      : (localStorage.getItem(BASE_TRIAL_EXPIRY_KEY) ? "trial" : "active");
+    try {
+      var profiles = getProfiles();
+      if (profiles && profiles.length) {
+        info.profiles = profiles.length;
+        var p = profiles.find(function(x) { return x.id === activeProfileId; });
+        if (p && p.name) info.name = p.name;
+      }
+    } catch(e) {}
+    if (!info.firstSeen) {
+      // Only set firstSeen once (on first ever write for this install)
+      var fs = localStorage.getItem("opmus_first_seen");
+      if (!fs) { fs = String(Date.now()); _lsSet("opmus_first_seen", fs); }
+      info.firstSeen = parseInt(fs, 10);
+    }
+    _db.ref("presence/" + _syncKey).update(info);
+  } catch(e) {}
+}
+function startPresence() {
+  if (!_db || !_syncKey || isSellerMode()) return;
+  recordPresence();
+  if (_presenceTimer) clearInterval(_presenceTimer);
+  _presenceTimer = setInterval(function() {
+    if (!document.hidden) recordPresence();
+  }, 60000);
 }
 
 // ── License key / gift code generator (Seller Tools) ─────
@@ -6319,7 +6452,7 @@ function renderDashboard() {
   const totalExp      = expenses.reduce(function(s, e) { return s + (parseFloat(e.amount) || 0); }, 0);
   const totalReceived = loadReceived().reduce(function(s, e) { return s + (parseFloat(e.amount) || 0); }, 0);
 
-  document.getElementById('headerMonth').innerHTML = '<span class="month-pill-icon"><i class="ph-fill ph-calendar-blank" style="color:#fca5a5;font-size:1rem;"></i></span><span class="month-pill-text"><span class="month-pill-label">' + periodLabel + '</span><span class="month-pill-hint">View Calendar</span></span><span class="month-pill-caret">▾</span>';
+  document.getElementById('headerMonth').innerHTML = '<span class="month-pill-icon"><i class="ph-fill ph-calendar-blank" style="color:#fca5a5;font-size:1rem;"></i></span><span class="month-pill-text"><span class="month-pill-label">' + ALL_MONTHS[currentMonthIdx] + ' ' + currentYear + '</span><span class="month-pill-hint">' + periodRange + '</span></span><span class="month-pill-caret">▾</span>';
   document.getElementById('expModalMonth').textContent  = periodLabel + '  ·  ' + periodRange;
 
   var salCfg = loadSalaryConfig();
@@ -7640,65 +7773,109 @@ function closeAppLibrary() {
   document.getElementById('appLibraryModal').classList.remove('open');
 }
 
-// ── User Guide ─────────────────────────────────────────────
+// ── User Guide (premium two-pane docs) ─────────────────────
+var _guideSideBuilt = false;
+function buildGuideSidebar() {
+  var side = document.getElementById('guideSidebar');
+  if (!side) return;
+  var html = '';
+  document.querySelectorAll('.guide-acc-item').forEach(function(item) {
+    var id = item.getAttribute('data-guide-id');
+    var iconEl  = item.querySelector('.guide-acc-icon');
+    var titleEl = item.querySelector('.guide-acc-title');
+    var name = '', sub = '';
+    if (titleEl) {
+      var clone = titleEl.cloneNode(true);
+      var subEl = clone.querySelector('.guide-acc-sub');
+      if (subEl) { sub = subEl.textContent.trim(); subEl.remove(); }
+      name = clone.textContent.trim();
+    }
+    var icon = iconEl ? iconEl.textContent.trim() : '';
+    var iconStyle = iconEl ? (iconEl.getAttribute('style') || '') : '';
+    html += '<div class="guide-side-item" data-side="' + id + '" onclick="showGuideSection(\'' + id + '\')">'
+      + '<span class="guide-side-ico" style="' + iconStyle + '">' + icon + '</span>'
+      + '<span class="guide-side-txt"><span class="guide-side-name">' + escHtml(name) + '</span>'
+      + (sub ? '<span class="guide-side-sub">' + escHtml(sub) + '</span>' : '') + '</span>'
+      + '</div>';
+  });
+  side.innerHTML = html;
+  _guideSideBuilt = true;
+}
+
+function _guideEmptyNote(show) {
+  var content = document.getElementById('guideAccordion');
+  if (!content) return;
+  var note = document.getElementById('guideEmptyNote');
+  if (show) {
+    if (!note) {
+      note = document.createElement('div');
+      note.id = 'guideEmptyNote';
+      note.className = 'guide-side-empty';
+      note.style.padding = '2.5rem 1rem';
+      note.textContent = 'No results found. Try another keyword.';
+      content.appendChild(note);
+    }
+    note.style.display = '';
+  } else if (note) {
+    note.style.display = 'none';
+  }
+}
+
+function showGuideSection(id) {
+  _guideEmptyNote(false);
+  document.querySelectorAll('.guide-acc-item').forEach(function(el) {
+    el.classList.toggle('active', el.getAttribute('data-guide-id') === id);
+  });
+  document.querySelectorAll('.guide-side-item').forEach(function(el) {
+    el.classList.toggle('active', el.getAttribute('data-side') === id);
+  });
+  var content = document.getElementById('guideAccordion');
+  if (content) content.scrollTop = 0;
+  var sa = document.querySelector('.guide-side-item.active');
+  if (sa && sa.scrollIntoView) sa.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+}
+
+// The section header titles call this — just route to showGuideSection.
+function toggleGuideSection(id) { showGuideSection(id); }
+
 function openUserGuide() {
   var dd = document.getElementById('profileDropdown');
   if (dd) dd.classList.remove('open');
   document.getElementById('userGuideModal').classList.add('open');
+  if (!_guideSideBuilt) buildGuideSidebar();
   var search = document.getElementById('guideSearchInput');
   if (search) search.value = '';
-  var items = document.querySelectorAll('.guide-acc-item');
-  items.forEach(function(el, i) {
-    el.classList.remove('guide-hidden');
-    setGuideItemOpen(el, i === 0);
-  });
-  var body = document.querySelector('#userGuideModal .guide-body');
-  if (body) body.scrollTop = 0;
+  document.querySelectorAll('.guide-acc-item, .guide-side-item').forEach(function(el) { el.classList.remove('guide-hidden'); });
+  var first = document.querySelector('.guide-acc-item');
+  if (first) showGuideSection(first.getAttribute('data-guide-id'));
 }
 
 function closeUserGuide() {
   document.getElementById('userGuideModal').classList.remove('open');
 }
 
-function setGuideItemOpen(item, open) {
-  var content = item.querySelector('.guide-acc-content');
-  item.classList.toggle('open', open);
-  content.style.maxHeight = open ? content.scrollHeight + 'px' : '0px';
-}
-
-function toggleGuideSection(id) {
-  var item = document.querySelector('.guide-acc-item[data-guide-id="' + id + '"]');
-  if (!item) return;
-  setGuideItemOpen(item, !item.classList.contains('open'));
-}
-
-function expandAllGuide() {
-  document.querySelectorAll('.guide-acc-item:not(.guide-hidden)').forEach(function(el) {
-    setGuideItemOpen(el, true);
-  });
-}
-
-function collapseAllGuide() {
-  document.querySelectorAll('.guide-acc-item').forEach(function(el) {
-    setGuideItemOpen(el, false);
-  });
-}
-
 function filterGuide(query) {
   query = (query || '').trim().toLowerCase();
   var items = document.querySelectorAll('.guide-acc-item');
   if (!query) {
-    items.forEach(function(el, i) {
-      el.classList.remove('guide-hidden');
-      setGuideItemOpen(el, i === 0);
-    });
+    document.querySelectorAll('.guide-acc-item, .guide-side-item').forEach(function(el) { el.classList.remove('guide-hidden'); });
+    if (items[0]) showGuideSection(items[0].getAttribute('data-guide-id'));
     return;
   }
+  var firstMatch = null;
   items.forEach(function(el) {
+    var id = el.getAttribute('data-guide-id');
     var match = el.textContent.toLowerCase().indexOf(query) !== -1;
-    el.classList.toggle('guide-hidden', !match);
-    if (match) setGuideItemOpen(el, true);
+    var side = document.querySelector('.guide-side-item[data-side="' + id + '"]');
+    if (side) side.classList.toggle('guide-hidden', !match);
+    if (match && !firstMatch) firstMatch = id;
   });
+  if (firstMatch) {
+    showGuideSection(firstMatch);
+  } else {
+    document.querySelectorAll('.guide-acc-item').forEach(function(el) { el.classList.remove('active'); });
+    _guideEmptyNote(true);
+  }
 }
 
 // ── Seller Tools (admin) ──────────────────────────────────
@@ -7716,17 +7893,22 @@ function closeSellerTools() {
 }
 
 function switchSellerTab(tab) {
-  var gen  = document.getElementById("sellerGenPane");
-  var hist = document.getElementById("sellerHistPane");
-  var tabGen  = document.getElementById("sellerTabGen");
-  var tabHist = document.getElementById("sellerTabHist");
+  var gen   = document.getElementById("sellerGenPane");
+  var hist  = document.getElementById("sellerHistPane");
+  var users = document.getElementById("sellerUsersPane");
+  var tabGen   = document.getElementById("sellerTabGen");
+  var tabHist  = document.getElementById("sellerTabHist");
+  var tabUsers = document.getElementById("sellerTabUsers");
+  gen.style.display = "none"; hist.style.display = "none"; users.style.display = "none";
+  tabGen.classList.remove("active"); tabHist.classList.remove("active"); tabUsers.classList.remove("active");
   if (tab === "history") {
-    gen.style.display = "none"; hist.style.display = "";
-    tabGen.classList.remove("active"); tabHist.classList.add("active");
+    hist.style.display = ""; tabHist.classList.add("active");
     loadSellerHistory();
+  } else if (tab === "users") {
+    users.style.display = ""; tabUsers.classList.add("active");
+    loadSellerUsers();
   } else {
-    gen.style.display = ""; hist.style.display = "none";
-    tabGen.classList.add("active"); tabHist.classList.remove("active");
+    gen.style.display = ""; tabGen.classList.add("active");
   }
 }
 
@@ -7818,6 +8000,185 @@ function renderSellerStats() {
   + '<div class="seller-stat"><i class="ph-bold ph-shield-check seller-stat-icon"></i><div class="seller-stat-num">' + licActivated + '</div><div class="seller-stat-label">Activated</div></div>'
   + '<div class="seller-stat"><i class="ph-bold ph-gift seller-stat-icon"></i><div class="seller-stat-num">' + giftKeys.length + '</div><div class="seller-stat-label">Gift Codes</div></div>'
   + '<div class="seller-stat"><i class="ph-bold ph-check-circle seller-stat-icon"></i><div class="seller-stat-num">' + giftRedeemed + '</div><div class="seller-stat-label">Redeemed</div></div>';
+}
+
+// ── Seller Console: active users / presence ───────────────
+var _presenceData = null;
+function _timeAgo(ts) {
+  if (!ts) return "never";
+  var diff = Date.now() - ts;
+  if (diff < 0) return "just now";
+  if (diff < 60000) return "just now";
+  var mins = Math.floor(diff / 60000);
+  if (mins < 60) return mins + (mins === 1 ? " min ago" : " mins ago");
+  var hrs = Math.floor(mins / 60);
+  if (hrs < 24) return hrs + (hrs === 1 ? " hour ago" : " hours ago");
+  var days = Math.floor(hrs / 24);
+  if (days < 7) return days + (days === 1 ? " day ago" : " days ago");
+  var weeks = Math.floor(days / 7);
+  if (weeks < 5) return weeks + (weeks === 1 ? " week ago" : " weeks ago");
+  return _fmtSellerDate(ts);
+}
+
+var _USER_AVATAR_COLORS = [
+  ['#f87171','#b91c1c'], ['#fb923c','#c2410c'], ['#fbbf24','#b45309'],
+  ['#34d399','#047857'], ['#22d3ee','#0e7490'], ['#60a5fa','#1d4ed8'],
+  ['#a78bfa','#6d28d9'], ['#f472b6','#be185d']
+];
+function _userAvatar(name, key) {
+  var n = (name || "").trim();
+  var initials = n
+    ? n.split(/\s+/).map(function(w) { return w[0]; }).slice(0, 2).join("")
+    : "?";
+  var seed = (key || name || "x");
+  var hash = 0;
+  for (var i = 0; i < seed.length; i++) hash = (hash * 31 + seed.charCodeAt(i)) >>> 0;
+  var pair = _USER_AVATAR_COLORS[hash % _USER_AVATAR_COLORS.length];
+  return { initials: initials, grad: 'linear-gradient(135deg,' + pair[0] + ',' + pair[1] + ')' };
+}
+
+var _userCodeMap = null; // syncKey -> [{ code, kind, at }]
+function _buildUserCodeMap(licenses, gifts) {
+  var map = {};
+  function add(sk, entry) {
+    if (!sk) return;
+    if (!map[sk]) map[sk] = [];
+    map[sk].push(entry);
+  }
+  Object.keys(licenses || {}).forEach(function(code) {
+    var d = licenses[code] || {};
+    var acts = d.activatedSyncKeys || {};
+    Object.keys(acts).forEach(function(sk) {
+      add(sk, { code: code, kind: "license", at: acts[sk] });
+    });
+  });
+  Object.keys(gifts || {}).forEach(function(code) {
+    var d = gifts[code] || {};
+    if (d.redeemedBySyncKey) add(d.redeemedBySyncKey, { code: code, kind: d.trial ? "trial" : "gift", at: d.redeemedAt });
+  });
+  return map;
+}
+
+async function loadSellerUsers() {
+  var listEl = document.getElementById("sellerUsersList");
+  if (!listEl) return;
+  if (!_db) { listEl.innerHTML = '<div class="empty-state"><div class="msg">Firebase not connected</div></div>'; return; }
+  listEl.innerHTML = '<div class="empty-state"><div class="msg">Loading…</div></div>';
+  try {
+    var presSnap = await _db.ref("presence").once("value");
+    var licSnap  = await _db.ref("licenses").once("value");
+    var giftSnap = await _db.ref("giftcodes").once("value");
+    _presenceData = presSnap.val() || {};
+    _userCodeMap  = _buildUserCodeMap(licSnap.val() || {}, giftSnap.val() || {});
+    renderSellerUserStats();
+    renderSellerUsers();
+  } catch(e) {
+    listEl.innerHTML = '<div class="empty-state"><div class="msg">Failed to load: ' + e.message + '</div></div>';
+  }
+}
+
+// Build a unified set of user rows from presence + everyone who activated/redeemed
+// a code (so even buyers who haven't re-opened since this feature shipped appear
+// when you search their code).
+function _allUserRows() {
+  var keys = {};
+  Object.keys(_presenceData || {}).forEach(function(k) { keys[k] = true; });
+  Object.keys(_userCodeMap || {}).forEach(function(k) { keys[k] = true; });
+  return Object.keys(keys).map(function(k) {
+    var d = (_presenceData && _presenceData[k]) || {};
+    var codes = (_userCodeMap && _userCodeMap[k]) || [];
+    var lastSeen = d.lastSeen || 0;
+    // Fallback "first activated" timestamp from codes when no presence yet
+    var activatedAt = codes.reduce(function(m, c) { return c.at && c.at > m ? c.at : m; }, 0);
+    return { key: k, d: d, codes: codes, lastSeen: lastSeen, activatedAt: activatedAt };
+  });
+}
+
+function renderSellerUserStats() {
+  var el = document.getElementById("sellerUserStats");
+  if (!el) return;
+  var now = Date.now();
+  var rows = _allUserRows();
+  var activeNow = 0, today = 0, week = 0;
+  rows.forEach(function(r) {
+    var diff = now - r.lastSeen;
+    if (r.lastSeen && diff < 3 * 60000)       activeNow++;   // seen in last 3 min
+    if (r.lastSeen && diff < 24 * 3600000)    today++;       // last 24h
+    if (r.lastSeen && diff < 7 * 24 * 3600000) week++;       // last 7 days
+  });
+  el.innerHTML =
+    '<div class="seller-stat"><i class="ph-bold ph-users-three seller-stat-icon"></i><div class="seller-stat-num">' + rows.length + '</div><div class="seller-stat-label">Total Users</div></div>'
+  + '<div class="seller-stat"><i class="ph-bold ph-broadcast seller-stat-icon" style="color:#22c55e;"></i><div class="seller-stat-num" style="color:#22c55e;">' + activeNow + '</div><div class="seller-stat-label">Active Now</div></div>'
+  + '<div class="seller-stat"><i class="ph-bold ph-sun seller-stat-icon"></i><div class="seller-stat-num">' + today + '</div><div class="seller-stat-label">Today</div></div>'
+  + '<div class="seller-stat"><i class="ph-bold ph-calendar-dots seller-stat-icon"></i><div class="seller-stat-num">' + week + '</div><div class="seller-stat-label">This Week</div></div>';
+}
+
+function renderSellerUsers() {
+  var el = document.getElementById("sellerUsersList");
+  if (!el) return;
+  var now = Date.now();
+  var q = ((document.getElementById("sellerUserSearch") || {}).value || "").trim().toLowerCase();
+  var rows = _allUserRows();
+  if (q) rows = rows.filter(function(r) {
+    if ((r.d.name || "").toLowerCase().indexOf(q) !== -1) return true;
+    if (r.key.toLowerCase().indexOf(q) !== -1) return true;
+    return r.codes.some(function(c) { return c.code.toLowerCase().indexOf(q) !== -1; });
+  });
+  // Sort: most recently active first; never-seen (code-only) rows sink to bottom
+  rows.sort(function(a, b) { return (b.lastSeen || b.activatedAt) - (a.lastSeen || a.activatedAt); });
+  if (!rows.length) {
+    el.innerHTML = '<div class="empty-state"><div class="msg">' + (q ? 'No user found for that code/name.' : 'No users yet.') + '</div></div>';
+    return;
+  }
+  el.innerHTML = rows.map(function(r) {
+    var d = r.d;
+    var online = r.lastSeen && (now - r.lastSeen) < 3 * 60000;
+    var hasName = !!(d.name && d.name.trim());
+    var shortId = r.key ? r.key.replace(/^mft-/, "").slice(0, 4) : "";
+    var name = hasName
+      ? escHtml(d.name)
+      : '<span style="color:#94a3b8;">' + (d.device ? escHtml(d.device) + ' user' : 'Setting up…') + '</span>'
+        + (shortId ? ' <span style="color:#475569;font-weight:500;font-size:0.72rem;">#' + escHtml(shortId) + '</span>' : '');
+    var av = _userAvatar(d.name, r.key);
+    // Derive status from presence, falling back to the codes they hold
+    var status = d.status;
+    if (!status) {
+      if (r.codes.some(function(c) { return c.kind === "license"; })) status = "licensed";
+      else if (r.codes.some(function(c) { return c.kind === "trial"; })) status = "trial";
+    }
+    var statusBadge = status === "trial"
+      ? '<span class="seller-badge warn">Trial</span>'
+      : status === "licensed"
+        ? '<span class="seller-badge ok">Licensed</span>'
+        : '';
+    var chips = [];
+    if (d.device) chips.push('<span class="user-chip"><i class="ph-bold ph-device-mobile"></i>' + escHtml(d.device) + '</span>');
+    if (d.profiles) chips.push('<span class="user-chip"><i class="ph-bold ph-user-circle"></i>' + d.profiles + (d.profiles === 1 ? ' profile' : ' profiles') + '</span>');
+    r.codes.forEach(function(c) {
+      chips.push('<span class="user-chip code"><i class="ph-bold ph-ticket"></i><span>' + escHtml(c.code) + '</span></span>');
+    });
+    if (d.firstSeen) chips.push('<span class="user-chip"><i class="ph-bold ph-calendar-plus"></i>' + _fmtSellerDate(d.firstSeen) + '</span>');
+
+    var rightTop, rightSub, rightCls;
+    if (online)             { rightTop = 'Active now';                  rightSub = 'online';         rightCls = ' on'; }
+    else if (r.lastSeen)    { rightTop = _timeAgo(r.lastSeen);          rightSub = 'last login';     rightCls = ''; }
+    else if (r.activatedAt) { rightTop = _fmtSellerDate(r.activatedAt); rightSub = 'code activated'; rightCls = ' never'; }
+    else                    { rightTop = 'never';                       rightSub = 'last login';     rightCls = ' never'; }
+
+    return '<div class="user-card' + (online ? ' online' : '') + '">'
+      + '<div class="user-avatar" style="background:' + av.grad + ';">' + escHtml(av.initials)
+        + '<span class="user-avatar-dot ' + (online ? 'on' : 'off') + '"></span>'
+      + '</div>'
+      + '<div class="user-main">'
+        + '<div class="user-name-row"><span class="user-name">' + name + '</span>' + statusBadge + '</div>'
+        + '<div class="user-meta">' + chips.join('') + '</div>'
+      + '</div>'
+      + '<div class="user-right">'
+        + '<div class="user-last' + rightCls + '">' + rightTop + '</div>'
+        + '<div class="user-last-lbl">' + rightSub + '</div>'
+      + '</div>'
+    + '</div>';
+  }).join('');
 }
 
 function _fmtSellerDate(ts) {
@@ -10287,20 +10648,23 @@ function renderCalendarPopup() {
   for (var n = 1; n <= daysInMonth; n++) {
     var cls = 'cal-cell';
     const ds = year + '-' + String(month+1).padStart(2,'0') + '-' + String(n).padStart(2,'0');
+    const phName = MY_PH[getPHKey(year, month, n)];
     if (isLeaveDate(ds)) cls += ' cal-offday-sm';
     else {
       const rt = getRosterType(year, month, n);
       if (rt === 'offday')  cls += ' cal-offday-sm';
       if (rt === 'restday') cls += ' cal-restday-sm';
     }
+    if (phName)       cls += ' cal-ph-sm';
     if (n === salDay) cls += ' cal-salary-sm';
     if (n === today)  cls += ' cal-today';
-    html += '<div class="' + cls + '">' + n + '</div>';
+    html += '<div class="' + cls + '" title="' + (phName || '') + '">' + n + '</div>';
   }
   html += '</div>';
   html += '<div class="cal-legend" style="margin-top:0.55rem;flex-wrap:wrap;gap:0.3rem 0.7rem;">';
   html += '<div class="cal-legend-item"><div class="cal-legend-dot" style="background:#ef4444;"></div>Today</div>';
   html += '<div class="cal-legend-item"><div class="cal-legend-dot" style="outline:2px solid #22c55e;outline-offset:-2px;border-radius:3px;"></div>Salary</div>';
+  html += '<div class="cal-legend-item"><div class="cal-legend-dot" style="background:#fb923c;"></div>Holiday</div>';
   if (localStorage.getItem(ROSTER_START_KEY)) {
     html += '<div class="cal-legend-item"><div class="cal-legend-dot" style="background:#06b6d4;"></div>Off/Leave</div>';
     html += '<div class="cal-legend-item"><div class="cal-legend-dot" style="background:#a855f7;"></div>Rest Day</div>';
@@ -10334,12 +10698,14 @@ function renderExpandedCal() {
   for (var n = 1; n <= daysInMonth; n++) {
     var cls = 'cal-big-cell';
     const rt = getRosterType(year, month, n);
+    const phName = MY_PH[getPHKey(year, month, n)];
     if (rt === 'work')    cls += ' cal-work';
     if (rt === 'offday')  cls += ' cal-offday-day';
     if (rt === 'restday') cls += ' cal-restday-day';
+    if (phName)       cls += ' cal-ph-day';
     if (n === salDay) cls += ' cal-salary';
     if (isCurrentMonth && n === todayD) cls += ' cal-today';
-    grid += '<div class="' + cls + '">' + n + '</div>';
+    grid += '<div class="' + cls + '">' + n + (phName ? '<span class="cal-ph-tip">' + escHtml(phName) + '</span>' : '') + '</div>';
   }
   var trailingCells = 42 - firstDay - daysInMonth;
   for (var t = 0; t < trailingCells; t++) grid += '<div class="cal-big-cell"></div>';
@@ -10350,6 +10716,7 @@ function renderExpandedCal() {
   const rs = localStorage.getItem(ROSTER_START_KEY);
   let leg = '<div class="cal-legend-item"><div class="cal-legend-dot" style="background:#ef4444;"></div>Today</div>';
   leg += '<div class="cal-legend-item"><div class="cal-legend-dot" style="outline:2px solid #22c55e;outline-offset:-2px;border-radius:3px;"></div>Salary</div>';
+  leg += '<div class="cal-legend-item"><div class="cal-legend-dot" style="background:#fb923c;"></div>Public Holiday</div>';
   if (rs) {
     leg += '<div class="cal-legend-item"><div class="cal-legend-dot" style="background:#06b6d4;"></div>Off Day</div>';
     leg += '<div class="cal-legend-item"><div class="cal-legend-dot" style="background:#a855f7;"></div>Rest Day</div>';
@@ -10869,7 +11236,7 @@ function checkReminders() {
 }
 
 document.addEventListener("visibilitychange", function() {
-  if (document.visibilityState === "visible") checkReminders();
+  if (document.visibilityState === "visible") { checkReminders(); recordPresence(); }
 });
 setInterval(checkReminders, 60 * 60 * 1000);
 
@@ -11108,6 +11475,9 @@ function applyProfileToUI(profile) {
   // Apply this profile's saved theme and style
   loadTheme();
   loadStyle();
+  // Record presence immediately so this user's name shows in the admin Users tab
+  // right away, instead of waiting for the next 60s heartbeat.
+  try { recordPresence(); } catch(e) {}
 }
 
 // ── Base Style System ─────────────────────────────────────
@@ -12300,6 +12670,7 @@ _syncKey = getSyncKey();
   if (!isLicensed() || _baseTrialExpired()) return;
   if (_fbConfigured()) await pullFromCloud();
   startLiveSync();
+  startPresence();
   loadCurrency();
   loadActiveModules();
   if (activeProfileId) {
