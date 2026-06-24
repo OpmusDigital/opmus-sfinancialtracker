@@ -16,6 +16,7 @@
   <!-- Firebase (compat SDK — paste your config below in the script) -->
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
@@ -3291,6 +3292,27 @@
     <div class="modal-title"><span class="seller-title-text">Seller Console</span> <span class="seller-admin-badge">Admin</span></div>
     <div class="modal-sub">Generate &amp; manage license keys and gift codes</div>
 
+    <div id="sellerLoginPane" style="display:none;">
+      <div class="seller-action-card">
+        <div class="seller-action-head">
+          <div class="seller-action-icon"><i class="ph-fill ph-lock-key"></i></div>
+          <div class="seller-action-info">
+            <div class="seller-action-title">Admin Sign In</div>
+            <div class="seller-action-desc">Sign in with your seller account to manage codes &amp; view users. This keeps your data locked to you only.</div>
+          </div>
+        </div>
+        <input type="email" id="sellerEmail" class="form-input" placeholder="Admin email" autocomplete="username" style="margin-bottom:0.5rem;" />
+        <input type="password" id="sellerPassword" class="form-input" placeholder="Password" autocomplete="current-password" onkeydown="if(event.key==='Enter')sellerLogin()" />
+        <div id="sellerLoginError" style="color:#f87171;font-size:0.74rem;margin-top:0.5rem;min-height:1em;"></div>
+        <button class="seller-cta-btn" onclick="sellerLogin()" style="margin-top:0.6rem;"><i class="ph-bold ph-sign-in"></i> Sign In</button>
+      </div>
+    </div>
+
+    <div id="sellerAuthedBody" style="display:none;">
+    <div style="display:flex;justify-content:flex-end;margin-bottom:0.4rem;">
+      <button class="seller-icon-btn" title="Sign out" onclick="sellerLogout()" style="width:auto;padding:0 0.6rem;gap:0.3rem;font-size:0.68rem;font-weight:700;"><i class="ph-bold ph-sign-out"></i> Sign out</button>
+    </div>
+
     <div class="seller-tabs">
       <button class="seller-tab active" id="sellerTabGen" onclick="switchSellerTab('generate')"><i class="ph-bold ph-sparkle"></i> Generate</button>
       <button class="seller-tab" id="sellerTabHist" onclick="switchSellerTab('history')"><i class="ph-bold ph-list-bullets"></i> All Codes</button>
@@ -3350,6 +3372,7 @@
       </div>
       <div id="sellerUsersList" class="seller-history-list"></div>
     </div>
+    </div><!-- /sellerAuthedBody -->
   </div>
 </div>
 
@@ -7884,8 +7907,51 @@ var _sellerCodes = null; // cached { licenses:{...}, gifts:{...} } from Firebase
 function openSellerTools() {
   hideProfilePicker();
   document.getElementById("sellerToolsResult").innerHTML = "";
-  switchSellerTab("generate");
   document.getElementById("sellerToolsModal").classList.add("open");
+  _renderSellerAuthState();
+}
+
+// Show the admin login form until the seller is signed in with their Firebase
+// account; only then reveal the console (whose data reads are gated by the
+// matching security rules: only the admin UID can list licenses/codes/users).
+function _renderSellerAuthState() {
+  var authed = !!(window.firebase && firebase.auth && firebase.auth().currentUser);
+  var loginPane = document.getElementById("sellerLoginPane");
+  var body      = document.getElementById("sellerAuthedBody");
+  if (loginPane) loginPane.style.display = authed ? "none" : "";
+  if (body)      body.style.display      = authed ? "" : "none";
+  if (authed) {
+    switchSellerTab("generate");
+  } else {
+    var err = document.getElementById("sellerLoginError");
+    if (err) err.textContent = "";
+    var pw = document.getElementById("sellerPassword");
+    if (pw) pw.value = "";
+  }
+}
+
+async function sellerLogin() {
+  var errEl = document.getElementById("sellerLoginError");
+  var email = ((document.getElementById("sellerEmail")    || {}).value || "").trim();
+  var pw    =  (document.getElementById("sellerPassword") || {}).value || "";
+  if (!email || !pw) { if (errEl) errEl.textContent = "Enter your email and password."; return; }
+  if (!(window.firebase && firebase.auth)) { if (errEl) errEl.textContent = "Auth unavailable — check your connection."; return; }
+  if (errEl) errEl.textContent = "Signing in…";
+  try {
+    await firebase.auth().signInWithEmailAndPassword(email, pw);
+    if (errEl) errEl.textContent = "";
+    _renderSellerAuthState();
+  } catch(e) {
+    if (errEl) errEl.textContent = "Sign in failed — " + (e && e.message ? e.message : "check your details.");
+  }
+}
+
+function sellerLogout() {
+  if (window.firebase && firebase.auth) {
+    firebase.auth().signOut().then(_renderSellerAuthState).catch(_renderSellerAuthState);
+  } else {
+    _renderSellerAuthState();
+  }
 }
 
 function closeSellerTools() {
