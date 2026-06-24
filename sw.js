@@ -1,41 +1,23 @@
-const CACHE_NAME = 'mft-sw-v1';
+// Minimal service worker — enables installability + local notifications.
+// No push/fetch handling: reminders are triggered locally via
+// registration.showNotification() from the app's own JS.
 
-self.addEventListener('install', () => self.skipWaiting());
-self.addEventListener('activate', e => e.waitUntil(self.clients.claim()));
+self.addEventListener('install', function(event) {
+  self.skipWaiting();
+});
 
-self.addEventListener('fetch', event => {
-  // Only intercept POST requests (share target)
-  if (event.request.method !== 'POST') return;
+self.addEventListener('activate', function(event) {
+  event.waitUntil(self.clients.claim());
+});
 
-  event.respondWith((async () => {
-    try {
-      const formData = await event.request.formData();
-      const file = formData.get('receipt');
-
-      if (file) {
-        const arrayBuffer = await file.arrayBuffer();
-        const allClients = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
-
-        if (allClients.length > 0) {
-          // App is already open — send file directly
-          allClients[0].postMessage(
-            { type: 'RECEIPT_SHARED', fileType: file.type, buffer: arrayBuffer },
-            [arrayBuffer]
-          );
-        } else {
-          // App is closed — store file so it's picked up on next load
-          const cache = await caches.open(CACHE_NAME);
-          await cache.put(
-            'pending-receipt',
-            new Response(new Blob([arrayBuffer], { type: file.type }))
-          );
-        }
+self.addEventListener('notificationclick', function(event) {
+  event.notification.close();
+  event.waitUntil(
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(function(clients) {
+      for (var i = 0; i < clients.length; i++) {
+        if ('focus' in clients[i]) return clients[i].focus();
       }
-    } catch (err) {
-      console.error('[SW] Share handling error:', err);
-    }
-
-    // Redirect back to the app
-    return Response.redirect('./index.html', 303);
-  })());
+      if (self.clients.openWindow) return self.clients.openWindow('./');
+    })
+  );
 });
