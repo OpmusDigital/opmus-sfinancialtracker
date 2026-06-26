@@ -6,7 +6,9 @@
 // install / local-notification worker) and they coexist fine.
 //
 // The scheduled Cloud Function sends a "webpush.notification" message; the FCM
-// SDK below auto-displays it. We only add a click handler to focus/open the app.
+// SDK below auto-displays it AND handles taps (opening the link from the
+// message's fcmOptions). We deliberately don't add our own notificationclick
+// handler — the SDK already registers one, and adding a second can open two tabs.
 
 importScripts('https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js');
 importScripts('https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging-compat.js');
@@ -20,22 +22,7 @@ firebase.initializeApp({
   appId:             "1:1034537453068:web:fa89242f982c35278e1029"
 });
 
-// Initialising messaging is what registers FCM's internal push handler, which
-// auto-displays any incoming "notification" message while in the background.
+// Initialising messaging registers FCM's internal push + notification-click
+// handlers, which auto-display incoming "notification" messages while the app
+// is in the background and open the app when the notification is tapped.
 firebase.messaging();
-
-// When a pushed notification is tapped, focus an open tab or open the app.
-self.addEventListener('notificationclick', function(event) {
-  event.notification.close();
-  var link = (event.notification.data && event.notification.data.FCM_MSG &&
-              event.notification.data.FCM_MSG.notification &&
-              event.notification.data.FCM_MSG.notification.click_action) || './';
-  event.waitUntil(
-    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(function(clients) {
-      for (var i = 0; i < clients.length; i++) {
-        if ('focus' in clients[i]) return clients[i].focus();
-      }
-      if (self.clients.openWindow) return self.clients.openWindow(link);
-    })
-  );
-});

@@ -3567,7 +3567,6 @@
       <span id="tbSalChip"   class="header-chip"></span>
       <div style="flex:1;"></div>
       <button class="mg-action-btn" onclick="openHistory()">📊 View History</button>
-      <button class="mg-action-btn" onclick="openSettings()">⚙ Settings</button>
     </div>
   </div>
 
@@ -11634,6 +11633,7 @@ async function toggleNotifications() {
   if (localStorage.getItem(NOTIF_ENABLED_KEY) === "1") {
     localStorage.setItem(NOTIF_ENABLED_KEY, "0");
     if (btn) { btn.textContent = "○ Off"; btn.classList.remove("active"); }
+    _disablePushNotifications();
     return;
   }
   if (typeof Notification === "undefined") {
@@ -11728,6 +11728,18 @@ function _pushDeviceId() {
   return id;
 }
 
+// "👤 Name · " prefix so multi-profile households can tell which profile a
+// reminder belongs to. Empty for single-profile users (no clutter).
+function _profileLabel() {
+  try {
+    var profiles = getProfiles();
+    if (!profiles || profiles.length <= 1) return "";
+    var p = profiles.find(function(x) { return x.id === activeProfileId; });
+    if (p && p.name) return "👤 " + p.name + " · ";
+  } catch (e) {}
+  return "";
+}
+
 // Builds a forward-looking (~60 day) reminder schedule mirroring checkReminders()
 // wording. Keyed uniquely per fire-date; the OS `tag` reuses the in-app tag so a
 // push + an in-app reminder for the same item collapse into a single notification.
@@ -11746,10 +11758,11 @@ function _buildPushSchedule() {
     if (Math.round((fireDate - today) / 86400000) > HORIZON) return;
     sched[tag + "__" + ymd(fireDate)] = { date: ymd(fireDate), tag: tag, title: title, body: body };
   }
+  var L = _profileLabel();
   function schedDue(dueDate, tag, name, body, emoji) {
     var before = new Date(dueDate); before.setDate(before.getDate() - 1);
-    add(before,  tag, emoji + " " + name + " is due tomorrow", body);
-    add(dueDate, tag, emoji + " " + name + " is due today",    body);
+    add(before,  tag, L + emoji + " " + name + " is due tomorrow", body);
+    add(dueDate, tag, L + emoji + " " + name + " is due today",    body);
   }
 
   // 1) Monthly commitments — project the next few occurrences of each due-day.
@@ -11790,7 +11803,7 @@ function _buildPushSchedule() {
     if (sDay) {
       var salDate = new Date(ref.getFullYear(), ref.getMonth(), sDay);
       var before = new Date(salDate); before.setDate(before.getDate() - 1);
-      add(before, "salary", "💵 Salary day is tomorrow", "Payday is tomorrow — check your budget!");
+      add(before, "salary", L + "💵 Salary day is tomorrow", "Payday is tomorrow — check your budget!");
     }
   }
 
@@ -11803,6 +11816,7 @@ async function enablePushNotifications() {
   if (!_pushConfigured()) return;
   if (!_db || !_syncKey) return;
   if (isSellerMode()) return;
+  if (localStorage.getItem(NOTIF_ENABLED_KEY) !== "1") return; // in-app toggle is the source of truth
   if (typeof Notification === "undefined" || Notification.permission !== "granted") return;
   if (!("serviceWorker" in navigator) || typeof firebase === "undefined" || !firebase.messaging) return;
   try {
@@ -11817,17 +11831,43 @@ async function enablePushNotifications() {
   }
 }
 
-// Uploads this device's token + current schedule to /pushSubs/{syncKey}/{devId}.
+// Uploads this device's token + the ACTIVE profile's schedule to
+// /pushSubs/{syncKey}/{devId}. The schedule is stored per profile, so a device
+// only accumulates reminders for the profiles actually opened on it (other
+// profiles' subtrees are left untouched). Each notification is already labelled
+// with the profile name via _profileLabel() for multi-profile households.
 function _syncPushSubscription() {
   if (!_db || !_syncKey || !_fcmToken || isSellerMode()) return;
+  if (!activeProfileId) return;
+  if (localStorage.getItem(NOTIF_ENABLED_KEY) !== "1") return; // respect the in-app toggle
   try {
-    _db.ref("pushSubs/" + _syncKey + "/" + _pushDeviceId()).set({
+    var base = "pushSubs/" + _syncKey + "/" + _pushDeviceId();
+    _db.ref(base).update({
       token: _fcmToken,
       device: _devicePlatform(),
       tz: "Asia/Kuala_Lumpur",
-      schedule: _buildPushSchedule(),
       updatedAt: Date.now()
     });
+    // Replace only this profile's slice of the schedule.
+    _db.ref(base + "/schedule/" + activeProfileId).set(_buildPushSchedule());
+  } catch (e) {}
+}
+
+// Turning the in-app toggle OFF stops background push too: remove this profile's
+// scheduled reminders from this device, and if no profiles remain scheduled on
+// the device, drop the whole device entry (token included).
+function _disablePushNotifications() {
+  if (!_db || !_syncKey || !activeProfileId) return;
+  var base = "pushSubs/" + _syncKey + "/" + _pushDeviceId();
+  try {
+    _db.ref(base + "/schedule/" + activeProfileId).remove().then(function() {
+      return _db.ref(base + "/schedule").once("value");
+    }).then(function(snap) {
+      if (!snap.exists() || !snap.hasChildren()) {
+        _db.ref(base).remove();
+        _fcmToken = null;
+      }
+    }).catch(function() {});
   } catch (e) {}
 }
 
