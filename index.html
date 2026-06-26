@@ -17,6 +17,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging-compat.js"></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
@@ -4801,6 +4802,17 @@ var FIREBASE_CONFIG = {
   appId:             "1:1034537453068:web:fa89242f982c35278e1029",
   measurementId:     "G-MVTY43VW1D"
 };
+
+// ── Background Push (FCM) ─────────────────────────────────
+// Paste your Web Push certificate "Key pair" here. Get it from:
+// Firebase Console → Project Settings → Cloud Messaging →
+// Web Push certificates → Generate key pair (then copy the long key string).
+// Until this is filled, background push silently stays off (in-app reminders
+// still work as before).
+var FCM_VAPID_KEY = "BN4Qor2meeV0tmIklekCB7a317dc1gG6SixN6gSm6K5U7FPfZ7g68xIcIjSWK7LG8HwCVVzNLl8VVylso6XQOTA";
+function _pushConfigured() {
+  return FCM_VAPID_KEY && FCM_VAPID_KEY.indexOf("PASTE") === -1;
+}
 
 const SYNC_KEY_STORAGE = "mft_cloud_code";
 var _NOSYNC = ["mft_sys_migrated", SYNC_KEY_STORAGE, "mft_fin_hidden"];
@@ -11636,6 +11648,7 @@ async function toggleNotifications() {
   localStorage.setItem(NOTIF_ENABLED_KEY, "1");
   if (btn) { btn.textContent = "● On"; btn.classList.add("active"); }
   checkReminders();
+  enablePushNotifications();
 }
 
 // Scans existing due-items, wedding deadlines & salary day for anything
@@ -11660,43 +11673,174 @@ function checkReminders() {
   }
 
   _allDueItems().forEach(function(item) {
-    if (item.daysLeft > 1) return;
-    var when = item.daysLeft === 0 ? "today" : "tomorrow";
-    fire("due-" + item.id, "💰 Payment due " + when, item.name + " — " + fmt(item.amount));
+    if (item.daysLeft === 1)      fire("due-" + item.id, "💰 " + item.name + " is due tomorrow", "Amount: " + fmt(item.amount));
+    else if (item.daysLeft === 0) fire("due-" + item.id, "💰 " + item.name + " is due today",    "Amount: " + fmt(item.amount));
   });
 
   if (isModuleUnlocked("wedding")) {
     loadWpItems().forEach(function(item) {
       var days = _daysUntil(item.deadline);
-      if (days !== 0 && days !== 1) return;
-      var when = days === 0 ? "today" : "tomorrow";
-      fire("wp-" + item.id, "💍 Wedding deadline " + when, item.name);
+      if (days === 1)      fire("wp-" + item.id, "💍 " + item.name + " is due tomorrow", "Wedding checklist deadline");
+      else if (days === 0) fire("wp-" + item.id, "💍 " + item.name + " is due today",    "Wedding checklist deadline");
     });
   }
 
   if (isModuleUnlocked("study")) {
     loadSpTasks().forEach(function(task) {
       if (task.done) return;
-      var days = _daysUntil(task.dueDate);
-      if (days !== 0 && days !== 1) return;
-      var when = days === 0 ? "today" : "tomorrow";
-      fire("sp-" + task.id, "📚 " + (SP_TYPE_LABELS[task.type] || "Task") + " due " + when, task.title);
+      var days  = _daysUntil(task.dueDate);
+      var label = (SP_TYPE_LABELS[task.type] || "Task");
+      if (days === 1)      fire("sp-" + task.id, "📚 " + task.title + " is due tomorrow", label);
+      else if (days === 0) fire("sp-" + task.id, "📚 " + task.title + " is due today",    label);
     });
   }
 
   var tomorrow = new Date(); tomorrow.setDate(tomorrow.getDate() + 1);
   var salDay = getSalaryDate(tomorrow.getFullYear(), tomorrow.getMonth());
   if (salDay === tomorrow.getDate()) {
-    fire("salary", "💵 Salary day tomorrow", "Don't forget to check your budget!");
+    fire("salary", "💵 Salary day is tomorrow", "Payday is tomorrow — check your budget!");
   }
 
   if (fired) _lsSet("opmus_notified_" + _todayStr(), JSON.stringify(notified));
 }
 
+// ── Background Push (Web Push via FCM) ───────────────────
+// Unlike checkReminders() (which only fires while the app is open), this path
+// works even when the app is fully closed: the app uploads a forward-looking
+// schedule of reminders + this device's push token to Firebase, and a daily
+// Cloud Function sends them at 8am. Falls back silently to in-app-only if the
+// VAPID key isn't set or cloud sync isn't connected.
+var _fcmToken = null;
+var _pushSwReg = null;
+
+function _parseYmd(s) {
+  var p = (s || "").split("-");
+  if (p.length !== 3) return null;
+  var d = new Date(parseInt(p[0]), parseInt(p[1]) - 1, parseInt(p[2]));
+  return isNaN(d.getTime()) ? null : d;
+}
+
+// Stable per-device id (device-local, never synced) so multiple devices in the
+// same household each keep their own push token under one sync key.
+function _pushDeviceId() {
+  var id = localStorage.getItem("opmus_push_devid");
+  if (!id) { id = _genSyncKey().replace("mft-", ""); _lsSet("opmus_push_devid", id); }
+  return id;
+}
+
+// Builds a forward-looking (~60 day) reminder schedule mirroring checkReminders()
+// wording. Keyed uniquely per fire-date; the OS `tag` reuses the in-app tag so a
+// push + an in-app reminder for the same item collapse into a single notification.
+function _buildPushSchedule() {
+  var sched = {};
+  var HORIZON = 60;
+  var today = new Date(); today.setHours(0, 0, 0, 0);
+
+  function ymd(d) {
+    return d.getFullYear() + "-" +
+      String(d.getMonth() + 1).padStart(2, "0") + "-" +
+      String(d.getDate()).padStart(2, "0");
+  }
+  function add(fireDate, tag, title, body) {
+    if (fireDate < today) return;
+    if (Math.round((fireDate - today) / 86400000) > HORIZON) return;
+    sched[tag + "__" + ymd(fireDate)] = { date: ymd(fireDate), tag: tag, title: title, body: body };
+  }
+  function schedDue(dueDate, tag, name, body, emoji) {
+    var before = new Date(dueDate); before.setDate(before.getDate() - 1);
+    add(before,  tag, emoji + " " + name + " is due tomorrow", body);
+    add(dueDate, tag, emoji + " " + name + " is due today",    body);
+  }
+
+  // 1) Monthly commitments — project the next few occurrences of each due-day.
+  var cleared = _getDueCleared();
+  loadCommitments().forEach(function(c) {
+    var day = parseInt(c.dueDay) || 0;
+    if (!day) return;
+    if (cleared.indexOf(c.id) !== -1) return;
+    var amt = parseFloat(c.amount) || 0;
+    for (var m = 0; m < 3; m++) {
+      var occ = new Date(today.getFullYear(), today.getMonth() + m, day);
+      if (occ.getDate() !== day) occ = new Date(today.getFullYear(), today.getMonth() + m + 1, 0); // clamp short months
+      schedDue(occ, "due-" + c.id, c.name, "Amount: " + fmt(amt), "💰");
+    }
+  });
+
+  // 2) Wedding checklist deadlines (one-off).
+  if (isModuleUnlocked("wedding")) {
+    loadWpItems().forEach(function(item) {
+      var d = _parseYmd(item.deadline);
+      if (d) schedDue(d, "wp-" + item.id, item.name, "Wedding checklist deadline", "💍");
+    });
+  }
+
+  // 3) Study tasks (one-off, skip completed).
+  if (isModuleUnlocked("study")) {
+    loadSpTasks().forEach(function(task) {
+      if (task.done) return;
+      var d = _parseYmd(task.dueDate);
+      if (d) schedDue(d, "sp-" + task.id, task.title, (SP_TYPE_LABELS[task.type] || "Task"), "📚");
+    });
+  }
+
+  // 4) Salary day — the day before each upcoming payday.
+  for (var mm = 0; mm < 3; mm++) {
+    var ref = new Date(today.getFullYear(), today.getMonth() + mm, 1);
+    var sDay = getSalaryDate(ref.getFullYear(), ref.getMonth());
+    if (sDay) {
+      var salDate = new Date(ref.getFullYear(), ref.getMonth(), sDay);
+      var before = new Date(salDate); before.setDate(before.getDate() - 1);
+      add(before, "salary", "💵 Salary day is tomorrow", "Payday is tomorrow — check your budget!");
+    }
+  }
+
+  return sched;
+}
+
+// Registers the FCM service worker, fetches this device's push token, and
+// uploads it + the schedule. Safe to call repeatedly (idempotent).
+async function enablePushNotifications() {
+  if (!_pushConfigured()) return;
+  if (!_db || !_syncKey) return;
+  if (isSellerMode()) return;
+  if (typeof Notification === "undefined" || Notification.permission !== "granted") return;
+  if (!("serviceWorker" in navigator) || typeof firebase === "undefined" || !firebase.messaging) return;
+  try {
+    if (!_pushSwReg) _pushSwReg = await navigator.serviceWorker.register("./firebase-messaging-sw.js");
+    _fcmToken = await firebase.messaging().getToken({
+      vapidKey: FCM_VAPID_KEY,
+      serviceWorkerRegistration: _pushSwReg
+    });
+    if (_fcmToken) _syncPushSubscription();
+  } catch (e) {
+    console.warn("Push enable failed:", e && e.message);
+  }
+}
+
+// Uploads this device's token + current schedule to /pushSubs/{syncKey}/{devId}.
+function _syncPushSubscription() {
+  if (!_db || !_syncKey || !_fcmToken || isSellerMode()) return;
+  try {
+    _db.ref("pushSubs/" + _syncKey + "/" + _pushDeviceId()).set({
+      token: _fcmToken,
+      device: _devicePlatform(),
+      tz: "Asia/Kuala_Lumpur",
+      schedule: _buildPushSchedule(),
+      updatedAt: Date.now()
+    });
+  } catch (e) {}
+}
+
 document.addEventListener("visibilitychange", function() {
-  if (document.visibilityState === "visible") { checkReminders(); recordPresence(); }
+  if (document.visibilityState === "visible") {
+    checkReminders(); recordPresence();
+    if (_fcmToken) _syncPushSubscription(); else enablePushNotifications();
+  }
 });
-setInterval(checkReminders, 60 * 60 * 1000);
+setInterval(function() {
+  checkReminders();
+  if (_fcmToken) _syncPushSubscription();
+}, 60 * 60 * 1000);
 
 // ── Popup toggle & outside-click close ───────────
 function toggleCalendarPopup() {
@@ -13482,6 +13626,7 @@ _syncKey = getSyncKey();
   loadEstIncomePref();
   loadNotifPref();
   checkReminders();
+  enablePushNotifications();
   checkAccessStatus();
   updateTrialCountdown();
   checkWhatsNew();
