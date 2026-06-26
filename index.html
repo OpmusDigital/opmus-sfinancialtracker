@@ -644,11 +644,11 @@
     .seller-result-code { flex: 1; font-family: 'SF Mono', Consolas, monospace; font-size: 0.92rem; font-weight: 800; color: #fde68a; letter-spacing: 0.04em; word-break: break-all; }
 
     /* Stats */
-    .seller-stats { display: grid; grid-template-columns: repeat(4,1fr); gap: 0.5rem; margin-bottom: 0.75rem; }
-    .seller-stat { background: rgba(251,191,36,0.04); border: 1px solid rgba(251,191,36,0.12); border-radius: 12px; padding: 0.6rem 0.3rem; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 0.25rem; }
-    .seller-stat-icon { font-size: 0.85rem; color: #fbbf24; opacity: 0.85; }
-    .seller-stat-num { font-size: 1.1rem; font-weight: 800; color: #fde68a; }
-    .seller-stat-label { font-size: 0.56rem; color: #64748b; text-transform: uppercase; letter-spacing: 0.06em; }
+    .seller-stats { display: grid; grid-template-columns: repeat(4,1fr); gap: 0.55rem; margin-bottom: 0.8rem; }
+    .seller-stat { background: rgba(251,191,36,0.05); border: 1px solid rgba(251,191,36,0.14); border-radius: 13px; padding: 0.75rem 0.3rem; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 0.3rem; }
+    .seller-stat-icon { font-size: 1rem; color: #fbbf24; opacity: 0.9; }
+    .seller-stat-num { font-size: 1.25rem; font-weight: 800; color: #fde68a; line-height: 1; }
+    .seller-stat-label { font-size: 0.6rem; font-weight: 600; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; }
 
     /* Search row */
     .seller-search-row { display: flex; gap: 0.5rem; margin-bottom: 0.6rem; }
@@ -679,6 +679,31 @@
     .seller-icon-btn.danger:hover { background: rgba(248,113,113,0.12); color: #f87171; border-color: rgba(248,113,113,0.25); }
 
     .seller-modal .form-input:focus, .seller-modal input:focus { border-color: rgba(251,191,36,0.45); }
+
+    /* ── Redesigned code card (clearer, roomier) ─────────── */
+    .scode { background: rgba(255,255,255,0.025); border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 0.85rem 0.95rem; transition: border-color 0.15s, background 0.15s; }
+    .scode:hover { border-color: rgba(251,191,36,0.25); background: rgba(255,255,255,0.04); }
+    .scode.is-off { opacity: 0.62; }
+    .scode-head { display: flex; align-items: center; gap: 0.55rem; }
+    .scode-ico { width: 30px; height: 30px; border-radius: 9px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 0.95rem; background: linear-gradient(135deg, rgba(251,191,36,0.2), rgba(180,83,9,0.1)); border: 1px solid rgba(251,191,36,0.22); color: #fbbf24; }
+    .scode-id { flex: 1; min-width: 0; font-family: 'SF Mono', Consolas, monospace; font-size: 0.86rem; font-weight: 800; color: #f1f5f9; letter-spacing: 0.03em; word-break: break-all; line-height: 1.3; }
+    .scode-copy { flex-shrink: 0; display: inline-flex; align-items: center; gap: 0.25rem; padding: 4px 9px; border-radius: 8px; border: 1px solid rgba(251,191,36,0.25); background: rgba(251,191,36,0.08); color: #fbbf24; font-size: 0.66rem; font-weight: 700; cursor: pointer; font-family: inherit; transition: all 0.15s; }
+    .scode-copy:hover { background: rgba(251,191,36,0.18); }
+    .scode-typerow { display: flex; align-items: center; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.6rem; }
+    .scode-type { display: inline-flex; align-items: center; gap: 0.3rem; font-size: 0.68rem; font-weight: 700; color: #cbd5e1; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); border-radius: 7px; padding: 2px 8px; }
+    .scode-type.base   { color: #fcd34d; background: rgba(251,191,36,0.1);  border-color: rgba(251,191,36,0.22); }
+    .scode-type.combo  { color: #c4b5fd; background: rgba(139,92,246,0.12); border-color: rgba(139,92,246,0.25); }
+    .scode-type.trial  { color: #fbbf24; background: rgba(245,158,11,0.12); border-color: rgba(245,158,11,0.25); }
+    .scode-details { margin-top: 0.7rem; display: flex; flex-direction: column; gap: 0.32rem; padding-top: 0.6rem; border-top: 1px solid rgba(255,255,255,0.06); }
+    .scode-kv { display: flex; align-items: baseline; justify-content: space-between; gap: 0.75rem; }
+    .scode-k { font-size: 0.6rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: #64748b; flex-shrink: 0; }
+    .scode-v { font-size: 0.74rem; color: #cbd5e1; text-align: right; line-height: 1.4; }
+    .scode-v.good { color: #34d399; } .scode-v.warnv { color: #fbbf24; } .scode-v.bad { color: #f87171; }
+    .scode-actions { display: flex; gap: 0.4rem; margin-top: 0.75rem; }
+    .scode-btn { flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: 0.3rem; padding: 7px 0; border-radius: 9px; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.04); color: #94a3b8; font-size: 0.7rem; font-weight: 700; cursor: pointer; font-family: inherit; transition: all 0.15s; }
+    .scode-btn:hover { background: rgba(251,191,36,0.12); color: #fbbf24; border-color: rgba(251,191,36,0.25); }
+    .scode-btn.danger:hover { background: rgba(248,113,113,0.12); color: #f87171; border-color: rgba(248,113,113,0.25); }
+    .scode-btn i { font-size: 0.85rem; }
 
     /* ── Users tab cards ─────────────────────────────────── */
     .user-card { display: flex; align-items: center; gap: 0.7rem; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.07); border-radius: 14px; padding: 0.65rem 0.8rem; transition: border-color 0.15s, background 0.15s; }
@@ -1889,6 +1914,67 @@
     .prof-add-card:hover .prof-avatar { border-color: rgba(255,255,255,0.3); color: #94a3b8; background: rgba(255,255,255,0.08); }
     .prof-add-card .prof-card-name { color: #475569; }
     .prof-add-card:hover .prof-card-name { color: #94a3b8; }
+
+    /* Profile photo picker (create/edit profile) */
+    .prof-photo-pick { width: 74px; height: 74px; border-radius: 20px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; color: #fff; background-size: cover; background-position: center; box-shadow: 0 6px 22px rgba(0,0,0,0.4); border: 2px solid rgba(255,255,255,0.12); transition: transform 0.15s, border-color 0.15s; }
+    .prof-photo-pick:hover { transform: scale(1.05); border-color: rgba(255,255,255,0.3); }
+    .prof-photo-link { background: none; border: none; color: #818cf8; font-size: 0.72rem; font-weight: 700; cursor: pointer; font-family: inherit; padding: 2px 6px; }
+    .prof-photo-link:hover { text-decoration: underline; }
+
+    /* ── Avatar crop editor (premium) ────────────────────── */
+    .crop-modal { max-width: 332px; width: 332px; background: linear-gradient(180deg, rgba(99,102,241,0.08), transparent 20%), #0e1017; border: 1px solid rgba(255,255,255,0.08); }
+    .crop-head { display: flex; align-items: center; gap: 0.65rem; margin-bottom: 0.2rem; }
+    .crop-head-ico { width: 40px; height: 40px; border-radius: 11px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; color: #c7d2fe; background: linear-gradient(135deg, rgba(129,140,248,0.28), rgba(79,70,229,0.12)); border: 1px solid rgba(129,140,248,0.3); }
+    .crop-head-title { font-size: 1rem; font-weight: 800; color: #f8fafc; letter-spacing: -0.01em; }
+    .crop-head-sub { font-size: 0.72rem; color: #64748b; margin-top: 1px; }
+
+    .crop-stage { position: relative; width: 268px; height: 268px; max-width: 80vw; max-height: 80vw; margin: 1rem auto 0.5rem; border-radius: 20px; overflow: hidden; background: #07090d; touch-action: none; box-shadow: 0 10px 30px rgba(0,0,0,0.45), inset 0 0 0 1px rgba(255,255,255,0.05); }
+    .crop-canvas { display: block; width: 100%; height: 100%; cursor: grab; }
+    .crop-canvas:active { cursor: grabbing; }
+    .crop-grid { position: absolute; inset: 0; pointer-events: none; opacity: 0; transition: opacity 0.2s; background-image: linear-gradient(rgba(255,255,255,0.18) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.18) 1px, transparent 1px); background-size: 33.33% 33.33%; }
+    .crop-stage:active .crop-grid { opacity: 1; }
+    .crop-ring { position: absolute; inset: 0; border-radius: 20px; box-shadow: inset 0 0 0 2px rgba(129,140,248,0.4); pointer-events: none; }
+
+    .crop-row { display: flex; align-items: center; gap: 0.7rem; margin-top: 0.65rem; }
+    .crop-row-ico { width: 30px; height: 30px; border-radius: 9px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 0.9rem; color: #a5b4fc; background: rgba(99,102,241,0.12); border: 1px solid rgba(99,102,241,0.22); }
+    .crop-range { -webkit-appearance: none; appearance: none; flex: 1; height: 6px; border-radius: 10px; background: rgba(255,255,255,0.1); cursor: pointer; outline: none; }
+    .crop-range::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 19px; height: 19px; border-radius: 50%; background: linear-gradient(135deg,#a5b4fc,#6366f1); border: 2px solid #0e1017; box-shadow: 0 2px 8px rgba(99,102,241,0.5); cursor: grab; }
+    .crop-range::-moz-range-thumb { width: 19px; height: 19px; border-radius: 50%; background: #6366f1; border: 2px solid #0e1017; box-shadow: 0 2px 8px rgba(99,102,241,0.5); cursor: grab; }
+    .crop-val { flex-shrink: 0; display: inline-flex; align-items: center; gap: 1px; font-size: 0.72rem; font-weight: 700; color: #c7d2fe; background: rgba(99,102,241,0.1); border: 1px solid rgba(99,102,241,0.2); border-radius: 7px; padding: 2px 7px 2px 4px; transition: border-color 0.15s; }
+    .crop-val:focus-within { border-color: rgba(129,140,248,0.55); }
+    .crop-val-inp { width: 32px; background: transparent; border: none; color: #c7d2fe; font-size: 0.72rem; font-weight: 700; text-align: right; font-variant-numeric: tabular-nums; font-family: inherit; outline: none; padding: 0; -moz-appearance: textfield; }
+    .crop-val-inp::-webkit-outer-spin-button, .crop-val-inp::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+    .crop-rot90 { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); color: #c7d2fe; border-radius: 9px; width: 32px; height: 30px; cursor: pointer; font-size: 0.85rem; flex-shrink: 0; font-family: inherit; display: flex; align-items: center; justify-content: center; transition: all 0.15s; }
+    .crop-rot90:hover { background: rgba(99,102,241,0.18); border-color: rgba(99,102,241,0.35); color: #fff; }
+
+    .crop-actions { display: flex; gap: 0.5rem; margin-top: 0.95rem; }
+    .crop-use { flex: 1; padding: 11px 0; border: none; border-radius: 11px; background: linear-gradient(135deg, #818cf8, #6366f1 55%, #4f46e5); color: #fff; font-weight: 800; font-size: 0.85rem; cursor: pointer; font-family: inherit; box-shadow: 0 6px 18px rgba(99,102,241,0.3); transition: all 0.2s; }
+    .crop-use:hover { transform: translateY(-1px); box-shadow: 0 10px 26px rgba(99,102,241,0.45); filter: brightness(1.05); }
+    .crop-use:active { transform: translateY(0); }
+    @media (max-width: 480px) { .crop-modal { width: 92vw; max-width: 92vw; } }
+
+    /* ── What's New (premium dated changelog) ────────────── */
+    .whatsnew-modal { max-width: 430px; width: 430px; overflow: hidden; background: linear-gradient(180deg, rgba(99,102,241,0.09), transparent 22%), #0e1017; border: 1px solid rgba(255,255,255,0.08); }
+    .wn-hero { text-align: center; }
+    .wn-hero-ico { width: 56px; height: 56px; margin: 0 auto 0.55rem; border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 1.55rem; color: #c7d2fe; background: linear-gradient(135deg, rgba(129,140,248,0.3), rgba(79,70,229,0.12)); border: 1px solid rgba(129,140,248,0.35); box-shadow: 0 6px 22px rgba(99,102,241,0.25); }
+    .wn-hero-title { font-size: 1.3rem; font-weight: 800; color: #f8fafc; letter-spacing: -0.01em; }
+    .wn-hero-sub { font-size: 0.78rem; color: #64748b; margin-top: 0.15rem; }
+    .wn-body { max-height: 48vh; overflow-y: auto; margin: 1.1rem 0; padding-right: 0.3rem; display: flex; flex-direction: column; gap: 1.1rem; }
+    .wn-body::-webkit-scrollbar { width: 8px; }
+    .wn-body::-webkit-scrollbar-thumb { background: linear-gradient(180deg, rgba(129,140,248,0.5), rgba(79,70,229,0.3)); border: 2px solid transparent; background-clip: padding-box; border-radius: 20px; }
+    .wn-release { display: flex; flex-direction: column; gap: 0.55rem; }
+    .wn-date { align-self: flex-start; display: inline-flex; align-items: center; gap: 0.35rem; font-size: 0.66rem; font-weight: 800; color: #a5b4fc; background: rgba(99,102,241,0.12); border: 1px solid rgba(99,102,241,0.28); border-radius: 20px; padding: 3px 11px; text-transform: uppercase; letter-spacing: 0.06em; }
+    .wn-date i { font-size: 0.8rem; }
+    .wn-item { display: flex; gap: 0.7rem; align-items: flex-start; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 13px; padding: 0.7rem 0.8rem; transition: border-color 0.15s, transform 0.15s, background 0.15s; }
+    .wn-item:hover { border-color: rgba(129,140,248,0.3); background: rgba(255,255,255,0.045); transform: translateY(-1px); }
+    .wn-item-ico { width: 36px; height: 36px; border-radius: 11px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 1.05rem; }
+    .wn-item-txt { min-width: 0; }
+    .wn-item-title { font-size: 0.86rem; font-weight: 700; color: #f1f5f9; margin-bottom: 0.13rem; }
+    .wn-item-desc { font-size: 0.77rem; color: #94a3b8; line-height: 1.5; }
+    .wn-cta { width: 100%; padding: 12px 0; border: none; border-radius: 13px; background: linear-gradient(135deg, #818cf8, #6366f1 55%, #4f46e5); color: #fff; font-weight: 800; font-size: 0.88rem; letter-spacing: 0.01em; cursor: pointer; font-family: inherit; box-shadow: 0 6px 20px rgba(99,102,241,0.3); transition: all 0.2s; }
+    .wn-cta:hover { transform: translateY(-1px); box-shadow: 0 10px 28px rgba(99,102,241,0.45); filter: brightness(1.05); }
+    .wn-cta:active { transform: translateY(0); }
+    @media (max-width: 480px) { .whatsnew-modal { width: 94vw; max-width: 94vw; } }
     /* Picker bottom actions */
     .prof-picker-actions {
       display: flex; gap: 0.75rem; margin-top: 2.8rem;
@@ -2294,7 +2380,7 @@
   <div class="modal" style="max-width:380px;">
     <div class="modal-icon">&#x1F511;</div>
     <div class="modal-title" id="licenseGateTitle">Activate OpmusDigital</div>
-    <div class="modal-sub" id="licenseGateSub">Enter the license key from your Shopee order to get started.</div>
+    <div class="modal-sub" id="licenseGateSub">Enter your license key to get started.</div>
     <input type="text" id="licenseKeyInput" class="form-input" placeholder="e.g. OPMUS-BASE-XXXX-XXXX" autocomplete="off" style="text-align:center;text-transform:uppercase;letter-spacing:0.05em;" onkeydown="if(event.key==='Enter')activateLicense()" />
     <div id="licenseKeyError" style="color:#f87171;font-size:0.75rem;margin-top:0.5rem;min-height:1em;text-align:center;"></div>
     <button class="modal-btn primary" onclick="activateLicense()" style="margin-top:0.75rem;">Activate</button>
@@ -2313,13 +2399,53 @@
   </div>
 </div>
 
+<!-- What's New (dated changelog) — shown once per app update -->
+<div class="modal-overlay" id="whatsNewModal" style="z-index:9000;">
+  <div class="modal whatsnew-modal">
+    <button class="modal-close" onclick="closeWhatsNew()">✕</button>
+    <div class="wn-hero">
+      <div class="wn-hero-ico"><i class="ph-fill ph-sparkle"></i></div>
+      <div class="wn-hero-title">What's New</div>
+      <div class="wn-hero-sub">Fresh updates just landed</div>
+    </div>
+    <div class="wn-body" id="whatsNewBody"></div>
+    <button class="wn-cta" onclick="closeWhatsNew()">Got it</button>
+  </div>
+</div>
+
+<!-- Avatar Crop / Adjust editor -->
+<div class="modal-overlay" id="avatarCropModal" style="z-index:10003;">
+  <div class="modal crop-modal">
+    <button class="modal-close" onclick="_closeAvatarCrop()">✕</button>
+    <div class="crop-head">
+      <div class="crop-head-ico"><i class="ph-fill ph-crop"></i></div>
+      <div>
+        <div class="crop-head-title">Adjust Photo</div>
+        <div class="crop-head-sub">Drag, zoom &amp; rotate to frame it</div>
+      </div>
+    </div>
+    <div class="crop-stage">
+      <canvas id="avatarCropCanvas" width="256" height="256" class="crop-canvas"
+        onpointerdown="_cropPointerDown(event)" onpointermove="_cropPointerMove(event)" onpointerup="_cropPointerUp(event)" onpointercancel="_cropPointerUp(event)"></canvas>
+      <div class="crop-grid"></div>
+      <div class="crop-ring"></div>
+    </div>
+    <div class="crop-row"><span class="crop-row-ico"><i class="ph-bold ph-magnifying-glass-plus"></i></span><input type="range" class="crop-range" id="cropZoom" min="1" max="3" step="0.01" value="1" oninput="_cropOnZoom(this.value)" /></div>
+    <div class="crop-row"><span class="crop-row-ico"><i class="ph-bold ph-arrows-clockwise"></i></span><input type="range" class="crop-range" id="cropRot" min="-180" max="180" step="1" value="0" oninput="_cropOnRot(this.value)" /><span class="crop-val"><input type="number" id="cropRotInput" class="crop-val-inp" min="-180" max="180" step="1" value="0" oninput="_cropSetRotInput(this.value)" onchange="_cropNormalizeRotInput()" />°</span><button class="crop-rot90" onclick="_cropRotate90()" title="Rotate 90°"><i class="ph-bold ph-arrow-clockwise"></i></button></div>
+    <div class="crop-actions">
+      <button class="modal-btn secondary" onclick="_closeAvatarCrop()" style="flex:1;">Cancel</button>
+      <button class="crop-use" onclick="_saveAvatarCrop()">Use Photo</button>
+    </div>
+  </div>
+</div>
+
 <!-- License Revoked Lock (shown if the seller deactivates this device's license key) -->
 <div class="modal-overlay" id="licenseRevokedOverlay" style="z-index:10001;">
   <div class="modal" style="max-width:380px;">
     <div class="modal-icon" style="color:#f87171;"><i class="ph-fill ph-warning-circle"></i></div>
     <div class="modal-title">License Deactivated</div>
     <div class="modal-sub">Your license key has been deactivated by the seller — this usually happens if a key is found to be shared or used outside its terms.</div>
-    <div class="modal-sub" style="margin-top:0.5rem;">Please contact us via Shopee chat to appeal or to purchase a new license key.</div>
+    <div class="modal-sub" style="margin-top:0.5rem;">Please contact us to appeal or to purchase a new license key.</div>
   </div>
 </div>
 
@@ -2329,7 +2455,7 @@
     <div class="modal-icon" style="color:#f59e0b;"><i class="ph-fill ph-clock-countdown"></i></div>
     <div class="modal-title">Trial Ended</div>
     <div class="modal-sub" id="trialEndedMsg">Your trial access has ended.</div>
-    <div class="modal-sub" style="margin-top:0.5rem;">Contact us via Shopee chat to purchase the full version and keep access.</div>
+    <div class="modal-sub" style="margin-top:0.5rem;">Contact us to purchase the full version and keep access.</div>
     <button class="modal-btn primary" onclick="closeTrialEndedOverlay()" style="margin-top:0.75rem;">Got it</button>
   </div>
 </div>
@@ -2445,7 +2571,6 @@
       Tip: tap <b>Apps</b> to add, remove, resize and rearrange dashboard panels — make this tracker your own!
       <button class="apps-hint-btn" onclick="dismissAppsHint()">Got it</button>
     </div>
-    <button class="btn-layout" id="btnSettings" onclick="openSettings()" title="Settings">⚙ Settings</button>
     <div class="header-sep"></div>
     <div style="position:relative;" id="dueAlertWrap">
       <button class="btn-hide-vals" id="dueAlertBtn" onclick="toggleDueAlert()" title="Upcoming payments" style="display:none;">
@@ -2481,6 +2606,10 @@
     </div>
 
     <div class="prof-drop-section" style="margin-top:0.45rem;">Preferences</div>
+    <div class="prof-drop-item" onclick="openSettings()">
+      <span class="prof-drop-icon">⚙</span>
+      <span>Settings</span>
+    </div>
     <div class="prof-drop-item" onclick="openThemeModal()">
       <span class="prof-drop-icon">🎨</span>
       <span>Appearance</span>
@@ -2498,6 +2627,10 @@
     <div class="prof-drop-item" onclick="openUserGuide()">
       <span class="prof-drop-icon">📖</span>
       <span>User Guide</span>
+    </div>
+    <div class="prof-drop-item" onclick="openWhatsNew()">
+      <span class="prof-drop-icon">🎉</span>
+      <span>What's New</span>
     </div>
   </div>
   <div class="prof-drop-footer">
@@ -3325,14 +3458,23 @@
           <div class="seller-action-icon"><i class="ph-fill ph-key"></i></div>
           <div class="seller-action-info">
             <div class="seller-action-title">Generate Code</div>
-            <div class="seller-action-desc">Pick Base App or a module, then generate a permanent code — or tick Trial for a time-limited code.</div>
+            <div class="seller-action-desc">Tick everything this one code should include — combine Base App and modules into a single combo code. Tick Trial for time-limited access.</div>
           </div>
         </div>
-        <select id="genCodeType" class="form-input">
-          <option value="base">Base App (License Key)</option>
-          <option value="wedding">Wedding Planner</option>
-          <option value="study">Study Planner</option>
-        </select>
+        <div style="display:flex;flex-direction:column;gap:0.45rem;margin-bottom:0.2rem;">
+          <label style="display:flex;align-items:center;gap:0.55rem;cursor:pointer;">
+            <input type="checkbox" class="gen-inc" value="base" checked style="width:16px;height:16px;accent-color:#fbbf24;" />
+            <span style="font-size:0.85rem;color:#e2e8f0;font-weight:600;">🔑 Base App</span>
+          </label>
+          <label style="display:flex;align-items:center;gap:0.55rem;cursor:pointer;">
+            <input type="checkbox" class="gen-inc" value="wedding" style="width:16px;height:16px;accent-color:#fbbf24;" />
+            <span style="font-size:0.85rem;color:#e2e8f0;font-weight:600;">💍 Wedding Planner</span>
+          </label>
+          <label style="display:flex;align-items:center;gap:0.55rem;cursor:pointer;">
+            <input type="checkbox" class="gen-inc" value="study" style="width:16px;height:16px;accent-color:#fbbf24;" />
+            <span style="font-size:0.85rem;color:#e2e8f0;font-weight:600;">📚 Study Planner</span>
+          </label>
+        </div>
         <label style="display:flex;align-items:center;gap:0.55rem;cursor:pointer;margin:0.65rem 0;">
           <input type="checkbox" id="genCodeTrialToggle" style="width:16px;height:16px;accent-color:#06b6d4;" onchange="toggleGenCodeTrialFields()" />
           <span style="font-size:0.82rem;color:#94a3b8;">Trial (temporary access)</span>
@@ -3373,6 +3515,30 @@
       <div id="sellerUsersList" class="seller-history-list"></div>
     </div>
     </div><!-- /sellerAuthedBody -->
+  </div>
+</div>
+
+<!-- Edit Code / Convert to Trial Modal (admin only) -->
+<div class="modal-overlay" id="editCodeModal" style="z-index:10002;">
+  <div class="modal seller-modal" style="width:380px;max-width:95vw;">
+    <button class="modal-close" onclick="closeEditCode()">✕</button>
+    <div class="modal-icon seller-modal-icon"><i class="ph-fill ph-clock-countdown"></i></div>
+    <div class="modal-title">Edit Code</div>
+    <div class="modal-sub" id="editCodeSub" style="font-family:'SF Mono',Consolas,monospace;">—</div>
+    <div id="editCodeStatus" style="font-size:0.74rem;color:#94a3b8;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:9px;padding:0.55rem 0.7rem;margin:0.7rem 0 0.9rem;line-height:1.5;"></div>
+
+    <label style="display:block;font-size:0.78rem;font-weight:600;color:#e2e8f0;margin-bottom:0.3rem;">Free access length <span style="font-weight:400;color:#64748b;">(starts now)</span></label>
+    <div style="display:flex;gap:0.5rem;margin-bottom:0.7rem;">
+      <input type="number" id="editCodeValue" class="form-input" value="30" min="1" step="0.5" style="flex:1;" />
+      <select id="editCodeUnit" class="form-input" style="flex:1;">
+        <option value="days">Days</option>
+        <option value="hours">Hours</option>
+        <option value="minutes">Minutes</option>
+        <option value="seconds">Seconds</option>
+      </select>
+    </div>
+    <button class="seller-cta-btn" onclick="_convertCodeToTrial()"><i class="ph-bold ph-hourglass"></i> Convert to trial</button>
+    <button class="modal-btn secondary" onclick="_makeCodePermanent()" style="margin-top:0.5rem;width:100%;">Make permanent (remove expiry)</button>
   </div>
 </div>
 
@@ -7807,12 +7973,17 @@ async function redeemGiftCode() {
       applyModuleVisibility();
       showToast("🎉 Trial activated for " + _fmtDuration(data.trialMs) + "!");
     } else {
-      if (unlocked.indexOf(data.module) === -1) unlocked.push(data.module);
+      var mods = (data.modules && data.modules.length) ? data.modules.slice() : (data.module ? [data.module] : []);
+      mods = mods.filter(function(m) { return m !== "base"; });
+      mods.forEach(function(m) {
+        if (unlocked.indexOf(m) === -1) unlocked.push(m);
+        addModule(m);
+      });
       saveUnlockedModules(unlocked);
-      addModule(data.module);
       renderAppLibrary();
       applyModuleVisibility();
-      showToast("🎉 " + (MODULES[data.module] ? MODULES[data.module].name : data.module) + " unlocked!");
+      var nm = mods.map(function(m) { return MODULES[m] ? MODULES[m].name : m; });
+      showToast("🎉 " + (nm.length ? nm.join(" + ") : "Module") + " unlocked!");
     }
     inp.value = "";
     msg.textContent = "";
@@ -8116,7 +8287,12 @@ function toggleGenCodeTrialFields() {
 
 async function genCode() {
   if (!_db) { showToast("Firebase not connected"); return; }
-  var type = (document.getElementById("genCodeType") || {}).value || "base";
+  var selected = Array.prototype.slice.call(document.querySelectorAll(".gen-inc:checked"))
+    .map(function(c) { return c.value; });
+  if (!selected.length) { showToast("Tick at least one item to include"); return; }
+  var includeBase = selected.indexOf("base") !== -1;
+  var modules = selected.filter(function(x) { return x !== "base"; });
+  var label = selected.map(function(x) { return _trialItemName(x); }).join(" + ");
   var trialToggle = document.getElementById("genCodeTrialToggle");
   var isTrial = trialToggle && trialToggle.checked;
   var code;
@@ -8127,17 +8303,22 @@ async function genCode() {
       if (!val || val <= 0) { showToast("Enter a valid trial length"); return; }
       var trialMs = val * TRIAL_UNIT_MS[unit];
       code = _genCode("TRIAL");
-      await _db.ref("giftcodes/" + code).set({ valid: true, redeemed: false, createdAt: Date.now(), trial: true, modules: [type], trialMs: trialMs });
-      _showSellerResult("Trial Code (" + _fmtDuration(trialMs) + ") — " + _trialItemName(type), code);
-    } else if (type === "base") {
+      await _db.ref("giftcodes/" + code).set({ valid: true, redeemed: false, createdAt: Date.now(), trial: true, modules: selected, trialMs: trialMs });
+      _showSellerResult("Trial Code (" + _fmtDuration(trialMs) + ") — " + label, code);
+    } else if (includeBase) {
+      // License key (Base) — optionally bundling modules to auto-unlock on activation.
       code = _genCode("BASE");
-      await _db.ref("licenses/" + code).set({ valid: true, product: "base", createdAt: Date.now(), maxActivations: MAX_LICENSE_ACTIVATIONS });
-      _showSellerResult("License Key", code);
+      var rec = { valid: true, product: "base", createdAt: Date.now(), maxActivations: MAX_LICENSE_ACTIVATIONS };
+      if (modules.length) rec.modules = modules;
+      await _db.ref("licenses/" + code).set(rec);
+      _showSellerResult(modules.length ? "Bundle Key — " + label : "License Key", code);
     } else {
+      // Modules-only gift code (one module → 'module', combo → 'modules'), redeemed in App Library.
       code = _genCode("GIFT");
-      await _db.ref("giftcodes/" + code).set({ valid: true, module: type, redeemed: false, createdAt: Date.now() });
-      var name = (MODULES[type] && MODULES[type].name) || type;
-      _showSellerResult("Gift Code — " + name, code);
+      var grec = { valid: true, redeemed: false, createdAt: Date.now() };
+      if (modules.length > 1) grec.modules = modules; else grec.module = modules[0];
+      await _db.ref("giftcodes/" + code).set(grec);
+      _showSellerResult("Gift Code — " + label, code);
     }
     _sellerCodes = null;
   } catch(e) {
@@ -8363,56 +8544,96 @@ function _fmtSellerDate(ts) {
   return d.getDate() + "/" + (d.getMonth() + 1) + "/" + d.getFullYear();
 }
 
+// Builds one "Label : Value" detail row for a code card.
+function _scodeKV(label, value, cls) {
+  return '<div class="scode-kv"><span class="scode-k">' + label + '</span><span class="scode-v' + (cls ? ' ' + cls : '') + '">' + value + '</span></div>';
+}
+
 function _renderLicenseRow(code, d) {
   var activations = d.activatedSyncKeys ? Object.keys(d.activatedSyncKeys) : [];
   var max = d.maxActivations || MAX_LICENSE_ACTIVATIONS;
   var revoked = d.valid === false;
-  var badge = revoked
-    ? '<span class="seller-badge off">Revoked</span>'
-    : activations.length > 0
-      ? '<span class="seller-badge ok">' + activations.length + '/' + max + ' households</span>'
-      : '<span class="seller-badge warn">Unused</span>';
-  return '<div class="seller-code-row">'
-    + '<div class="seller-code-top"><span class="seller-code-id"><i class="ph-fill ph-key"></i>' + code + '</span>' + badge + '</div>'
-    + '<div class="seller-code-bottom">'
-    + '<div class="seller-code-meta">Base App · Created ' + _fmtSellerDate(d.createdAt) + (d.lastActivatedAt ? ' · Last used ' + _fmtSellerDate(d.lastActivatedAt) : '') + '</div>'
-    + '<div class="seller-code-actions">'
-    + '<button class="seller-icon-btn" title="Copy" onclick="_copySellerCode(\'' + code + '\')"><i class="ph-bold ph-copy"></i></button>'
-    + '<button class="seller-icon-btn' + (revoked ? '' : ' danger') + '" title="' + (revoked ? 'Restore' : 'Revoke') + '" onclick="_toggleCodeValid(\'licenses\',\'' + code + '\',' + (revoked ? 'true' : 'false') + ')"><i class="ph-bold ph-' + (revoked ? 'arrow-counter-clockwise' : 'prohibit') + '"></i></button>'
-    + '<button class="seller-icon-btn danger" title="Delete" onclick="_deleteSellerCode(\'licenses\',\'' + code + '\')"><i class="ph-bold ph-trash"></i></button>'
-    + '</div></div></div>';
+  var isTrial = !!d.expiresAt;
+  var expired = isTrial && Date.now() >= d.expiresAt;
+  var isBundle = !!(d.modules && d.modules.length);
+
+  var badge;
+  if (revoked)            badge = '<span class="seller-badge off">Revoked</span>';
+  else if (expired)       badge = '<span class="seller-badge off">Trial ended</span>';
+  else if (isTrial)       badge = '<span class="seller-badge warn">Trial · ' + _fmtTimeLeft(d.expiresAt - Date.now()) + ' left</span>';
+  else if (activations.length > 0) badge = '<span class="seller-badge ok">Active</span>';
+  else                    badge = '<span class="seller-badge warn">Unused</span>';
+
+  var typePill = isBundle
+    ? '<span class="scode-type combo"><i class="ph-bold ph-stack"></i>Bundle: Base + ' + d.modules.map(function(m) { return _trialItemName(m); }).join(' + ') + '</span>'
+    : '<span class="scode-type base"><i class="ph-bold ph-key"></i>Base App</span>';
+  if (isTrial) typePill += '<span class="scode-type trial"><i class="ph-bold ph-hourglass"></i>Trial</span>';
+
+  var details = '';
+  details += _scodeKV('Created', _fmtSellerDate(d.createdAt));
+  details += _scodeKV('Activations', activations.length + ' of ' + max + ' device' + (max === 1 ? '' : 's'), activations.length >= max ? 'warnv' : '');
+  if (d.lastActivatedAt) details += _scodeKV('Last used', _fmtSellerDate(d.lastActivatedAt));
+  if (isTrial) details += _scodeKV('Expires', _fmtSellerDate(d.expiresAt) + (expired ? ' · ended' : ' · ' + _fmtTimeLeft(d.expiresAt - Date.now()) + ' left'), expired ? 'bad' : 'warnv');
+
+  return '<div class="scode' + (revoked || expired ? ' is-off' : '') + '">'
+    + '<div class="scode-head">'
+      + '<span class="scode-ico"><i class="ph-fill ph-key"></i></span>'
+      + '<span class="scode-id">' + code + '</span>'
+      + badge
+    + '</div>'
+    + '<div class="scode-typerow">' + typePill + '</div>'
+    + '<div class="scode-details">' + details + '</div>'
+    + '<div class="scode-actions">'
+      + '<button class="scode-btn" onclick="_copySellerCode(\'' + code + '\')"><i class="ph-bold ph-copy"></i> Copy</button>'
+      + '<button class="scode-btn" onclick="_openEditCode(\'' + code + '\')"><i class="ph-bold ph-clock-countdown"></i> Edit</button>'
+      + '<button class="scode-btn' + (revoked ? '' : ' danger') + '" onclick="_toggleCodeValid(\'licenses\',\'' + code + '\',' + (revoked ? 'true' : 'false') + ')"><i class="ph-bold ph-' + (revoked ? 'arrow-counter-clockwise' : 'prohibit') + '"></i> ' + (revoked ? 'Restore' : 'Revoke') + '</button>'
+      + '<button class="scode-btn danger" onclick="_deleteSellerCode(\'licenses\',\'' + code + '\')"><i class="ph-bold ph-trash"></i> Delete</button>'
+    + '</div>'
+  + '</div>';
 }
 
 function _renderGiftRow(code, d) {
   var revoked = d.valid === false;
   var isTrial = d.trial === true;
-  var moduleName;
-  if (isTrial) {
-    var names = (d.modules || []).map(function(m) { return _trialItemName(m); });
-    moduleName = "Trial · " + _fmtDuration(d.trialMs) + " · " + names.join(", ");
-  } else {
-    moduleName = (MODULES[d.module] && MODULES[d.module].name) || d.module || "—";
-  }
+  var isCombo = !isTrial && d.modules && d.modules.length > 1;
+  var modList = isTrial ? (d.modules || []) : (d.modules && d.modules.length ? d.modules : (d.module ? [d.module] : []));
+  var modNames = modList.map(function(m) { return _trialItemName(m); }).join(' + ') || '—';
+
   var badge = revoked
     ? '<span class="seller-badge off">Revoked</span>'
     : d.redeemed
       ? '<span class="seller-badge used">Redeemed</span>'
       : '<span class="seller-badge ok">Available</span>';
-  var expiresStr = '';
+
+  var typePill;
+  if (isTrial)      typePill = '<span class="scode-type trial"><i class="ph-bold ph-hourglass"></i>Trial · ' + _fmtDuration(d.trialMs) + '</span>';
+  else if (isCombo) typePill = '<span class="scode-type combo"><i class="ph-bold ph-stack"></i>Combo</span>';
+  else              typePill = '<span class="scode-type"><i class="ph-bold ph-puzzle-piece"></i>Module</span>';
+
+  var details = '';
+  details += _scodeKV('Includes', modNames);
+  details += _scodeKV('Created', _fmtSellerDate(d.createdAt));
+  if (d.redeemedAt) details += _scodeKV('Redeemed', _fmtSellerDate(d.redeemedAt));
   if (isTrial && d.redeemedAt) {
     var expiresAt = d.redeemedAt + d.trialMs;
     var remaining = expiresAt - Date.now();
-    expiresStr = ' · Expires ~' + _fmtSellerDate(expiresAt) + ' (' + (remaining > 0 ? _fmtTimeLeft(remaining) + ' left' : 'Expired') + ')';
+    details += _scodeKV('Expires', _fmtSellerDate(expiresAt) + (remaining > 0 ? ' · ' + _fmtTimeLeft(remaining) + ' left' : ' · ended'), remaining > 0 ? 'warnv' : 'bad');
   }
-  return '<div class="seller-code-row">'
-    + '<div class="seller-code-top"><span class="seller-code-id"><i class="ph-fill ph-gift"></i>' + code + '</span>' + badge + '</div>'
-    + '<div class="seller-code-bottom">'
-    + '<div class="seller-code-meta">' + moduleName + ' · Created ' + _fmtSellerDate(d.createdAt) + (d.redeemedAt ? ' · Redeemed ' + _fmtSellerDate(d.redeemedAt) : '') + expiresStr + '</div>'
-    + '<div class="seller-code-actions">'
-    + '<button class="seller-icon-btn" title="Copy" onclick="_copySellerCode(\'' + code + '\')"><i class="ph-bold ph-copy"></i></button>'
-    + '<button class="seller-icon-btn' + (revoked ? '' : ' danger') + '" title="' + (revoked ? 'Restore' : 'Revoke') + '" onclick="_toggleCodeValid(\'giftcodes\',\'' + code + '\',' + (revoked ? 'true' : 'false') + ')"><i class="ph-bold ph-' + (revoked ? 'arrow-counter-clockwise' : 'prohibit') + '"></i></button>'
-    + '<button class="seller-icon-btn danger" title="Delete" onclick="_deleteSellerCode(\'giftcodes\',\'' + code + '\')"><i class="ph-bold ph-trash"></i></button>'
-    + '</div></div></div>';
+
+  return '<div class="scode' + (revoked ? ' is-off' : '') + '">'
+    + '<div class="scode-head">'
+      + '<span class="scode-ico"><i class="ph-fill ph-gift"></i></span>'
+      + '<span class="scode-id">' + code + '</span>'
+      + badge
+    + '</div>'
+    + '<div class="scode-typerow">' + typePill + '</div>'
+    + '<div class="scode-details">' + details + '</div>'
+    + '<div class="scode-actions">'
+      + '<button class="scode-btn" onclick="_copySellerCode(\'' + code + '\')"><i class="ph-bold ph-copy"></i> Copy</button>'
+      + '<button class="scode-btn' + (revoked ? '' : ' danger') + '" onclick="_toggleCodeValid(\'giftcodes\',\'' + code + '\',' + (revoked ? 'true' : 'false') + ')"><i class="ph-bold ph-' + (revoked ? 'arrow-counter-clockwise' : 'prohibit') + '"></i> ' + (revoked ? 'Restore' : 'Revoke') + '</button>'
+      + '<button class="scode-btn danger" onclick="_deleteSellerCode(\'giftcodes\',\'' + code + '\')"><i class="ph-bold ph-trash"></i> Delete</button>'
+    + '</div>'
+  + '</div>';
 }
 
 function renderSellerHistory() {
@@ -8466,6 +8687,64 @@ async function _deleteSellerCode(path, code) {
   } catch(e) {
     showToast("Failed: " + e.message);
   }
+}
+
+// ── Edit a license code: convert full ↔ time-limited trial ───
+var _editCodeTarget = null;
+function _openEditCode(code) {
+  if (!_sellerCodes || !_sellerCodes.licenses[code]) return;
+  var d = _sellerCodes.licenses[code];
+  _editCodeTarget = code;
+  document.getElementById("editCodeSub").textContent = code;
+  var acts = d.activatedSyncKeys ? Object.keys(d.activatedSyncKeys) : [];
+  var info;
+  if (d.expiresAt) {
+    var rem = d.expiresAt - Date.now();
+    info = rem > 0
+      ? "Currently a trial — " + _fmtTimeLeft(rem) + " left (expires " + _fmtSellerDate(d.expiresAt) + ")."
+      : "Trial expired on " + _fmtSellerDate(d.expiresAt) + ".";
+  } else {
+    info = "Currently a full (permanent) license.";
+  }
+  info += acts.length ? " Activated by " + acts.length + " device(s)." : " Not activated yet.";
+  document.getElementById("editCodeStatus").textContent = info;
+  document.getElementById("editCodeValue").value = 30;
+  document.getElementById("editCodeUnit").value = "days";
+  document.getElementById("editCodeModal").classList.add("open");
+}
+
+function closeEditCode() {
+  document.getElementById("editCodeModal").classList.remove("open");
+  _editCodeTarget = null;
+}
+
+async function _convertCodeToTrial() {
+  if (!_editCodeTarget || !_db || !_sellerCodes) return;
+  var val  = parseFloat(document.getElementById("editCodeValue").value);
+  var unit = (document.getElementById("editCodeUnit") || {}).value || "days";
+  if (!val || val <= 0) { showToast("Enter a valid trial length"); return; }
+  var durMs = val * TRIAL_UNIT_MS[unit];
+  // Trial window starts now (the moment you convert the code).
+  var expiresAt = Date.now() + durMs;
+  try {
+    await _db.ref("licenses/" + _editCodeTarget).update({ expiresAt: expiresAt });
+    if (_sellerCodes.licenses[_editCodeTarget]) _sellerCodes.licenses[_editCodeTarget].expiresAt = expiresAt;
+    showToast("Converted to a " + _fmtDuration(durMs) + " trial (expires " + _fmtSellerDate(expiresAt) + ")");
+    closeEditCode();
+    renderSellerStats();
+    renderSellerHistory();
+  } catch(e) { showToast("Failed: " + e.message); }
+}
+
+async function _makeCodePermanent() {
+  if (!_editCodeTarget || !_db || !_sellerCodes) return;
+  try {
+    await _db.ref("licenses/" + _editCodeTarget + "/expiresAt").remove();
+    if (_sellerCodes.licenses[_editCodeTarget]) delete _sellerCodes.licenses[_editCodeTarget].expiresAt;
+    showToast("Expiry removed — now a full license");
+    closeEditCode();
+    renderSellerHistory();
+  } catch(e) { showToast("Failed: " + e.message); }
 }
 
 function initModuleRemoveButtons() {
@@ -8685,6 +8964,8 @@ function onCurrencySelectChange() {
 }
 
 function openSettings() {
+  var _dd = document.getElementById('profileDropdown');
+  if (_dd) _dd.classList.remove('open');
   var snapBtn = document.getElementById('btnSnapSettings');
   if (snapBtn) { snapBtn.textContent = _snapEnabled ? '🧲 On' : '🧲 Off'; snapBtn.classList.toggle('active', _snapEnabled); }
   var estBtn = document.getElementById('btnEstIncome');
@@ -11594,6 +11875,135 @@ function getProfiles() {
 }
 function saveProfiles(arr) { localStorage.setItem(PROF_KEY, JSON.stringify(arr)); }
 
+// ── Profile avatar helpers (photo or initials fallback) ───
+// Returns the CSS background for an avatar element: the profile photo if set,
+// otherwise the solid colour. Pair with _avatarTxt() for the initials overlay.
+function _avatarBg(p) {
+  return (p && p.avatar)
+    ? "background-image:url('" + p.avatar + "');background-size:cover;background-position:center;"
+    : "background:" + (p && p.color ? p.color : '#3b82f6') + ";";
+}
+function _avatarTxt(p) {
+  return (p && p.avatar) ? "" : escHtml(p && p.initials ? p.initials : "?");
+}
+// Reads an image file, centre-crops to a 256px square and returns a compact
+// JPEG data-URL (~15–25 KB) so it stays small for localStorage + cloud sync.
+function _compressAvatar(file, cb) {
+  if (!file || !/^image\//.test(file.type)) { showToast("Please choose an image file"); return; }
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    var img = new Image();
+    img.onload = function() {
+      var S = 256, c = document.createElement('canvas');
+      c.width = S; c.height = S;
+      var ctx = c.getContext('2d');
+      var m = Math.min(img.width, img.height);
+      ctx.drawImage(img, (img.width - m) / 2, (img.height - m) / 2, m, m, 0, 0, S, S);
+      try { cb(c.toDataURL('image/jpeg', 0.82)); } catch(err) { showToast("Couldn't process that image"); }
+    };
+    img.onerror = function() { showToast("Couldn't load that image"); };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+// ── Interactive avatar crop editor (pan / zoom / rotate) ──
+var _cropImg = null, _cropBase = 1, _cropScale = 1, _cropRot = 0, _cropX = 0, _cropY = 0;
+var _cropDrag = null, _cropCallback = null;
+var _CROP_S = 256;
+
+function _beginCrop(dataUrl, cb) {
+  var img = new Image();
+  img.onload = function() {
+    _cropImg = img;
+    _cropScale = 1; _cropRot = 0; _cropX = 0; _cropY = 0;
+    _cropBase = _CROP_S / Math.min(img.width, img.height); // cover the square
+    _cropCallback = cb;
+    var z = document.getElementById('cropZoom'); if (z) z.value = 1;
+    var r = document.getElementById('cropRot');  if (r) r.value = 0;
+    _cropUpdateRotVal();
+    document.getElementById('avatarCropModal').classList.add('open');
+    _cropDraw();
+  };
+  img.onerror = function() { showToast("Couldn't load that image"); };
+  img.src = dataUrl;
+}
+
+function _cropDraw() {
+  var c = document.getElementById('avatarCropCanvas');
+  if (!c || !_cropImg) return;
+  var ctx = c.getContext('2d');
+  var S = _CROP_S;
+  ctx.clearRect(0, 0, S, S);
+  ctx.fillStyle = '#0b0d12';
+  ctx.fillRect(0, 0, S, S);
+  ctx.save();
+  ctx.translate(S / 2 + _cropX, S / 2 + _cropY);
+  ctx.rotate(_cropRot * Math.PI / 180);
+  var sc = _cropBase * _cropScale;
+  ctx.scale(sc, sc);
+  ctx.drawImage(_cropImg, -_cropImg.width / 2, -_cropImg.height / 2);
+  ctx.restore();
+}
+
+function _cropUpdateRotVal() {
+  var el = document.getElementById('cropRotInput');
+  if (el && document.activeElement !== el) el.value = Math.round(_cropRot);
+}
+// User typed an angle into the input — apply it live (clamped, without fighting
+// what they're typing). Normalised on blur/Enter via _cropNormalizeRotInput.
+function _cropSetRotInput(v) {
+  var n = parseFloat(v);
+  if (isNaN(n)) return;
+  n = Math.max(-180, Math.min(180, n));
+  _cropRot = n;
+  var r = document.getElementById('cropRot'); if (r) r.value = n;
+  _cropDraw();
+}
+function _cropNormalizeRotInput() {
+  var el = document.getElementById('cropRotInput');
+  if (el) el.value = Math.round(_cropRot);
+}
+function _cropOnZoom(v) { _cropScale = parseFloat(v) || 1; _cropDraw(); }
+function _cropOnRot(v)  { _cropRot = parseFloat(v) || 0; _cropUpdateRotVal(); _cropDraw(); }
+function _cropRotate90() {
+  _cropRot = ((_cropRot + 90 + 180) % 360) - 180;
+  var r = document.getElementById('cropRot'); if (r) r.value = _cropRot;
+  _cropUpdateRotVal();
+  _cropDraw();
+}
+
+function _cropPointerDown(e) {
+  if (!_cropImg) return;
+  _cropDrag = { x: e.clientX, y: e.clientY };
+  if (e.target.setPointerCapture) try { e.target.setPointerCapture(e.pointerId); } catch(err) {}
+}
+function _cropPointerMove(e) {
+  if (!_cropDrag) return;
+  // Canvas is 256 internal px shown at its CSS size; scale the delta to match.
+  var c = document.getElementById('avatarCropCanvas');
+  var ratio = c ? (_CROP_S / c.getBoundingClientRect().width) : 1;
+  _cropX += (e.clientX - _cropDrag.x) * ratio;
+  _cropY += (e.clientY - _cropDrag.y) * ratio;
+  _cropDrag = { x: e.clientX, y: e.clientY };
+  _cropDraw();
+}
+function _cropPointerUp() { _cropDrag = null; }
+
+function _saveAvatarCrop() {
+  var c = document.getElementById('avatarCropCanvas');
+  if (!c) return;
+  var url;
+  try { url = c.toDataURL('image/jpeg', 0.82); } catch(e) { showToast("Couldn't process that image"); return; }
+  var cb = _cropCallback;
+  _closeAvatarCrop();
+  if (cb) cb(url);
+}
+function _closeAvatarCrop() {
+  document.getElementById('avatarCropModal').classList.remove('open');
+  _cropImg = null; _cropDrag = null; _cropCallback = null;
+}
+
 async function hashPin(pin) {
   const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(pin));
   return Array.from(new Uint8Array(buf)).map(function(b) { return b.toString(16).padStart(2,'0'); }).join('');
@@ -11630,19 +12040,32 @@ function migrateExistingData() {
   localStorage.setItem(MIGRATED_KEY, '1');
 }
 
+function _setAvatarEl(el, profile) {
+  if (!el) return;
+  if (profile.avatar) {
+    el.textContent = '';
+    el.style.backgroundImage = "url('" + profile.avatar + "')";
+    el.style.backgroundSize = 'cover';
+    el.style.backgroundPosition = 'center';
+  } else {
+    el.textContent = profile.initials;
+    el.style.backgroundImage = 'none';
+    el.style.background = profile.color;
+  }
+}
+
 function applyProfileToUI(profile) {
   // Header avatar button
   var btn = document.getElementById('headerProfileBtn');
   if (btn) {
-    btn.textContent = profile.initials;
-    btn.style.background = profile.color;
+    _setAvatarEl(btn, profile);
     btn.style.borderColor = profile.color + '88';
     btn.style.boxShadow = '0 0 12px ' + profile.color + '44';
   }
   // Dropdown header
   var dropAvatar = document.getElementById('profDropAvatar');
   var dropName   = document.getElementById('profDropName');
-  if (dropAvatar) { dropAvatar.textContent = profile.initials; dropAvatar.style.background = profile.color; }
+  _setAvatarEl(dropAvatar, profile);
   if (dropName)   { dropName.textContent = profile.name; }
   // Welcome name in header + mobile greeting
   var nameEl = document.getElementById('welcomeName');
@@ -11954,7 +12377,7 @@ function renderPickerCards() {
   var html = '<div class="prof-cards">';
   profiles.forEach(function(p) {
     html += '<div class="prof-card" onclick="profCardClick(\'' + p.id + '\')">'
-          + '<div class="prof-avatar" style="background:' + p.color + ';">' + escHtml(p.initials) + '</div>'
+          + '<div class="prof-avatar" style="' + _avatarBg(p) + '">' + _avatarTxt(p) + '</div>'
           + '<div class="prof-card-name">' + escHtml(p.name) + '</div>'
           + '<div class="prof-card-lock">' + (p.pinHash ? '🔒 PIN protected' : '') + '</div>'
           + '</div>';
@@ -12043,7 +12466,7 @@ function showPinPrompt(profile) {
   document.getElementById('profManageArea').innerHTML    = '';
   document.getElementById('profScreenBody').innerHTML =
     '<div class="prof-pin-wrap">'
-  + '<div class="prof-pin-avatar" style="background:' + profile.color + ';">' + escHtml(profile.initials) + '</div>'
+  + '<div class="prof-pin-avatar" style="' + _avatarBg(profile) + '">' + _avatarTxt(profile) + '</div>'
   + '<div class="prof-pin-name">' + escHtml(profile.name) + '</div>'
   + '<div class="prof-pin-label">Enter your PIN</div>'
   + '<input class="prof-pin-input" id="profPinInput" type="password" placeholder="••••" maxlength="20" onkeydown="if(event.key===\'Enter\')profPinSubmit(\'' + profile.id + '\')" autofocus />'
@@ -12083,10 +12506,42 @@ function loginWithProfile(profile) {
 
 // ── Add Profile Screen ───────────────────────────────────
 var _newProfColor = '#3b82f6';
+var _newProfAvatar = null;
+var _editProfAvatar = null;
+var _newProfOrig = null;   // original (uncropped) image for re-adjusting
+var _editProfOrig = null;
 
 function showAddProfileScreen() {
   // Require admin PIN first
   showAdminPrompt('add_profile', function() { _renderAddProfileForm(); });
+}
+
+function _onNewProfPhoto(input) {
+  var file = input.files && input.files[0];
+  input.value = '';
+  if (!file || !/^image\//.test(file.type)) { if (file) showToast("Please choose an image file"); return; }
+  var reader = new FileReader();
+  reader.onload = function(e) { _newProfOrig = e.target.result; _beginCrop(_newProfOrig, _setNewProfPhoto); };
+  reader.onerror = function() { showToast("Couldn't read that file"); };
+  reader.readAsDataURL(file);
+}
+function _adjustNewProfPhoto() {
+  var src = _newProfOrig || _newProfAvatar;
+  if (src) _beginCrop(src, _setNewProfPhoto);
+}
+function _setNewProfPhoto(dataUrl) {
+  _newProfAvatar = dataUrl;
+  var prev = document.getElementById('newProfAvatarPreview');
+  if (prev) { prev.style.backgroundImage = "url('" + dataUrl + "')"; prev.textContent = ''; }
+  var act = document.getElementById('newProfPhotoActions');
+  if (act) act.innerHTML = '<button class="prof-photo-link" onclick="_adjustNewProfPhoto()">Adjust</button><span style="color:#334155;"> · </span><button class="prof-photo-link" onclick="_removeNewProfPhoto()">Remove</button>';
+}
+function _removeNewProfPhoto() {
+  _newProfAvatar = null; _newProfOrig = null;
+  var prev = document.getElementById('newProfAvatarPreview');
+  if (prev) { prev.style.backgroundImage = 'none'; prev.style.background = _newProfColor; prev.textContent = '📷'; }
+  var act = document.getElementById('newProfPhotoActions');
+  if (act) act.textContent = 'Tap to add a photo (optional)';
 }
 
 function _renderAddProfileForm() {
@@ -12094,12 +12549,20 @@ function _renderAddProfileForm() {
   document.getElementById('profScreenSub').textContent   = 'New profiles start with a fresh template';
   document.getElementById('profManageArea').innerHTML    = '';
   _newProfColor = '#3b82f6';
+  _newProfAvatar = null;
   var swatches = PROF_COLORS.map(function(c) {
     return '<div class="color-swatch' + (c === _newProfColor ? ' selected' : '') + '" style="background:' + c + ';" onclick="selectProfColor(\'' + c + '\')" data-color="' + c + '"></div>';
   }).join('');
   document.getElementById('profScreenBody').innerHTML =
     '<div class="prof-setup-wrap">'
   + '<div class="prof-setup-title">New Profile</div>'
+  + '<div style="display:flex;flex-direction:column;align-items:center;gap:0.45rem;margin-bottom:0.4rem;">'
+  +   '<label title="Add a photo" style="cursor:pointer;">'
+  +     '<div id="newProfAvatarPreview" class="prof-photo-pick" style="background:' + _newProfColor + ';">📷</div>'
+  +     '<input type="file" accept="image/*" style="display:none;" onchange="_onNewProfPhoto(this)" />'
+  +   '</label>'
+  +   '<div id="newProfPhotoActions" style="font-size:0.7rem;color:#64748b;">Tap to add a photo (optional)</div>'
+  + '</div>'
   + '<div class="prof-setup-label">Name</div>'
   + '<input class="prof-setup-input" id="newProfName" placeholder="e.g. Mom, Alex, Dad..." maxlength="20" />'
   + '<div class="prof-setup-label">Pick a colour</div>'
@@ -12128,15 +12591,16 @@ function saveNewProfile() {
   var id = name.toLowerCase().replace(/[^a-z0-9]/g, '') + '_' + Date.now().toString(36);
   var initials = name.slice(0, 2).toUpperCase();
   var newSyncKey = _genSyncKey();
+  var avatar = _newProfAvatar || null;
   if (pin) {
     hashPin(pin).then(function(hash) {
-      profiles.push({ id: id, name: name, initials: initials, color: _newProfColor, pinHash: hash, syncKey: newSyncKey });
+      profiles.push({ id: id, name: name, initials: initials, color: _newProfColor, avatar: avatar, pinHash: hash, syncKey: newSyncKey });
       saveProfiles(profiles);
       showToast("Profile created!");
       renderPickerCards();
     });
   } else {
-    profiles.push({ id: id, name: name, initials: initials, color: _newProfColor, pinHash: null, syncKey: newSyncKey });
+    profiles.push({ id: id, name: name, initials: initials, color: _newProfColor, avatar: avatar, pinHash: null, syncKey: newSyncKey });
     saveProfiles(profiles);
     showToast("Profile created!");
     renderPickerCards();
@@ -12220,7 +12684,7 @@ function renderManageScreen() {
     var delBtn  = _allProfiles.length <= 1 ? '' :
       '<button onclick="deleteProfile(\'' + p.id + '\')" style="background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.22);color:#ef4444;border-radius:7px;padding:4px 9px;font-size:0.72rem;cursor:pointer;font-family:inherit;flex-shrink:0;">🗑</button>';
     return '<div style="display:flex;align-items:center;gap:0.5rem;padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.06);">'
-      + '<div style="width:36px;height:36px;border-radius:9px;background:' + p.color + ';display:flex;align-items:center;justify-content:center;font-size:0.9rem;font-weight:800;color:#fff;flex-shrink:0;">' + escHtml(p.initials) + '</div>'
+      + '<div style="width:36px;height:36px;border-radius:9px;' + _avatarBg(p) + 'display:flex;align-items:center;justify-content:center;font-size:0.9rem;font-weight:800;color:#fff;flex-shrink:0;background-size:cover;background-position:center;">' + _avatarTxt(p) + '</div>'
       + '<div style="flex:1;min-width:0;">'
         + '<div style="font-size:0.85rem;color:#e2e8f0;font-weight:600;display:flex;align-items:center;flex-wrap:wrap;gap:4px;">' + escHtml(p.name) + lockBadge + '</div>'
       + '</div>'
@@ -12270,7 +12734,7 @@ function showEditPin(profileId) {
     : '';
   document.getElementById('profScreenBody').innerHTML =
     '<div class="prof-setup-wrap" style="min-width:320px;align-items:center;">'
-  + '<div style="width:58px;height:58px;border-radius:15px;background:'+p.color+';display:flex;align-items:center;justify-content:center;font-size:1.35rem;font-weight:800;color:#fff;margin-bottom:0.5rem;box-shadow:0 6px 22px rgba(0,0,0,0.4);">'+escHtml(p.initials)+'</div>'
+  + '<div style="width:58px;height:58px;border-radius:15px;'+_avatarBg(p)+'display:flex;align-items:center;justify-content:center;font-size:1.35rem;font-weight:800;color:#fff;margin-bottom:0.5rem;box-shadow:0 6px 22px rgba(0,0,0,0.4);background-size:cover;background-position:center;">'+_avatarTxt(p)+'</div>'
   + '<div style="font-size:1rem;font-weight:700;color:#f1f5f9;">'+escHtml(p.name)+'</div>'
   + '<div style="font-size:0.65rem;color:'+(hasPin?'#818cf8':'#475569')+';text-transform:uppercase;letter-spacing:0.1em;font-weight:600;margin-bottom:1.3rem;">'+(hasPin?'🔒 PIN Protected':'No PIN set')+'</div>'
   + '<div class="prof-setup-label">'+(hasPin?'New PIN':'Set a PIN')+'</div>'
@@ -12318,25 +12782,64 @@ function showEditName(profileId) {
   var profiles = getProfiles();
   var p = profiles.find(function(pr) { return pr.id === profileId; });
   if (!p) return;
-  document.getElementById('profScreenTitle').textContent = 'Edit Name';
+  document.getElementById('profScreenTitle').textContent = 'Edit Profile';
   document.getElementById('profScreenSub').textContent   = '';
   document.getElementById('profManageArea').innerHTML    = '';
+  _editProfAvatar = p.avatar || null;
+  _editProfOrig = null;
   document.getElementById('profScreenBody').innerHTML =
     '<div class="prof-setup-wrap" style="min-width:320px;align-items:center;">'
-  + '<div id="editNameAvatar" style="width:58px;height:58px;border-radius:15px;background:'+p.color+';display:flex;align-items:center;justify-content:center;font-size:1.35rem;font-weight:800;color:#fff;margin-bottom:0.75rem;box-shadow:0 6px 22px rgba(0,0,0,0.4);transition:all 0.2s;">'+escHtml(p.initials)+'</div>'
+  + '<label title="Change photo" style="cursor:pointer;">'
+  +   '<div id="editNameAvatar" class="prof-photo-pick" style="margin-bottom:0.5rem;' + _avatarBg(p) + '">' + _avatarTxt(p) + '</div>'
+  +   '<input type="file" accept="image/*" style="display:none;" onchange="_onEditProfPhoto(this)" />'
+  + '</label>'
+  + '<div id="editPhotoActions" style="margin-bottom:0.6rem;">' + (p.avatar ? '<button class="prof-photo-link" onclick="_adjustEditProfPhoto()">Adjust</button><span style="color:#334155;"> · </span><button class="prof-photo-link" onclick="_removeEditProfPhoto()">Remove</button>' : '<span style="font-size:0.7rem;color:#64748b;">Tap photo to change</span>') + '</div>'
   + '<div class="prof-setup-label">Display Name</div>'
   + '<input class="prof-setup-input" id="editNameInput" type="text" placeholder="Your name" maxlength="24" value="'+escHtml(p.name)+'" oninput="updateEditNamePreview()" onkeydown="if(event.key===\'Enter\')submitEditName(\''+profileId+'\')" />'
   + '<div id="editNameError" style="font-size:0.75rem;color:#ef4444;min-height:1em;width:100%;"></div>'
-  + '<button class="prof-btn" onclick="submitEditName(\''+profileId+'\')" style="margin-top:0.25rem;">Save Name</button>'
+  + '<button class="prof-btn" onclick="submitEditName(\''+profileId+'\')" style="margin-top:0.25rem;">Save</button>'
   + '<button class="prof-btn secondary" onclick="renderManageScreen()">← Back</button>'
   + '</div>';
   setTimeout(function() { var inp = document.getElementById('editNameInput'); if (inp) { inp.focus(); inp.select(); } }, 80);
+}
+
+function _onEditProfPhoto(input) {
+  var file = input.files && input.files[0];
+  input.value = '';
+  if (!file || !/^image\//.test(file.type)) { if (file) showToast("Please choose an image file"); return; }
+  var reader = new FileReader();
+  reader.onload = function(e) { _editProfOrig = e.target.result; _beginCrop(_editProfOrig, _setEditProfPhoto); };
+  reader.onerror = function() { showToast("Couldn't read that file"); };
+  reader.readAsDataURL(file);
+}
+function _adjustEditProfPhoto() {
+  var src = _editProfOrig || _editProfAvatar;
+  if (src) _beginCrop(src, _setEditProfPhoto);
+}
+function _setEditProfPhoto(dataUrl) {
+  _editProfAvatar = dataUrl;
+  var prev = document.getElementById('editNameAvatar');
+  if (prev) { prev.style.backgroundImage = "url('" + dataUrl + "')"; prev.textContent = ''; }
+  var act = document.getElementById('editPhotoActions');
+  if (act) act.innerHTML = '<button class="prof-photo-link" onclick="_adjustEditProfPhoto()">Adjust</button><span style="color:#334155;"> · </span><button class="prof-photo-link" onclick="_removeEditProfPhoto()">Remove</button>';
+}
+function _removeEditProfPhoto() {
+  _editProfAvatar = null; _editProfOrig = null;
+  updateEditNamePreview();
+  var act = document.getElementById('editPhotoActions');
+  if (act) act.innerHTML = '<span style="font-size:0.7rem;color:#64748b;">Tap photo to change</span>';
 }
 
 function updateEditNamePreview() {
   var inp    = document.getElementById('editNameInput');
   var avatar = document.getElementById('editNameAvatar');
   if (!inp || !avatar) return;
+  if (_editProfAvatar) {
+    avatar.style.backgroundImage = "url('" + _editProfAvatar + "')";
+    avatar.textContent = '';
+    return;
+  }
+  avatar.style.backgroundImage = 'none';
   var name     = inp.value.trim();
   var initials = name ? name.split(/\s+/).map(function(w) { return w[0] || ''; }).join('').toUpperCase().slice(0, 2) : '?';
   avatar.textContent = initials;
@@ -12354,10 +12857,69 @@ function submitEditName(profileId) {
   var initials = name.split(/\s+/).map(function(w) { return w[0] || ''; }).join('').toUpperCase().slice(0, 2) || name[0].toUpperCase();
   profiles[idx].name     = name;
   profiles[idx].initials = initials;
+  profiles[idx].avatar   = _editProfAvatar || null;
   saveProfiles(profiles);
   if (profileId === activeProfileId) applyProfileToUI(profiles[idx]);
-  showToast('Name updated to ' + name);
+  showToast('Profile updated');
   renderManageScreen();
+}
+
+// ── What's New (dated changelog) popup ───────────────────
+// For each update, add a NEW dated block at the TOP of CHANGELOG. Buyers see
+// the popup once when the newest date differs from what they last saw. The
+// "seen" flag is per-device (not synced). Each item: { icon, color, title, desc }.
+var CHANGELOG = [
+  {
+    date: "26 June 2026",
+    items: [
+      { icon: "🖼️", color: "#a78bfa", title: "Profile pictures",   desc: "Add a photo to your profile — profile menu → Manage Profiles → Edit." },
+      { icon: "⚙️", color: "#94a3b8", title: "Settings moved",      desc: "Settings now lives in your profile menu — just tap your avatar." },
+      { icon: "💰", color: "#34d399", title: "Allowances",          desc: "Add travel/meal allowances to your income on the red Nett Income card." },
+      { icon: "🎌", color: "#fb923c", title: "Public holiday pay",  desc: "Can now be based on your daily rate instead of hourly." },
+      { icon: "📅", color: "#60a5fa", title: "Smarter estimate",    desc: "Estimated income now switches months based on your own payday." },
+      { icon: "📖", color: "#fbbf24", title: "User Guide",          desc: "Fully redesigned — far easier to read and navigate." }
+    ]
+  }
+];
+var SEEN_CHANGELOG_KEY = "opmus_seen_changelog";
+
+function _latestChangelogId() { return CHANGELOG[0] ? CHANGELOG[0].date : ""; }
+
+function _renderWnRelease(r) {
+  var items = r.items.map(function(it) {
+    return '<div class="wn-item">'
+      + '<div class="wn-item-ico" style="background:' + it.color + '22;color:' + it.color + ';box-shadow:inset 0 0 0 1px ' + it.color + '44;">' + it.icon + '</div>'
+      + '<div class="wn-item-txt"><div class="wn-item-title">' + escHtml(it.title) + '</div><div class="wn-item-desc">' + it.desc + '</div></div>'
+      + '</div>';
+  }).join('');
+  return '<div class="wn-release"><div class="wn-date"><i class="ph-fill ph-calendar-dots"></i>' + escHtml(r.date) + '</div>' + items + '</div>';
+}
+
+function checkWhatsNew() {
+  if (!activeProfileId) return;
+  if (!localStorage.getItem(ONBOARDED_KEY)) return; // brand-new users get onboarding, not this
+  if (!CHANGELOG.length) return;
+  if (localStorage.getItem(SEEN_CHANGELOG_KEY) === _latestChangelogId()) return;
+  var body = document.getElementById("whatsNewBody");
+  if (body) body.innerHTML = CHANGELOG.map(_renderWnRelease).join('');
+  setTimeout(function() {
+    var m = document.getElementById("whatsNewModal");
+    if (m) m.classList.add("open");
+  }, 650);
+}
+// Lets buyers re-open the changelog anytime from the profile menu.
+function openWhatsNew() {
+  var dd = document.getElementById('profileDropdown');
+  if (dd) dd.classList.remove('open');
+  var body = document.getElementById("whatsNewBody");
+  if (body) body.innerHTML = CHANGELOG.map(_renderWnRelease).join('');
+  var m = document.getElementById("whatsNewModal");
+  if (m) m.classList.add("open");
+}
+function closeWhatsNew() {
+  _lsSet(SEEN_CHANGELOG_KEY, _latestChangelogId());
+  var m = document.getElementById("whatsNewModal");
+  if (m) m.classList.remove("open");
 }
 
 // ── First-login Onboarding ───────────────────────────────
@@ -12378,7 +12940,7 @@ function showOnboarding() {
   if (!p) return;
   var avatarEl = document.getElementById('onboardAvatar');
   var nameEl   = document.getElementById('onboardName');
-  if (avatarEl) { avatarEl.textContent = p.initials; avatarEl.style.background = p.color; avatarEl.style.boxShadow = '0 8px 28px rgba(0,0,0,0.5), 0 0 0 3px ' + p.color + '44'; }
+  if (avatarEl) { _setAvatarEl(avatarEl, p); avatarEl.style.boxShadow = '0 8px 28px rgba(0,0,0,0.5), 0 0 0 3px ' + p.color + '44'; }
   if (nameEl)   nameEl.textContent = p.name;
   // Show weekend rule only when payday input has a value
   var salDayEl = document.getElementById('obSalDay');
@@ -12503,6 +13065,9 @@ function submitFirstTimeSetup() {
   var initials  = userName.trim().split(/\s+/).map(function(w){ return w[0]; }).join('').toUpperCase().slice(0,2);
   var colors    = ['#ef4444','#3b82f6','#10b981','#8b5cf6','#f59e0b','#ec4899'];
   var color     = colors[Math.floor(Math.random() * colors.length)];
+  // Brand-new install → mark the current changelog as seen so they don't get a
+  // "What's New" popup on their very first run (they get onboarding instead).
+  try { _lsSet(SEEN_CHANGELOG_KEY, _latestChangelogId()); } catch(e) {}
   hashPin(adminPin).then(function(adminHash) {
     localStorage.setItem(ADMIN_HASH_KEY, adminHash);
     if (userPin) {
@@ -12574,6 +13139,10 @@ async function activateLicense() {
       errEl.textContent = "Invalid license key. Please check and try again.";
       return;
     }
+    if (data.expiresAt && Date.now() >= data.expiresAt) {
+      errEl.textContent = "This code's access period has ended. Purchase a license key to continue using this app.";
+      return;
+    }
     // Each distinct cloud sync code (~household) that activates this key is
     // recorded. Once a key has been activated by maxActivations different
     // households, further activations are blocked.
@@ -12581,7 +13150,7 @@ async function activateLicense() {
     var activated  = data.activatedSyncKeys || {};
     var max        = data.maxActivations || MAX_LICENSE_ACTIVATIONS;
     if (!activated[mySyncKey] && Object.keys(activated).length >= max) {
-      errEl.textContent = "This key has reached its device limit. Contact us via Shopee chat for help.";
+      errEl.textContent = "This key has reached its device limit. Please contact us for help.";
       return;
     }
     var updates = {};
@@ -12590,6 +13159,11 @@ async function activateLicense() {
     await ref.update(updates);
     _lsSet("opmus_license_key", key);
     _lsSet("opmus_license_active", "1");
+    // Bundle key: stash any included modules to unlock once a profile exists.
+    if (data.modules && data.modules.length) {
+      var bundleMods = data.modules.filter(function(m) { return m !== "base"; });
+      if (bundleMods.length) _lsSet(PENDING_UNLOCK_KEY, JSON.stringify(bundleMods));
+    }
     errEl.textContent = "";
     location.reload();
   } catch(e) {
@@ -12599,6 +13173,7 @@ async function activateLicense() {
 
 var BASE_TRIAL_EXPIRY_KEY = "opmus_base_trial_expiry";
 var PENDING_TRIAL_KEY = "opmus_pending_trial";
+var PENDING_UNLOCK_KEY = "opmus_pending_unlock";
 
 // True once the device's "base" trial window (granted via redeemTrialCode)
 // has passed and no real license key has been activated since.
@@ -12686,7 +13261,7 @@ async function redeemTrialCode() {
 function checkBaseTrialStatus() {
   if (!_baseTrialExpired()) return;
   document.getElementById("licenseGateTitle").textContent = "Free Trial Ended";
-  document.getElementById("licenseGateSub").textContent = "Your free trial has ended. Enter a license key to continue, or contact us via Shopee chat to purchase one.";
+  document.getElementById("licenseGateSub").textContent = "Your free trial has ended. Purchase and enter a license key to continue using this app.";
   _lockApp("licenseGateOverlay");
 }
 
@@ -12712,6 +13287,23 @@ function applyPendingTrial() {
   _lsRemove(PENDING_TRIAL_KEY);
 }
 
+// Applies modules bundled into a Base license key, once a profile exists.
+function applyPendingUnlock() {
+  var raw = localStorage.getItem(PENDING_UNLOCK_KEY);
+  if (!raw || !activeProfileId) return;
+  try {
+    var mods = JSON.parse(raw);
+    var unlocked = getUnlockedModules();
+    mods.forEach(function(m) {
+      if (unlocked.indexOf(m) === -1) unlocked.push(m);
+      addModule(m);
+    });
+    saveUnlockedModules(unlocked);
+    if (mods.length) showToast("🎉 Bundle unlocked: " + mods.map(function(m) { return MODULES[m] ? MODULES[m].name : m; }).join(" + "));
+  } catch(e) {}
+  _lsRemove(PENDING_UNLOCK_KEY);
+}
+
 // Re-check this device's license key against Firebase. If the seller has
 // revoked it (valid:false) since activation, lock the app with an appeal screen.
 // Fails open on offline/error — only an explicit valid:false locks the app.
@@ -12719,9 +13311,21 @@ async function checkLicenseStatus() {
   var key = localStorage.getItem("opmus_license_key");
   if (!key || !_db) return;
   try {
-    var snap = await _db.ref("licenses/" + key + "/valid").once("value");
-    if (snap.val() === false) {
+    var snap = await _db.ref("licenses/" + key).once("value");
+    var data = snap.val();
+    if (!data || data.valid === false) {
       _lockApp("licenseRevokedOverlay");
+      return;
+    }
+    // Trial/limited code whose access window has ended → show the gate with a
+    // purchase message (works even for already-activated devices, since this
+    // re-checks Firebase on load, on tab focus and on the periodic poll).
+    if (data.expiresAt && Date.now() >= data.expiresAt) {
+      var t = document.getElementById("licenseGateTitle");
+      var s = document.getElementById("licenseGateSub");
+      if (t) t.textContent = "Access Period Ended";
+      if (s) s.textContent = "Your free access period has ended. Purchase and enter a license key to continue using this app.";
+      _lockApp("licenseGateOverlay");
     }
   } catch(e) {}
 }
@@ -12832,7 +13436,7 @@ _syncKey = getSyncKey();
   if (!isLicensed() || _baseTrialExpired()) {
     if (_baseTrialExpired()) {
       document.getElementById("licenseGateTitle").textContent = "Free Trial Ended";
-      document.getElementById("licenseGateSub").textContent = "Your free trial has ended. Enter a license key to continue, or contact us via Shopee chat to purchase one.";
+      document.getElementById("licenseGateSub").textContent = "Your free trial has ended. Purchase and enter a license key to continue using this app.";
     }
     _lockApp("licenseGateOverlay");
     return;
@@ -12868,6 +13472,7 @@ _syncKey = getSyncKey();
     renderPickerCards();
   }
   applyPendingTrial();
+  applyPendingUnlock();
   renderAppLibrary();
   applyModuleVisibility();
   initModuleRemoveButtons();
@@ -12879,6 +13484,7 @@ _syncKey = getSyncKey();
   checkReminders();
   checkAccessStatus();
   updateTrialCountdown();
+  checkWhatsNew();
   var sellerSection = document.getElementById("sellerToolsSection");
   if (sellerSection && isSellerMode()) sellerSection.style.display = "";
   initSnapGuides();
