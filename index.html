@@ -2071,7 +2071,8 @@
     .prof-dropdown {
       display: none; position: fixed; top: 0; right: 1rem;
       background: rgba(8,10,18,0.97); border: 1px solid rgba(255,255,255,0.1);
-      border-radius: 18px; padding: 0; min-width: 248px; overflow: hidden;
+      border-radius: 18px; padding: 0; min-width: 248px; overflow: hidden auto;
+      max-height: calc(100vh - 88px);
       box-shadow: 0 24px 70px rgba(0,0,0,0.9), 0 0 0 1px rgba(255,255,255,0.04); z-index: 9999;
       backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
       max-width: calc(100vw - 2rem);
@@ -2622,6 +2623,10 @@
     <div class="prof-drop-item" onclick="openSyncModal()">
       <span class="prof-drop-icon">☁</span>
       <span>Cloud Sync</span>
+    </div>
+    <div class="prof-drop-item" onclick="openMonthlyReport()">
+      <span class="prof-drop-icon">📄</span>
+      <span>Monthly Report (PDF)</span>
     </div>
 
     <div class="prof-drop-section" style="margin-top:0.45rem;">Help</div>
@@ -4132,18 +4137,27 @@
     <input type="text" id="goalName" placeholder="e.g. Holiday Fund, New Phone, Emergency…" maxlength="40"
       onkeydown="if(event.key==='Enter')saveGoal()" />
 
-    <div class="field-label">Target Amount (RM)</div>
-    <input type="number" id="goalTarget" inputmode="decimal" placeholder="e.g. 5000.00" step="0.01" min="0" />
+    <label style="display:flex;align-items:center;gap:0.5rem;margin:0.1rem 0 0.7rem;cursor:pointer;font-size:0.78rem;color:#cbd5e1;">
+      <input type="checkbox" id="goalNoTarget" onchange="_goalNoTargetToggle()" style="width:16px;height:16px;accent-color:#38bdf8;flex-shrink:0;" />
+      <span>Ongoing — no target amount <span style="color:#64748b;">(e.g. ASNB)</span></span>
+    </label>
 
-    <div class="field-label">Target Date <span style="color:#475569;font-weight:400;">(optional)</span></div>
-    <div class="date-row">
-      <input type="number" id="goalDay" inputmode="numeric" placeholder="DD" min="1" max="31" style="width:60px;"
-        oninput="autoAdvanceDate(this,'goalMonth',2)" />
-      <div class="date-sep">/</div>
-      <input type="number" id="goalMonth" inputmode="numeric" placeholder="MM" min="1" max="12" style="width:60px;"
-        oninput="autoAdvanceDate(this,'goalYear',2)" />
-      <div class="date-sep">/</div>
-      <input type="number" id="goalYear" inputmode="numeric" placeholder="YYYY" min="2024" max="2099" style="width:80px;" />
+    <div id="goalTargetWrap">
+      <div class="field-label">Target Amount (RM)</div>
+      <input type="number" id="goalTarget" inputmode="decimal" placeholder="e.g. 5000.00" step="0.01" min="0" />
+    </div>
+
+    <div id="goalDateWrap">
+      <div class="field-label">Target Date <span style="color:#475569;font-weight:400;">(optional)</span></div>
+      <div class="date-row">
+        <input type="number" id="goalDay" inputmode="numeric" placeholder="DD" min="1" max="31" style="width:60px;"
+          oninput="autoAdvanceDate(this,'goalMonth',2)" />
+        <div class="date-sep">/</div>
+        <input type="number" id="goalMonth" inputmode="numeric" placeholder="MM" min="1" max="12" style="width:60px;"
+          oninput="autoAdvanceDate(this,'goalYear',2)" />
+        <div class="date-sep">/</div>
+        <input type="number" id="goalYear" inputmode="numeric" placeholder="YYYY" min="2024" max="2099" style="width:80px;" />
+      </div>
     </div>
 
     <button class="modal-btn primary" id="goalSaveBtn" onclick="saveGoal()">Create Goal</button>
@@ -6788,6 +6802,9 @@ function renderDashboard() {
     }
   }
 
+  // Refresh the Commitments panel so the CNI indicator reflects income changes.
+  // (renderCommitments never calls renderDashboard, so this can't recurse.)
+  try { renderCommitments(); } catch (e) {}
 }
 
 // ═══════════════════════════════════════════════════
@@ -9132,6 +9149,48 @@ function commitTotal() {
   }, 0);
 }
 
+// ── CNI: Commitment-to-Nett-Income health indicator ───────
+// CNI = Commitments ÷ (Nett income + Money received that month) × 100
+// Lower is healthier (less of your income is locked into fixed commitments).
+function _cniBand(pct) {
+  if (pct > 55) return { label: "Dangerous", color: "#ef4444", bg: "rgba(239,68,68,0.10)",  border: "rgba(239,68,68,0.35)" };  // >55
+  if (pct > 45) return { label: "Bad",       color: "#f97316", bg: "rgba(249,115,22,0.10)", border: "rgba(249,115,22,0.35)" };  // 46–55
+  if (pct > 30) return { label: "Moderate",  color: "#eab308", bg: "rgba(234,179,8,0.10)",  border: "rgba(234,179,8,0.35)" };  // 31–45
+  if (pct > 15) return { label: "Good",      color: "#84cc16", bg: "rgba(132,204,22,0.10)", border: "rgba(132,204,22,0.35)" };  // 16–30
+  return              { label: "Very Good", color: "#16a34a", bg: "rgba(22,163,74,0.14)",  border: "rgba(22,163,74,0.40)" };  // ≤15
+}
+
+function _cniIndicatorHtml() {
+  var commit   = commitTotal();
+  var nett     = parseFloat(localStorage.getItem(salaryKey)) || 0;
+  var received = loadReceived().reduce(function(s, e) { return s + (parseFloat(e.amount) || 0); }, 0);
+  var income   = nett + received;
+  var wrap = 'margin:0.5rem 0.85rem 0.25rem;';
+
+  if (income <= 0) {
+    return '<div style="' + wrap + 'font-size:0.62rem;color:#64748b;">Set your salary to see <span style="color:#94a3b8;">Commitment Health</span>.</div>';
+  }
+
+  var pct  = (commit / income) * 100;
+  var band = _cniBand(pct);
+  var SCALE_MAX = 70;                 // 0%–70% scale (55%+ all reads as Dangerous)
+  var ptr  = Math.max(0, Math.min(100, (Math.min(pct, SCALE_MAX) / SCALE_MAX) * 100));
+  var tip  = 'CNI = Commitments ' + fmt(commit) + ' / income ' + fmt(income) + ' x 100. Lower is healthier.';
+
+  var h = '<div style="' + wrap + '" title="' + tip + '">';
+  // Slim caption: label (left) + percentage · band (right, in band colour)
+  h += '<div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:0.32rem;">';
+  h += '<span style="font-size:0.63rem;font-weight:600;color:#94a3b8;letter-spacing:0.01em;">Commitment Health</span>';
+  h += '<span style="font-size:0.67rem;font-weight:700;color:' + band.color + ';">' + pct.toFixed(1) + '% &middot; ' + band.label + '</span>';
+  h += '</div>';
+  // Thin gradient spectrum with a sliding marker
+  h += '<div style="position:relative;height:6px;border-radius:4px;background:linear-gradient(90deg,#16a34a 0%,#84cc16 21%,#eab308 43%,#f97316 64%,#ef4444 79%);">';
+  h += '<div style="position:absolute;top:-2px;bottom:-2px;left:' + ptr.toFixed(1) + '%;width:3px;transform:translateX(-50%);background:#fff;border-radius:2px;box-shadow:0 0 3px rgba(0,0,0,0.55);transition:left 0.35s;"></div>';
+  h += '</div>';
+  h += '</div>';
+  return h;
+}
+
 var _commitExpanded = false;
 var _debtView = 'list';
 var _debtAdviceOpen = {}; // tracks which debt card has advice panel open
@@ -9182,6 +9241,9 @@ function renderCommitments() {
     }
     html += '</div>';
     html += '</div>';
+
+    // CNI health indicator (commitment-to-income)
+    html += _cniIndicatorHtml();
 
     if (count === 0) {
       html += '<div class="commit-empty">No commitments yet — tap + to add one.</div>';
@@ -9625,40 +9687,53 @@ function renderPanelB() {
   }
 
   el.innerHTML = goals.map(function(g) {
-    var saved  = goalSaved(g);
-    var target = parseFloat(g.target) || 0;
-    var pct    = target > 0 ? Math.min(100, (saved / target) * 100) : 0;
-    var color  = goalColor(pct);
-    var pctStr = pct.toFixed(pct >= 10 ? 0 : 1) + '%';
+    var saved   = goalSaved(g);
+    var ongoing = !!g.noTarget;
+    var target  = parseFloat(g.target) || 0;
+    var pct     = (!ongoing && target > 0) ? Math.min(100, (saved / target) * 100) : 0;
+    var color   = ongoing ? '#38bdf8' : goalColor(pct);
+    var pctStr  = pct.toFixed(pct >= 10 ? 0 : 1) + '%';
     var isExp    = _expandedGoals[g.id];
     var isAdv    = _goalAdviceOpen[g.id];
     var dl       = goalDeadlineStr(g.deadline);
+    var cCount   = (g.contributions || []).length;
 
     var html = '<div class="goal-card">';
     html += '<div class="goal-top">';
-    html += '<div class="goal-name">' + escHtml(g.name) + '</div>';
+    html += '<div class="goal-name">' + escHtml(g.name);
+    if (ongoing) html += ' <span style="font-size:0.55rem;font-weight:700;color:#38bdf8;background:rgba(56,189,248,0.12);border:1px solid rgba(56,189,248,0.3);border-radius:4px;padding:1px 5px;vertical-align:middle;letter-spacing:0.04em;">ONGOING</span>';
+    html += '</div>';
     html += '<div style="display:flex;align-items:center;gap:0.25rem;">';
-    html += '<span class="goal-pct" style="background:' + color + '22;color:' + color + ';">' + pctStr + '</span>';
-    html += '<button class="goal-action-btn goal-action-advice' + (isAdv ? ' active' : '') + '" onclick="toggleGoalAdvice(\'' + g.id + '\')" title="Savings advice">💡</button>';
+    html += '<span class="goal-pct" style="background:' + color + '22;color:' + color + ';">' + (ongoing ? '&#8734;' : pctStr) + '</span>';
+    if (!ongoing) html += '<button class="goal-action-btn goal-action-advice' + (isAdv ? ' active' : '') + '" onclick="toggleGoalAdvice(\'' + g.id + '\')" title="Savings advice">💡</button>';
     html += '<button class="goal-action-btn" onclick="openEditGoal(\'' + g.id + '\')" title="Edit goal">✏</button>';
     html += '<button class="goal-action-btn goal-action-del" onclick="deleteGoal(\'' + g.id + '\')" title="Delete goal">🗑</button>';
     html += '</div>';
     html += '</div>';
-    html += '<div class="goal-bar-wrap"><div class="goal-bar-fill" style="width:' + pct.toFixed(1) + '%;background:linear-gradient(90deg,' + color + ',' + color + 'cc);"></div></div>';
-    var surplus = saved - parseFloat(g.target);
-    html += '<div class="goal-amounts">';
-    html += '<span class="goal-saved-val" style="color:' + color + ';" id="gSaved_' + g.id + '">' + fmt(saved) + ' saved</span>';
-    if (surplus > 0) {
-      html += '<span style="color:#4ade80;font-weight:700;">+' + fmt(surplus) + ' extra</span>';
+
+    if (ongoing) {
+      // No target — just show the accumulated balance.
+      html += '<div class="goal-amounts" style="margin-top:0.5rem;">';
+      html += '<span class="goal-saved-val" style="color:' + color + ';" id="gSaved_' + g.id + '">' + fmt(saved) + ' saved</span>';
+      html += '<span style="color:#64748b;">' + cCount + ' deposit' + (cCount === 1 ? '' : 's') + '</span>';
+      html += '</div>';
     } else {
-      html += '<span>of ' + fmt(parseFloat(g.target)) + '</span>';
-    }
-    html += '</div>';
-    if (surplus < 0) {
-      html += '<div class="goal-remaining">' + fmt(Math.abs(surplus)) + ' remaining &nbsp;·&nbsp; tap 💡 for advice</div>';
+      html += '<div class="goal-bar-wrap"><div class="goal-bar-fill" style="width:' + pct.toFixed(1) + '%;background:linear-gradient(90deg,' + color + ',' + color + 'cc);"></div></div>';
+      var surplus = saved - target;
+      html += '<div class="goal-amounts">';
+      html += '<span class="goal-saved-val" style="color:' + color + ';" id="gSaved_' + g.id + '">' + fmt(saved) + ' saved</span>';
+      if (surplus > 0) {
+        html += '<span style="color:#4ade80;font-weight:700;">+' + fmt(surplus) + ' extra</span>';
+      } else {
+        html += '<span>of ' + fmt(target) + '</span>';
+      }
+      html += '</div>';
+      if (surplus < 0) {
+        html += '<div class="goal-remaining">' + fmt(Math.abs(surplus)) + ' remaining &nbsp;·&nbsp; tap 💡 for advice</div>';
+      }
     }
     if (dl) html += '<div class="goal-deadline">' + dl + '</div>';
-    if (isAdv) html += goalAdviceHtml(g);
+    if (!ongoing && isAdv) html += goalAdviceHtml(g);
 
     html += '<div class="goal-footer">';
     html += '<button class="goal-contrib-toggle" onclick="toggleGoalExpand(\'' + g.id + '\')">';
@@ -9704,8 +9779,17 @@ function openAddGoal() {
   document.getElementById('goalDay').value    = '';
   document.getElementById('goalMonth').value  = '';
   document.getElementById('goalYear').value   = '';
+  document.getElementById('goalNoTarget').checked = false;
+  _goalNoTargetToggle();
   document.getElementById('addGoalModal').classList.add('open');
   setTimeout(function() { document.getElementById('goalName').focus(); }, 100);
+}
+
+// Ongoing (no-target, e.g. ASNB) toggle — hide target/date fields when on.
+function _goalNoTargetToggle() {
+  var on = document.getElementById('goalNoTarget').checked;
+  document.getElementById('goalTargetWrap').style.display = on ? 'none' : '';
+  document.getElementById('goalDateWrap').style.display   = on ? 'none' : '';
 }
 
 function openEditGoal(id) {
@@ -9716,6 +9800,8 @@ function openEditGoal(id) {
   document.getElementById('goalSaveBtn').textContent    = 'Save Changes';
   document.getElementById('goalName').value   = g.name || '';
   document.getElementById('goalTarget').value = g.target || '';
+  document.getElementById('goalNoTarget').checked = !!g.noTarget;
+  _goalNoTargetToggle();
   if (g.deadline) {
     var p = g.deadline.split('-');
     document.getElementById('goalDay').value   = parseInt(p[2], 10);
@@ -9735,23 +9821,24 @@ function closeAddGoal() {
 
 function saveGoal() {
   var name   = (document.getElementById('goalName').value   || '').trim();
+  var noTgt  = document.getElementById('goalNoTarget').checked;
   var target = parseFloat(document.getElementById('goalTarget').value);
   var day    = parseInt(document.getElementById('goalDay').value, 10);
   var month  = parseInt(document.getElementById('goalMonth').value, 10);
   var year   = parseInt(document.getElementById('goalYear').value, 10);
   if (!name)            { showToast('Enter a goal name'); return; }
-  if (!target || target <= 0) { showToast('Enter a target amount'); return; }
+  if (!noTgt && (!target || target <= 0)) { showToast('Enter a target amount'); return; }
   var deadline = '';
-  if (day && month && year) {
+  if (!noTgt && day && month && year) {
     deadline = year + '-' + String(month).padStart(2,'0') + '-' + String(day).padStart(2,'0');
   }
   var goals = loadGoals();
   if (_editGoalId) {
     var idx = goals.findIndex(function(x) { return x.id === _editGoalId; });
-    if (idx !== -1) { goals[idx].name = name; goals[idx].target = target; goals[idx].deadline = deadline; }
+    if (idx !== -1) { goals[idx].name = name; goals[idx].noTarget = noTgt; goals[idx].target = noTgt ? 0 : target; goals[idx].deadline = deadline; }
     showToast('Goal updated');
   } else {
-    goals.push({ id: uid(), name: name, target: target, deadline: deadline, contributions: [] });
+    goals.push({ id: uid(), name: name, noTarget: noTgt, target: noTgt ? 0 : target, deadline: deadline, contributions: [] });
     showToast('Goal created: ' + name);
   }
   saveGoals(goals);
@@ -11968,6 +12055,146 @@ function renderBudget() {
   });
   el.innerHTML = html;
 }
+
+// ── Monthly Performance Report (printable / Save-as-PDF) ──
+function openMonthlyReport() {
+  var dd = document.getElementById('profileDropdown');
+  if (dd) dd.classList.remove('open');
+
+  // Gather this month's figures
+  var nett     = parseFloat(localStorage.getItem(salaryKey)) || 0;
+  var received = loadReceived().reduce(function(s, e) { return s + (parseFloat(e.amount) || 0); }, 0);
+  var otList   = []; try { otList = JSON.parse(localStorage.getItem(OT_KEY)) || []; } catch(e) {}
+  var otPay    = otList.reduce(function(s, e) { return s + (parseFloat(e.pay) || 0); }, 0);
+  var income   = nett + received;
+  var expenses = loadExpenses();
+  var expTotal = expenses.reduce(function(s, e) { return s + (parseFloat(e.amount) || 0); }, 0);
+  var commits  = loadCommitments();
+  var commitT  = commitTotal();
+  var cleared  = _getDueCleared();
+  var actuals  = _getDueActuals();
+  var paidList = commits.filter(function(c) { return cleared.indexOf(c.id) !== -1; });
+  var spending = expTotal + commitT;
+  var balance  = income - spending;
+  var budget   = loadBudget();
+  var spent    = {};
+  expenses.forEach(function(e) { spent[e.category] = (spent[e.category] || 0) + (parseFloat(e.amount) || 0); });
+  var debts    = loadDebts();
+  var debtRem  = debts.reduce(function(s, d) { return s + (parseFloat(d.remaining) || 0); }, 0);
+  var goals    = loadGoals();
+  var goalTotal= goals.reduce(function(s, g) { return s + goalSaved(g); }, 0);
+  var cni      = income > 0 ? (commitT / income) * 100 : 0;
+  var cb       = _cniBand(cni);
+
+  var profName = '';
+  try { var ps = getProfiles(); var p = ps && ps.find(function(x) { return x.id === activeProfileId; }); if (p && p.name) profName = p.name; } catch(e) {}
+  var monthLabel = ALL_MONTHS[currentMonthIdx] + ' ' + currentYear;
+  var genDate = new Date().toLocaleString('en-GB', { day:'numeric', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' });
+
+  var periodKey = periodYear + '_' + periodMonthIdx;
+  var otTypes   = (typeof getAllOtTypes === 'function') ? getAllOtTypes() : {};
+  var recList   = loadReceived();
+  function _byDateDesc(a, b) { return (b.date || '').localeCompare(a.date || ''); }
+
+  var budgetRows = Object.keys(CATEGORIES).filter(function(k) { return budget[k] > 0; }).map(function(k) {
+    var cat = CATEGORIES[k]; var lim = parseFloat(budget[k]) || 0; var sp = spent[k] || 0; var left = lim - sp;
+    var c = left < 0 ? '#dc2626' : ((sp / lim) >= 0.75 ? '#ca8a04' : '#16a34a');
+    return '<tr><td>' + escHtml(cat.label) + '</td><td class="num">' + fmt(lim) + '</td><td class="num">' + fmt(sp) + '</td><td class="num" style="color:' + c + ';font-weight:600;">' + (left < 0 ? '-' + fmt(Math.abs(left)) + ' over' : fmt(left)) + '</td></tr>';
+  }).join('');
+
+  var expRows = expenses.slice().sort(_byDateDesc).map(function(e) {
+    var cat = CATEGORIES[e.category] ? CATEGORIES[e.category].label : (e.category || '—');
+    return '<tr><td>' + escHtml(e.date || '') + '</td><td>' + escHtml(cat) + '</td><td>' + escHtml(e.description || '—') + '</td><td class="num">' + fmt(parseFloat(e.amount) || 0) + '</td></tr>';
+  }).join('');
+
+  var recRows = recList.slice().sort(_byDateDesc).map(function(e) {
+    return '<tr><td>' + escHtml(e.date || '') + '</td><td>' + escHtml(e.description || '—') + '</td><td class="num">' + fmt(parseFloat(e.amount) || 0) + '</td></tr>';
+  }).join('');
+
+  var otRows = otList.slice().sort(_byDateDesc).map(function(e) {
+    var t = otTypes[e.type] || { label: 'OT' };
+    return '<tr><td>' + escHtml(e.date || '') + '</td><td>' + escHtml(t.label || 'OT') + '</td><td class="num">' + (parseFloat(e.hours) || 0).toFixed(1) + '</td><td class="num">' + fmt(parseFloat(e.pay) || 0) + '</td></tr>';
+  }).join('');
+
+  var commitRows = commits.map(function(c) {
+    var paid  = cleared.indexOf(c.id) !== -1;
+    var base  = (c.variable && c.schedule && c.schedule[periodKey]) ? c.schedule[periodKey] : (parseFloat(c.amount) || 0);
+    var act   = actuals[c.id];
+    var shown = (paid && act !== undefined) ? act : base;
+    return '<tr><td>' + escHtml(c.name) + '</td><td class="num">' + (c.dueDay || '—') + '</td><td class="num">' + fmt(shown) + '</td><td>' + (paid ? '<span style="color:#16a34a;font-weight:600;">Paid</span>' : '<span style="color:#94a3b8;">Unpaid</span>') + '</td></tr>';
+  }).join('');
+
+  var debtRows = debts.map(function(d) {
+    var tot = parseFloat(d.total) || 0; var rem = parseFloat(d.remaining) || 0; var minP = parseFloat(d.minPay) || 0;
+    var clr = tot > 0 ? Math.max(0, Math.min(100, ((tot - rem) / tot) * 100)) : 0;
+    return '<tr><td>' + escHtml(d.name || 'Debt') + '</td><td class="num">' + fmt(tot) + '</td><td class="num">' + fmt(rem) + '</td><td class="num">' + (minP > 0 ? fmt(minP) : '—') + '</td><td class="num">' + clr.toFixed(0) + '%</td></tr>';
+  }).join('');
+
+  var goalRows = goals.map(function(g) {
+    var sv = goalSaved(g);
+    if (g.noTarget) return '<tr><td>' + escHtml(g.name) + '</td><td class="num">' + fmt(sv) + '</td><td class="num">Ongoing</td><td class="num">—</td><td>—</td></tr>';
+    var tg = parseFloat(g.target) || 0; var p = tg > 0 ? Math.min(100, (sv / tg) * 100) : 0;
+    return '<tr><td>' + escHtml(g.name) + '</td><td class="num">' + fmt(sv) + '</td><td class="num">' + fmt(tg) + '</td><td class="num">' + p.toFixed(0) + '%</td><td>' + escHtml(g.deadline || '—') + '</td></tr>';
+  }).join('');
+
+  var doc = '<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Monthly Report — ' + monthLabel + '</title><style>'
+    + '*{box-sizing:border-box;}'
+    + "body{font-family:'Inter',-apple-system,system-ui,sans-serif;color:#1e293b;background:#f1f5f9;margin:0;padding:24px;}"
+    + '.sheet{max-width:760px;margin:0 auto;background:#fff;border-radius:14px;padding:32px;box-shadow:0 4px 24px rgba(0,0,0,0.08);}'
+    + '.top{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:2px solid #e2e8f0;padding-bottom:16px;margin-bottom:20px;}'
+    + '.brand{font-size:18px;font-weight:800;color:#0f172a;}.brand span{color:#ef4444;}'
+    + '.sub{font-size:12px;color:#64748b;margin-top:2px;}'
+    + '.per{text-align:right;}.per .m{font-size:20px;font-weight:800;color:#0f172a;}.per .d{font-size:11px;color:#94a3b8;margin-top:2px;}'
+    + '.cards{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:8px;}'
+    + '.card{border:1px solid #e2e8f0;border-radius:10px;padding:12px;}'
+    + '.card .l{font-size:10px;text-transform:uppercase;letter-spacing:0.05em;color:#94a3b8;font-weight:700;}'
+    + '.card .v{font-size:17px;font-weight:800;margin-top:4px;}'
+    + 'h2{font-size:13px;text-transform:uppercase;letter-spacing:0.04em;color:#475569;border-bottom:1px solid #e2e8f0;padding-bottom:6px;margin:22px 0 10px;}'
+    + 'h3{font-size:11px;text-transform:uppercase;letter-spacing:0.04em;color:#64748b;font-weight:700;margin:14px 0 6px;}'
+    + '.kv{display:flex;justify-content:space-between;padding:5px 0;font-size:14px;border-bottom:1px solid #f1f5f9;}.kv .v{font-weight:600;}'
+    + '.tot{display:flex;justify-content:space-between;padding:8px 0 2px;font-size:15px;font-weight:800;}'
+    + 'table{width:100%;border-collapse:collapse;font-size:13px;}'
+    + 'th{text-align:left;color:#94a3b8;font-size:10px;text-transform:uppercase;letter-spacing:0.04em;border-bottom:1px solid #e2e8f0;padding:6px 4px;}'
+    + 'td{padding:6px 4px;border-bottom:1px solid #f1f5f9;}td.num{text-align:right;}'
+    + '.cni{display:flex;align-items:center;gap:14px;padding:12px;border-radius:10px;border:1px solid ' + cb.border + ';background:' + cb.bg + ';}'
+    + '.cni .p{font-size:26px;font-weight:800;color:' + cb.color + ';}.cni .b{font-size:13px;font-weight:700;color:' + cb.color + ';text-transform:uppercase;letter-spacing:0.04em;}.cni .x{font-size:12px;color:#64748b;}'
+    + '.foot{margin-top:24px;padding-top:12px;border-top:1px solid #e2e8f0;font-size:10px;color:#94a3b8;text-align:center;}'
+    + '.noprint{text-align:center;margin-bottom:16px;}.pbtn{background:#ef4444;color:#fff;border:none;border-radius:10px;padding:10px 22px;font-size:14px;font-weight:700;cursor:pointer;}'
+    + '@media print{body{background:#fff;padding:0;}.sheet{box-shadow:none;border-radius:0;max-width:100%;}.noprint{display:none!important;}}'
+    + '</style></head><body>'
+    + '<div class="noprint"><button class="pbtn" onclick="window.print()">&#128424; Save as PDF / Print</button></div>'
+    + '<div class="sheet">'
+    + '<div class="top"><div><div class="brand">Opmus<span>Digital</span> Tracker</div><div class="sub">Monthly Performance Report' + (profName ? ' &middot; ' + escHtml(profName) : '') + '</div></div>'
+    + '<div class="per"><div class="m">' + monthLabel + '</div><div class="d">Generated ' + genDate + '</div></div></div>'
+    + '<div class="cards">'
+    + '<div class="card"><div class="l">Total Income</div><div class="v" style="color:#16a34a;">' + fmt(income) + '</div></div>'
+    + '<div class="card"><div class="l">Total Spending</div><div class="v" style="color:#dc2626;">' + fmt(spending) + '</div></div>'
+    + '<div class="card"><div class="l">Net Balance</div><div class="v" style="color:' + (balance >= 0 ? '#16a34a' : '#dc2626') + ';">' + fmt(balance) + '</div></div>'
+    + '<div class="card"><div class="l">Total Savings</div><div class="v" style="color:#0ea5e9;">' + fmt(goalTotal) + '</div></div>'
+    + '</div>'
+    + '<h2>Income &middot; ' + fmt(income) + '</h2>'
+    + '<div class="kv"><span>Nett salary</span><span class="v">' + fmt(nett) + '</span></div>'
+    + (received > 0 ? '<div class="kv"><span>Money received</span><span class="v">' + fmt(received) + '</span></div>' : '')
+    + (otPay > 0 ? '<div class="kv"><span>Overtime (OT) earned</span><span class="v">' + fmt(otPay) + '</span></div>' : '')
+    + '<div class="tot"><span>Total income</span><span>' + fmt(income) + '</span></div>'
+    + (recRows ? '<h3>Money Received (' + recList.length + ')</h3><table><thead><tr><th>Date</th><th>Source</th><th class="num">Amount</th></tr></thead><tbody>' + recRows + '</tbody></table>' : '')
+    + (otRows ? '<h3>Overtime (' + otList.length + ' entr' + (otList.length === 1 ? 'y' : 'ies') + ')</h3><table><thead><tr><th>Date</th><th>Type</th><th class="num">Hours</th><th class="num">Pay</th></tr></thead><tbody>' + otRows + '</tbody></table>' : '')
+    + '<h2>Expenses &middot; ' + fmt(expTotal) + '</h2>'
+    + (expRows ? '<table><thead><tr><th>Date</th><th>Category</th><th>Description</th><th class="num">Amount</th></tr></thead><tbody>' + expRows + '</tbody></table>' : '<div class="kv"><span>No expenses logged this month.</span></div>')
+    + (budgetRows ? '<h3>Budget vs Spending</h3><table><thead><tr><th>Category</th><th class="num">Limit</th><th class="num">Spent</th><th class="num">Left</th></tr></thead><tbody>' + budgetRows + '</tbody></table>' : '')
+    + '<h2>Commitments &middot; ' + fmt(commitT) + (paidList.length ? ' &middot; ' + paidList.length + ' of ' + commits.length + ' paid' : '') + '</h2>'
+    + (commitRows ? '<table><thead><tr><th>Name</th><th class="num">Due day</th><th class="num">Amount</th><th>Status</th></tr></thead><tbody>' + commitRows + '</tbody></table>' : '<div class="kv"><span>No commitments set.</span></div>')
+    + (income > 0 ? '<h2>Commitment Health (CNI)</h2><div class="cni"><div class="p">' + cni.toFixed(1) + '%</div><div><div class="b">' + cb.label + '</div><div class="x">' + fmt(commitT) + ' of ' + fmt(income) + ' income locked in commitments</div></div></div>' : '')
+    + (debtRows ? '<h2>Debts &middot; ' + fmt(debtRem) + ' remaining</h2><table><thead><tr><th>Debt</th><th class="num">Total</th><th class="num">Remaining</th><th class="num">Min/mo</th><th class="num">Cleared</th></tr></thead><tbody>' + debtRows + '</tbody></table>' : '')
+    + (goalRows ? '<h2>Savings Goals &middot; ' + fmt(goalTotal) + ' saved</h2><table><thead><tr><th>Goal</th><th class="num">Saved</th><th class="num">Target</th><th class="num">Progress</th><th>Deadline</th></tr></thead><tbody>' + goalRows + '</tbody></table>' : '')
+    + '<div class="foot">Generated by OpmusDigital Financial Tracker &middot; ' + genDate + '<br>This is a personal summary, not an official financial statement.</div>'
+    + '</div></body></html>';
+
+  var w = window.open('', '_blank');
+  if (!w) { showToast('Allow pop-ups to generate the report.'); return; }
+  w.document.open(); w.document.write(doc); w.document.close();
+}
+
 function openBudgetSettings() {
   const budget = loadBudget();
   const inputStyle = 'flex:1;padding:0.4rem 0.6rem;border-radius:6px;border:1px solid #334155;background:#0f172a;color:#f1f5f9;font-size:0.9rem;';
@@ -12517,6 +12744,9 @@ function toggleProfileDropdown() {
     dd.style.top  = (r.bottom + 8) + 'px';
     dd.style.right = Math.max(8, window.innerWidth - r.right) + 'px';
     dd.style.left  = 'auto';
+    // Cap height to the space below the button so all items stay reachable
+    // (scrolls if the list is taller than the screen — fixes hidden items on phones).
+    dd.style.maxHeight = Math.max(220, window.innerHeight - r.bottom - 16) + 'px';
   }
   dd.classList.add('open');
 }
