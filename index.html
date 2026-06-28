@@ -1823,7 +1823,8 @@
     #profileOverlay {
       position: fixed; inset: 0; z-index: 9999;
       background: #06060a;
-      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
+      overflow-y: auto; padding: 1.5rem 1rem; box-sizing: border-box;
       font-family: 'Inter', system-ui, sans-serif;
     }
     #profileOverlay.hidden { display: none; }
@@ -1841,7 +1842,7 @@
       background-size: 30px 30px;
     }
     .prof-inner {
-      position: relative; z-index: 1;
+      position: relative; z-index: 1; margin: auto;
       display: flex; flex-direction: column; align-items: center; gap: 0;
       animation: profFadeUp 0.55s cubic-bezier(0.22,1,0.36,1) both;
     }
