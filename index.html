@@ -18,6 +18,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-functions-compat.js"></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
@@ -3474,6 +3475,7 @@
       <button class="seller-tab active" id="sellerTabGen" onclick="switchSellerTab('generate')"><i class="ph-bold ph-sparkle"></i> Generate</button>
       <button class="seller-tab" id="sellerTabHist" onclick="switchSellerTab('history')"><i class="ph-bold ph-list-bullets"></i> All Codes</button>
       <button class="seller-tab" id="sellerTabUsers" onclick="switchSellerTab('users')"><i class="ph-bold ph-users-three"></i> Users</button>
+      <button class="seller-tab" id="sellerTabCast" onclick="switchSellerTab('broadcast')"><i class="ph-bold ph-megaphone"></i> Broadcast</button>
     </div>
 
     <div id="sellerGenPane">
@@ -3537,6 +3539,34 @@
         <button class="seller-icon-btn seller-refresh-btn" onclick="loadSellerUsers()" title="Refresh"><i class="ph-bold ph-arrows-clockwise"></i></button>
       </div>
       <div id="sellerUsersList" class="seller-history-list"></div>
+    </div>
+
+    <div id="sellerCastPane" style="display:none;">
+      <div class="seller-action-card">
+        <div class="seller-action-head">
+          <div class="seller-action-icon"><i class="ph-fill ph-megaphone"></i></div>
+          <div class="seller-action-info">
+            <div class="seller-action-title">Broadcast Notification</div>
+            <div class="seller-action-desc">Push an announcement to your users. Reaches everyone (or a chosen segment) who turned notifications on.</div>
+          </div>
+        </div>
+        <label style="display:block;font-size:0.78rem;font-weight:600;color:#e2e8f0;margin-bottom:0.3rem;">Audience</label>
+        <select id="castAudience" class="form-input" style="margin-bottom:0.65rem;">
+          <option value="all">📣 All users</option>
+          <option value="trial">⏳ Trial users</option>
+          <option value="licensed">✅ Licensed users</option>
+          <option value="active">🆓 Free / active users</option>
+          <option value="inactive">💤 Inactive (14+ days)</option>
+          <option value="android">🤖 Android</option>
+          <option value="ios">🍎 iPhone / iPad</option>
+        </select>
+        <label style="display:block;font-size:0.78rem;font-weight:600;color:#e2e8f0;margin-bottom:0.3rem;">Title</label>
+        <input type="text" id="castTitle" class="form-input" maxlength="120" placeholder="e.g. New update available! 🎉" style="margin-bottom:0.65rem;" />
+        <label style="display:block;font-size:0.78rem;font-weight:600;color:#e2e8f0;margin-bottom:0.3rem;">Message</label>
+        <textarea id="castBody" class="form-input" maxlength="300" rows="3" placeholder="Write your announcement…" style="margin-bottom:0.65rem;resize:vertical;font-family:inherit;"></textarea>
+        <button class="seller-cta-btn" id="castSendBtn" onclick="sendBroadcast()"><i class="ph-bold ph-paper-plane-tilt"></i> Send Broadcast</button>
+      </div>
+      <div id="castResult"></div>
     </div>
     </div><!-- /sellerAuthedBody -->
   </div>
@@ -4141,6 +4171,17 @@
       <button class="modal-btn secondary" onclick="closeVarAmtModal()">Cancel</button>
       <button class="modal-btn primary" onclick="saveVarAmt()">Mark Paid</button>
     </div>
+  </div>
+</div>
+
+<!-- CNI Plan Modal -->
+<div class="modal-overlay" id="cniPlanModal">
+  <div class="modal" style="max-width:360px;">
+    <button class="modal-close" onclick="closeCniPlan()">✕</button>
+    <div class="modal-icon">📊</div>
+    <div class="modal-title">Commitment Health Plan</div>
+    <div id="cniPlanBody"></div>
+    <button class="modal-btn secondary" style="margin-top:0.9rem;" onclick="closeCniPlan()">Close</button>
   </div>
 </div>
 
@@ -8289,19 +8330,63 @@ function switchSellerTab(tab) {
   var gen   = document.getElementById("sellerGenPane");
   var hist  = document.getElementById("sellerHistPane");
   var users = document.getElementById("sellerUsersPane");
+  var cast  = document.getElementById("sellerCastPane");
   var tabGen   = document.getElementById("sellerTabGen");
   var tabHist  = document.getElementById("sellerTabHist");
   var tabUsers = document.getElementById("sellerTabUsers");
-  gen.style.display = "none"; hist.style.display = "none"; users.style.display = "none";
-  tabGen.classList.remove("active"); tabHist.classList.remove("active"); tabUsers.classList.remove("active");
+  var tabCast  = document.getElementById("sellerTabCast");
+  gen.style.display = "none"; hist.style.display = "none"; users.style.display = "none"; cast.style.display = "none";
+  tabGen.classList.remove("active"); tabHist.classList.remove("active"); tabUsers.classList.remove("active"); tabCast.classList.remove("active");
   if (tab === "history") {
     hist.style.display = ""; tabHist.classList.add("active");
     loadSellerHistory();
   } else if (tab === "users") {
     users.style.display = ""; tabUsers.classList.add("active");
     loadSellerUsers();
+  } else if (tab === "broadcast") {
+    cast.style.display = ""; tabCast.classList.add("active");
   } else {
     gen.style.display = ""; tabGen.classList.add("active");
+  }
+}
+
+// ── Admin Broadcast (push to all / segment) ──────────────
+async function sendBroadcast() {
+  var titleEl = document.getElementById("castTitle");
+  var bodyEl  = document.getElementById("castBody");
+  var audSel  = document.getElementById("castAudience");
+  var resEl   = document.getElementById("castResult");
+  var btn     = document.getElementById("castSendBtn");
+  var title = (titleEl.value || "").trim();
+  var body  = (bodyEl.value  || "").trim();
+  var audience = audSel.value || "all";
+  var audLabel = audSel.options[audSel.selectedIndex].textContent.trim();
+
+  function note(html, color) {
+    resEl.innerHTML = '<div style="margin-top:0.6rem;padding:0.6rem 0.8rem;border-radius:10px;font-size:0.8rem;border:1px solid ' + (color || 'rgba(255,255,255,0.1)') + ';color:#e2e8f0;">' + html + '</div>';
+  }
+
+  if (!title || !body) { note('⚠ Enter a title and a message.', 'rgba(239,68,68,0.4)'); return; }
+  if (typeof firebase === "undefined" || !firebase.functions) { note('⚠ Functions SDK not loaded — re-upload the latest index.html.', 'rgba(239,68,68,0.4)'); return; }
+  if (!confirm('Send this notification to "' + audLabel + '"?\n\n' + title + '\n' + body)) return;
+
+  btn.disabled = true;
+  var orig = btn.innerHTML;
+  btn.innerHTML = 'Sending…';
+  note('📡 Sending to ' + audLabel + '…');
+  try {
+    var fn = firebase.app().functions("asia-southeast1").httpsCallable("sendBroadcast");
+    var r  = await fn({ title: title, body: body, audience: audience });
+    var d  = r.data || {};
+    var msg = '✅ Delivered to <b>' + (d.sent || 0) + '</b> of ' + (d.total || 0) + ' device(s) — ' + audLabel + '.';
+    if (d.failed)  msg += '<br><span style="color:#94a3b8;">' + d.failed + ' failed' + (d.cleaned ? ', ' + d.cleaned + ' stale token(s) removed' : '') + '.</span>';
+    if (!d.total)  msg = 'ℹ No matching users have notifications enabled yet — nothing was sent.';
+    note(msg, 'rgba(34,197,94,0.4)');
+    titleEl.value = ""; bodyEl.value = "";
+  } catch (e) {
+    note('❌ Failed: ' + ((e && e.message) || 'Unknown error') + '<br><span style="color:#94a3b8;font-size:0.72rem;">Make sure you are signed in as admin.</span>', 'rgba(239,68,68,0.4)');
+  } finally {
+    btn.disabled = false; btn.innerHTML = orig;
   }
 }
 
@@ -9158,13 +9243,63 @@ function loadCommitments() { return JSON.parse(localStorage.getItem(COMMITMENTS_
 function saveCommitments(list) { localStorage.setItem(COMMITMENTS_KEY, JSON.stringify(list)); }
 
 function commitTotal() {
-  var periodKey = periodYear + '_' + periodMonthIdx;
   return loadCommitments().reduce(function(s, c) {
-    var amt = (c.variable && c.schedule && c.schedule[periodKey])
-      ? c.schedule[periodKey]
-      : (parseFloat(c.amount) || 0);
-    return s + amt;
+    return s + _commitAmountForMonth(c, periodYear, periodMonthIdx);
   }, 0);
+}
+
+// ── Smart amount for a (possibly variable) commitment in a given month ──
+// Priority: a pre-scheduled amount for that month → the actual amount already
+// recorded that month → for VARIABLE bills, the AVERAGE of past actual amounts
+// (e.g. electricity, ShopeePay Later) → the base/estimated amount.
+function _monthActual(id, year, monthIdx) {
+  try {
+    var m = JSON.parse(localStorage.getItem(profilePrefix + 'mft_due_actuals_' + year + '_' + monthIdx)) || {};
+    return (m[id] != null && m[id] !== '') ? (parseFloat(m[id]) || 0) : null;
+  } catch (e) { return null; }
+}
+function _pastActualAvg(id) {
+  var prefix = profilePrefix + 'mft_due_actuals_';
+  var vals = [];
+  for (var i = 0; i < localStorage.length; i++) {
+    var k = localStorage.key(i);
+    if (!k || k.indexOf(prefix) !== 0) continue;
+    try {
+      var m = JSON.parse(localStorage.getItem(k)) || {};
+      var v = parseFloat(m[id]);
+      if (!isNaN(v) && v > 0) vals.push(v);
+    } catch (e) {}
+  }
+  if (!vals.length) return null;
+  return vals.reduce(function(s, v) { return s + v; }, 0) / vals.length;
+}
+function _commitAmountForMonth(c, year, monthIdx) {
+  var pk = year + '_' + monthIdx;
+  // An explicit amount scheduled for that exact month always wins.
+  if (c.schedule && c.schedule[pk] != null && c.schedule[pk] !== '') return parseFloat(c.schedule[pk]) || 0;
+  if (c.variable) {
+    // The CURRENT pay cycle keeps the amount you set, so the live "Monthly Fixed"
+    // total stays stable and matches the dashboard. Only OTHER months estimate.
+    var isCurrent = (year === periodYear && monthIdx === periodMonthIdx);
+    if (!isCurrent) {
+      var act = _monthActual(c.id, year, monthIdx);   // actual recorded that month
+      if (act != null) return act;
+      var avg = _pastActualAvg(c.id);                 // else average of past actuals
+      if (avg != null) return avg;
+    }
+  }
+  return parseFloat(c.amount) || 0;                   // base / your estimate
+}
+// True if any variable bill in this month is still an estimate (no confirmed amount).
+function _monthHasEstimate(year, monthIdx) {
+  var pk = year + '_' + monthIdx;
+  return loadCommitments().some(function(c) {
+    if (c.debtId) return false;   // debts use the bills you entered, not estimates
+    if (!c.variable) return false;
+    if (c.schedule && c.schedule[pk] != null && c.schedule[pk] !== '') return false;
+    if (_monthActual(c.id, year, monthIdx) != null) return false;
+    return true;
+  });
 }
 
 // ── CNI: Commitment-to-Nett-Income health indicator ───────
@@ -9178,33 +9313,168 @@ function _cniBand(pct) {
   return              { label: "Very Good", color: "#16a34a", bg: "rgba(22,163,74,0.14)",  border: "rgba(22,163,74,0.40)" };  // ≤15
 }
 
+// A variable DEBT's bill for a month (e.g. ShopeePay Later BNPL) = the amount you
+// entered in its Monthly Bill Schedule, else 0 (no payment scheduled that month).
+// Fixed debts contribute their monthly payment every month.
+function _debtAmountForMonth(d, year, monthIdx) {
+  if (d.variable) {
+    if (!d.bills) return 0;
+    var label = ALL_MONTHS[monthIdx] + ' ' + year;        // e.g. "July 2026"
+    var bill = d.bills.find(function(b) { return b.month === label; });
+    return bill ? (parseFloat(bill.amount) || 0) : 0;
+  }
+  return parseFloat(d.minPay) || 0;
+}
+
+// Commitment total for a NON-current cycle: non-debt commitments (with their
+// per-month estimates) + each debt's bill for that month — so BNPL schedules
+// (ShopeePay Later) show the correct decreasing amount each cycle.
+function _commitTotalForMonth(year, monthIdx) {
+  var total = 0;
+  loadCommitments().forEach(function(c) {
+    if (c.debtId) return; // debts handled directly below (per-month bill schedule)
+    total += _commitAmountForMonth(c, year, monthIdx);
+  });
+  loadDebts().forEach(function(d) {
+    total += _debtAmountForMonth(d, year, monthIdx);
+  });
+  return total;
+}
+
+// Money received logged for a specific month (0 for future months / none logged).
+function _receivedForMonth(year, monthIdx) {
+  try {
+    var key = profilePrefix + 'mft_received_' + ALL_MONTHS[monthIdx].toLowerCase() + '_' + year;
+    var list = JSON.parse(localStorage.getItem(key)) || [];
+    return list.reduce(function(s, e) { return s + (parseFloat(e.amount) || 0); }, 0);
+  } catch (e) { return 0; }
+}
+
+// CNI month navigator — step through past / future months for planning.
+var _cniViewOffset = 0;
+function cniPrevMonth() { _cniViewOffset--; renderCommitments(); }
+function cniNextMonth() { _cniViewOffset++; renderCommitments(); }
+function cniThisMonth() { _cniViewOffset = 0;  renderCommitments(); }
+
+// Pay-cycle date range for a given month, e.g. "25 Jul – 24 Aug" (matches the
+// dashboard's period range, driven by your configured pay day).
+function _cycleRange(year, monthIdx) {
+  var endMi = (monthIdx + 1) % 12;
+  return _cfgDay + ' ' + ALL_MONTHS[monthIdx].slice(0, 3) + ' – ' + (_cfgDay - 1) + ' ' + ALL_MONTHS[endMi].slice(0, 3);
+}
+
+// Shared CNI data for the currently-viewed cycle (card + plan popup use this).
+function _cniViewData() {
+  var d  = new Date(periodYear, periodMonthIdx + _cniViewOffset, 1);
+  var y  = d.getFullYear(), mi = d.getMonth();
+  var isNow = (_cniViewOffset === 0);
+  var commit = isNow ? commitTotal() : _commitTotalForMonth(y, mi);
+  var income;
+  if (isNow) {
+    var curNett = parseFloat(localStorage.getItem(salaryKey)) || 0;
+    if (!(curNett > 0)) curNett = _calcNett(loadSalaryConfig());
+    income = curNett + _receivedForMonth(y, mi);
+  } else {
+    income = _basicNettIncome();
+  }
+  var pct = income > 0 ? (commit / income) * 100 : 0;
+  return { y: y, mi: mi, isNow: isNow, commit: commit, income: income, pct: pct, band: _cniBand(pct), label: ALL_MONTHS[mi] + ' ' + y };
+}
+
+var _CNI_TARGETS = [
+  { pct: 100, label: 'Break-even',    color: '#ef4444' },
+  { pct: 55,  label: 'Out of danger', color: '#f97316' },
+  { pct: 45,  label: 'Moderate',      color: '#eab308' },
+  { pct: 30,  label: 'Good',          color: '#84cc16' }
+];
+
+// Plan popup: income needed to reach each target band (or commitment to cut).
+function openCniPlan() {
+  var vd = _cniViewData();
+  if (vd.income <= 0) { showToast('Set your salary first to plan.'); return; }
+  var html = '';
+  html += '<div style="text-align:center;margin:0.2rem 0 1rem;">';
+  html += '<div style="font-size:0.64rem;color:#64748b;text-transform:uppercase;letter-spacing:0.06em;font-weight:700;">' + vd.label + (vd.isNow ? ' &middot; This cycle' : '') + '</div>';
+  html += '<div style="font-size:0.62rem;color:#475569;margin-top:1px;">' + _cycleRange(vd.y, vd.mi) + '</div>';
+  html += '<div style="font-size:2.2rem;font-weight:800;line-height:1.1;color:' + vd.band.color + ';margin-top:0.2rem;">' + vd.pct.toFixed(1) + '%</div>';
+  html += '<div style="font-size:0.8rem;font-weight:700;color:' + vd.band.color + ';">' + vd.band.label + '</div>';
+  html += '<div style="font-size:0.72rem;color:#94a3b8;margin-top:0.3rem;">' + fmt(vd.commit) + ' commitments &middot; ' + fmt(vd.income) + ' income</div>';
+  html += '</div>';
+  html += '<div style="font-size:0.6rem;text-transform:uppercase;letter-spacing:0.06em;color:#475569;font-weight:700;margin-bottom:0.45rem;">Income needed to reach…</div>';
+  _CNI_TARGETS.forEach(function(t) {
+    var needIncome = vd.commit / (t.pct / 100);
+    var met = vd.income >= needIncome - 0.005;
+    html += '<div style="display:flex;align-items:center;justify-content:space-between;padding:0.55rem 0.7rem;margin-bottom:0.4rem;border-radius:12px;border:1px solid ' + t.color + '33;background:' + t.color + '0d;">';
+    html += '<div><div style="font-size:0.9rem;font-weight:800;color:' + t.color + ';">' + t.pct + '%</div><div style="font-size:0.6rem;color:#64748b;font-weight:600;">' + t.label + '</div></div>';
+    html += met
+      ? '<div style="font-size:0.8rem;font-weight:800;color:#22c55e;">&#10003; Reached</div>'
+      : '<div style="text-align:right;"><div style="font-size:0.9rem;font-weight:800;color:#f1f5f9;">' + fmt(needIncome) + '</div><div style="font-size:0.62rem;color:#64748b;">need +' + fmt(needIncome - vd.income) + '</div></div>';
+    html += '</div>';
+  });
+  var cut = vd.commit - vd.income;
+  html += cut > 0
+    ? '<div style="margin-top:0.6rem;padding:0.6rem 0.75rem;border-radius:12px;background:rgba(56,189,248,0.08);border:1px solid rgba(56,189,248,0.25);font-size:0.72rem;color:#bae6fd;line-height:1.5;">&#128161; Or <b>cut commitments by ' + fmt(cut) + '</b> to break even at your current income.</div>'
+    : '<div style="margin-top:0.6rem;padding:0.6rem 0.75rem;border-radius:12px;background:rgba(34,197,94,0.08);border:1px solid rgba(34,197,94,0.25);font-size:0.72rem;color:#86efac;line-height:1.5;">&#10003; Your income already covers your commitments this cycle.</div>';
+  document.getElementById('cniPlanBody').innerHTML = html;
+  document.getElementById('cniPlanModal').classList.add('open');
+}
+function closeCniPlan() { document.getElementById('cniPlanModal').classList.remove('open'); }
+
+// Basic nett income = Est. basic pay (mft_est_gross) − deductions + allowances,
+// matching the Est. Income card's "nettBase". Used for non-current cycles where
+// the real nett (OT / extra) isn't known yet.
+function _basicNettIncome() {
+  var estGross = parseFloat(localStorage.getItem(EST_GROSS_KEY)) || 0;
+  var cfg      = loadSalaryConfig();
+  var dedNet   = cfg.gross > 0 ? (cfg.gross - _calcNett(cfg)) : 0; // deductions − allowances (RM)
+  var nett     = estGross - dedNet;
+  if (nett > 0) return nett;
+  var cfgNett = _calcNett(cfg);
+  if (cfgNett > 0) return cfgNett;
+  return parseFloat(localStorage.getItem(salaryKey)) || 0;
+}
+
 function _cniIndicatorHtml() {
-  var commit   = commitTotal();
-  var nett     = parseFloat(localStorage.getItem(salaryKey)) || 0;
-  var received = loadReceived().reduce(function(s, e) { return s + (parseFloat(e.amount) || 0); }, 0);
-  var income   = nett + received;
-  var wrap = 'margin:0.5rem 0.85rem 0.25rem;';
+  var vd = _cniViewData();
+  var y = vd.y, mi = vd.mi, isNow = vd.isNow, commit = vd.commit, income = vd.income;
+  var wrap  = 'margin:0.5rem 0.85rem 0.25rem;';
+
+  // ‹ Month Year › navigator
+  var btn = 'background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);color:#cbd5e1;border-radius:8px;width:30px;height:26px;cursor:pointer;font-size:0.95rem;line-height:1;flex-shrink:0;';
+  var nav = '<div style="display:flex;align-items:center;justify-content:space-between;gap:0.4rem;margin-bottom:0.45rem;">'
+    + '<button onclick="cniPrevMonth()" title="Previous month" style="' + btn + '">&#8249;</button>'
+    + '<div style="text-align:center;line-height:1.25;">'
+    +   '<div style="font-size:0.78rem;font-weight:700;color:#e2e8f0;">' + ALL_MONTHS[mi] + ' ' + y + '</div>'
+    +   '<div style="font-size:0.54rem;color:#64748b;">' + _cycleRange(y, mi)
+    +     (isNow ? '' : ' &middot; <span onclick="cniThisMonth()" style="color:#38bdf8;cursor:pointer;">&#8634; today</span>')
+    +   '</div>'
+    + '</div>'
+    + '<button onclick="cniNextMonth()" title="Next month" style="' + btn + '">&#8250;</button>'
+    + '</div>';
 
   if (income <= 0) {
-    return '<div style="' + wrap + 'font-size:0.62rem;color:#64748b;">Set your salary to see <span style="color:#94a3b8;">Commitment Health</span>.</div>';
+    return '<div style="' + wrap + '">' + nav + '<div style="font-size:0.62rem;color:#64748b;text-align:center;">Set your salary to see <span style="color:#94a3b8;">Commitment Health</span>.</div></div>';
   }
 
   var pct  = (commit / income) * 100;
   var band = _cniBand(pct);
-  var SCALE_MAX = 70;                 // 0%–70% scale (55%+ all reads as Dangerous)
-  var ptr  = Math.max(0, Math.min(100, (Math.min(pct, SCALE_MAX) / SCALE_MAX) * 100));
+  var ptr  = Math.max(0, Math.min(100, (Math.min(pct, 70) / 70) * 100));
   var tip  = 'CNI = Commitments ' + fmt(commit) + ' / income ' + fmt(income) + ' x 100. Lower is healthier.';
 
   var h = '<div style="' + wrap + '" title="' + tip + '">';
-  // Slim caption: label (left) + percentage · band (right, in band colour)
+  h += nav;
   h += '<div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:0.32rem;">';
   h += '<span style="font-size:0.63rem;font-weight:600;color:#94a3b8;letter-spacing:0.01em;">Commitment Health</span>';
   h += '<span style="font-size:0.67rem;font-weight:700;color:' + band.color + ';">' + pct.toFixed(1) + '% &middot; ' + band.label + '</span>';
   h += '</div>';
-  // Thin gradient spectrum with a sliding marker
   h += '<div style="position:relative;height:6px;border-radius:4px;background:linear-gradient(90deg,#16a34a 0%,#84cc16 21%,#eab308 43%,#f97316 64%,#ef4444 79%);">';
   h += '<div style="position:absolute;top:-2px;bottom:-2px;left:' + ptr.toFixed(1) + '%;width:3px;transform:translateX(-50%);background:#fff;border-radius:2px;box-shadow:0 0 3px rgba(0,0,0,0.55);transition:left 0.35s;"></div>';
   h += '</div>';
+  h += '<div style="display:flex;justify-content:flex-end;margin-top:0.3rem;"><span style="font-size:0.58rem;color:#64748b;">' + fmt(commit) + ' of ' + fmt(income) + ((!isNow && _monthHasEstimate(y, mi)) ? ' &middot; est.' : '') + '</span></div>';
+
+  // Tap to open the planning popup (income needed to reach each target).
+  h += '<div onclick="openCniPlan()" style="margin-top:0.4rem;padding-top:0.35rem;border-top:1px dashed rgba(255,255,255,0.08);cursor:pointer;text-align:center;font-size:0.6rem;font-weight:700;color:#38bdf8;">&#128202; How to reach a target &rsaquo;</div>';
+
   h += '</div>';
   return h;
 }
@@ -9260,7 +9530,7 @@ function renderCommitments() {
     html += '</div>';
     html += '</div>';
 
-    // CNI health indicator (commitment-to-income)
+    // CNI health indicator with month navigator (past / future planning)
     html += _cniIndicatorHtml();
 
     if (count === 0) {
@@ -9275,7 +9545,7 @@ function renderCommitments() {
           html += '<div style="display:flex;align-items:center;gap:0.4rem;padding:0.3rem 0.5rem;">';
           html += '<span style="font-size:0.68rem;font-weight:700;color:' + debtColor + ';background:rgba(244,114,182,0.12);border:1px solid rgba(244,114,182,0.25);border-radius:4px;padding:1px 5px;flex-shrink:0;">💳 Debt</span>';
           html += '<span class="commit-name" style="flex:1;">' + escHtml(c.name) + '</span>';
-          html += '<span class="commit-amt">−' + fmt(parseFloat(c.amount)) + '/mo</span>';
+          html += '<span class="commit-amt">' + (c.variable ? '~' : '−') + fmt(c.variable ? _commitAmountForMonth(c, periodYear, periodMonthIdx) : parseFloat(c.amount)) + '/mo</span>';
           html += '<button class="goal-action-btn" onclick="openEditDebt(\'' + c.debtId + '\')" title="View in Debt Tracker" style="color:#f472b6;">↗</button>';
           html += '</div>';
           var debt = loadDebts().find(function(d) { return d.id === c.debtId; });
@@ -9298,7 +9568,7 @@ function renderCommitments() {
         } else {
           var varBadge = c.variable ? '<span style="font-size:0.6rem;font-weight:700;color:#f97316;background:rgba(249,115,22,0.1);border:1px solid rgba(249,115,22,0.25);border-radius:3px;padding:0 4px;margin-left:0.3rem;vertical-align:middle;">~var</span>' : '';
           html += '<span class="commit-name">' + escHtml(c.name) + varBadge + '</span>';
-          html += '<span class="commit-amt">' + (c.variable ? '~' : '−') + fmt(parseFloat(c.amount)) + '<span style="font-size:0.7rem;font-weight:400;">/mo</span></span>';
+          html += '<span class="commit-amt">' + (c.variable ? '~' : '−') + fmt(c.variable ? _commitAmountForMonth(c, periodYear, periodMonthIdx) : parseFloat(c.amount)) + '<span style="font-size:0.7rem;font-weight:400;">/mo</span></span>';
           html += '<button class="goal-action-btn" onclick="openEditCommitment(\'' + c.id + '\')" title="Edit">✏</button>';
           html += '<button class="goal-action-btn goal-action-del" onclick="deleteCommitment(\'' + c.id + '\')" title="Delete">🗑</button>';
         }
@@ -9316,8 +9586,7 @@ function renderCommitments() {
 
     // Amount totals
     var totalToPay = sortedList.reduce(function(s, c) {
-      var sched = c.variable && c.schedule && c.schedule[periodKey] ? c.schedule[periodKey] : null;
-      return s + (sched !== null ? sched : (parseFloat(c.amount) || 0));
+      return s + _commitAmountForMonth(c, periodYear, periodMonthIdx);
     }, 0);
     var paidAmt = paid.reduce(function(s, c) {
       var actual = actuals[c.id];
@@ -9363,7 +9632,7 @@ function renderCommitments() {
         unpaid.forEach(function(c) {
           var dayLabel  = c.dueDay ? '<span style="font-size:0.65rem;color:#475569;margin-left:0.3rem;">day ' + c.dueDay + '</span>' : '';
           var scheduled = c.variable && c.schedule && c.schedule[periodKey] ? c.schedule[periodKey] : null;
-          var dispAmt   = c.variable ? (scheduled || parseFloat(c.amount)) : parseFloat(c.amount);
+          var dispAmt   = c.variable ? _commitAmountForMonth(c, periodYear, periodMonthIdx) : parseFloat(c.amount);
           var amtLabel  = c.variable ? (scheduled ? '−' : '~') : '−';
           var varLabel  = c.variable ? (scheduled ? '<span style="font-size:0.6rem;color:#22c55e;margin-left:0.3rem;">scheduled</span>' : '<span style="font-size:0.6rem;color:#f97316;margin-left:0.3rem;">~est.</span>') : '';
           html += '<div class="pay-tracker-row">';
@@ -11548,10 +11817,13 @@ function openVarAmtPrompt(id) {
   _varAmtTarget = id;
   var periodKey   = periodYear + '_' + periodMonthIdx;
   var scheduled   = c.schedule && c.schedule[periodKey] ? c.schedule[periodKey] : null;
-  var displayEst  = scheduled ? fmt(scheduled) + ' (scheduled)' : 'Est. ' + fmt(parseFloat(c.amount));
+  var avg         = _pastActualAvg(c.id);
+  var displayEst  = scheduled
+    ? fmt(scheduled) + ' (scheduled)'
+    : (avg != null ? fmt(avg) + ' (avg of past)' : 'Est. ' + fmt(parseFloat(c.amount)));
   document.getElementById('varAmtModalTitle').textContent = c.name;
   document.getElementById('varAmtModalEst').textContent   = displayEst;
-  document.getElementById('varAmtInp').value = scheduled ? scheduled : '';
+  document.getElementById('varAmtInp').value = scheduled ? scheduled : (avg != null ? avg.toFixed(2) : '');
   document.getElementById('varAmtModal').classList.add('open');
   setTimeout(function() { document.getElementById('varAmtInp').focus(); }, 80);
 }
@@ -11817,6 +12089,7 @@ function checkReminders() {
 // VAPID key isn't set or cloud sync isn't connected.
 var _fcmToken = null;
 var _pushSwReg = null;
+var _fcmFgBound = false;
 
 function _parseYmd(s) {
   var p = (s || "").split("-");
@@ -11930,6 +12203,21 @@ async function enablePushNotifications() {
       vapidKey: FCM_VAPID_KEY,
       serviceWorkerRegistration: _pushSwReg
     });
+    // Show pushes even when the app is open & focused (foreground messages
+    // aren't auto-displayed by the browser otherwise). Bind once.
+    if (!_fcmFgBound) {
+      _fcmFgBound = true;
+      try {
+        firebase.messaging().onMessage(function(payload) {
+          var n = (payload && payload.notification) || {};
+          var title = n.title || "OpmusDigital";
+          var body  = n.body || "";
+          navigator.serviceWorker.ready.then(function(reg) {
+            reg.showNotification(title, { body: body, icon: "apple-touch-icon.png" });
+          }).catch(function() { try { showToast(title + " — " + body); } catch(e) {} });
+        });
+      } catch (e) {}
+    }
     if (_fcmToken) _syncPushSubscription();
   } catch (e) {
     console.warn("Push enable failed:", e && e.message);
@@ -12136,7 +12424,7 @@ function openMonthlyReport() {
 
   var commitRows = commits.map(function(c) {
     var paid  = cleared.indexOf(c.id) !== -1;
-    var base  = (c.variable && c.schedule && c.schedule[periodKey]) ? c.schedule[periodKey] : (parseFloat(c.amount) || 0);
+    var base  = _commitAmountForMonth(c, periodYear, periodMonthIdx);
     var act   = actuals[c.id];
     var shown = (paid && act !== undefined) ? act : base;
     return '<tr><td>' + escHtml(c.name) + '</td><td class="num">' + (c.dueDay || '—') + '</td><td class="num">' + fmt(shown) + '</td><td>' + (paid ? '<span style="color:#16a34a;font-weight:600;">Paid</span>' : '<span style="color:#94a3b8;">Unpaid</span>') + '</td></tr>';
