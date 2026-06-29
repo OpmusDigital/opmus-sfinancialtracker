@@ -3648,6 +3648,21 @@
     </div>
   </div>
 
+  <!-- Momentum / wins strip -->
+  <style>
+  .momentum-strip { display: flex; gap: 0.5rem; overflow-x: auto; -webkit-overflow-scrolling: touch; padding: 0 1rem 0.65rem; }
+  .momentum-strip:empty { display: none; }
+  .momentum-strip::-webkit-scrollbar { height: 0; }
+  .mo-chip { flex: 0 0 auto; display: flex; align-items: center; gap: 0.55rem; padding: 0.5rem 0.8rem; border-radius: 13px; background: rgba(255,255,255,0.035); border: 1px solid rgba(255,255,255,0.07); }
+  .mo-chip-ico { font-size: 1.15rem; line-height: 1; flex-shrink: 0; }
+  .mo-chip-label { font-size: 0.55rem; text-transform: uppercase; letter-spacing: 0.05em; color: #64748b; font-weight: 700; }
+  .mo-chip-val { font-size: 0.85rem; font-weight: 800; line-height: 1.15; margin-top: 1px; }
+  .sample-banner { display: none; align-items: center; justify-content: space-between; gap: 0.5rem; margin: 0.4rem 1rem 0; padding: 0.5rem 0.8rem; border-radius: 11px; background: rgba(56,189,248,0.1); border: 1px solid rgba(56,189,248,0.3); font-size: 0.74rem; color: #bae6fd; }
+  .sample-banner button { background: rgba(56,189,248,0.2); border: 1px solid rgba(56,189,248,0.4); color: #e0f2fe; border-radius: 8px; padding: 0.32rem 0.62rem; font-size: 0.7rem; font-weight: 700; cursor: pointer; font-family: inherit; flex-shrink: 0; }
+  </style>
+  <div class="sample-banner" id="sampleBanner"><span>🎈 You're exploring with <b>sample data</b></span><button onclick="clearSampleData()">Clear &amp; start fresh</button></div>
+  <div class="momentum-strip" id="momentumStrip"></div>
+
   <!-- Mobile panel tabs (inside app-body so they're visible over the fixed overlay) -->
   <div class="mpanel-tabs" id="mpanelTabs">
     <div class="mpanel-tab-grp active" data-mpanel="expenses">
@@ -4183,6 +4198,25 @@
     <div id="cniPlanBody"></div>
     <button class="modal-btn secondary" style="margin-top:0.9rem;" onclick="closeCniPlan()">Close</button>
   </div>
+</div>
+
+<!-- Monthly Report (in-app overlay — printable, mobile-safe) -->
+<style>
+.report-overlay { position: fixed; inset: 0; z-index: 11000; background: #0b1220; display: none; flex-direction: column; }
+.report-topbar { flex-shrink: 0; display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; padding: calc(0.6rem + env(safe-area-inset-top,0px)) 0.85rem 0.6rem; background: #0b1220; border-bottom: 1px solid rgba(255,255,255,0.1); }
+.report-topbar button { font-family: inherit; border-radius: 9px; padding: 0.5rem 0.95rem; font-size: 0.82rem; font-weight: 700; cursor: pointer; }
+.report-back { background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.16); color: #e2e8f0; }
+.report-print { background: linear-gradient(135deg,#38bdf8,#0ea5e9); border: none; color: #04293b; }
+.report-topbar-title { font-size: 0.8rem; font-weight: 700; color: #94a3b8; }
+.report-frame { flex: 1; width: 100%; border: none; background: #f1f5f9; }
+</style>
+<div id="reportOverlay" class="report-overlay">
+  <div class="report-topbar">
+    <button class="report-back" onclick="closeMonthlyReport()">‹ Back</button>
+    <span class="report-topbar-title">Monthly Report</span>
+    <button class="report-print" onclick="printMonthlyReport()">🖨 Save as PDF</button>
+  </div>
+  <iframe id="reportFrame" class="report-frame"></iframe>
 </div>
 
 <!-- Add / Edit Goal Modal -->
@@ -6863,7 +6897,91 @@ function renderDashboard() {
 
   // Refresh the Commitments panel so the CNI indicator reflects income changes.
   // (renderCommitments never calls renderDashboard, so this can't recurse.)
-  try { renderCommitments(); } catch (e) {}
+  try { renderCommitments();   } catch (e) {}
+  try { renderMomentum();      } catch (e) {}
+  try { _renderSampleBanner(); } catch (e) {}
+}
+
+// ── Momentum / wins strip — motivating "you're making progress" chips ──
+// Months until a debt is cleared, projected from the current cycle.
+function _debtPayoffOffset(d) {
+  var rem = parseFloat(d.remaining) || 0;
+  if (rem <= 0) return 0;
+  if (d.variable) {
+    var maxOff = 0, found = false;
+    (d.bills || []).forEach(function(b) {
+      if (b.paid || !(parseFloat(b.amount) > 0)) return;
+      var parts = (b.month || '').split(' ');
+      if (parts.length !== 2) return;
+      var mi = ALL_MONTHS.indexOf(parts[0]);
+      var yr = parseInt(parts[1], 10);
+      if (mi < 0 || isNaN(yr)) return;
+      var off = (yr - periodYear) * 12 + (mi - periodMonthIdx);
+      if (off < 0) off = 0;
+      if (off > maxOff) maxOff = off;
+      found = true;
+    });
+    return found ? maxOff : null;
+  }
+  var minPay = parseFloat(d.minPay) || 0;
+  if (minPay <= 0) return null;
+  return Math.max(0, Math.ceil(rem / minPay) - 1);
+}
+
+function _moChip(icon, color, label, value) {
+  return '<div class="mo-chip"><div class="mo-chip-ico" style="color:' + color + ';">' + icon + '</div>'
+    + '<div><div class="mo-chip-label">' + label + '</div>'
+    + '<div class="mo-chip-val" style="color:' + color + ';">' + value + '</div></div></div>';
+}
+
+function renderMomentum() {
+  var el = document.getElementById('momentumStrip');
+  if (!el) return;
+  var chips = '';
+
+  // 1) Commitment health (current cycle)
+  var curNett = parseFloat(localStorage.getItem(salaryKey)) || 0;
+  if (!(curNett > 0)) curNett = _calcNett(loadSalaryConfig());
+  var curIncome = curNett + loadReceived().reduce(function(s, e) { return s + (parseFloat(e.amount) || 0); }, 0);
+  var curCommit = commitTotal();
+  if (curIncome > 0 && curCommit > 0) {
+    var cni = curCommit / curIncome * 100;
+    var b = _cniBand(cni);
+    chips += _moChip('📊', b.color, 'Commitment health', b.label + ' · ' + cni.toFixed(0) + '%');
+  }
+
+  // 2) Debt-free countdown
+  var debts = loadDebts();
+  if (debts.length) {
+    var totalRem = debts.reduce(function(s, d) { return s + (parseFloat(d.remaining) || 0); }, 0);
+    if (totalRem <= 0) {
+      chips += _moChip('🎉', '#22c55e', 'Debts', 'All clear!');
+    } else {
+      var maxOff = null;
+      debts.forEach(function(d) {
+        var off = _debtPayoffOffset(d);
+        if (off === null) return;
+        if (maxOff === null || off > maxOff) maxOff = off;
+      });
+      if (maxOff !== null && maxOff <= 120) {
+        var dd = new Date(periodYear, periodMonthIdx + maxOff, 1);
+        chips += _moChip('🎯', '#38bdf8', 'Debt-free by', ALL_MONTHS[dd.getMonth()].slice(0, 3) + ' ' + dd.getFullYear());
+      } else {
+        chips += _moChip('💳', '#f472b6', 'Debt left', fmt(totalRem));
+      }
+    }
+  }
+
+  // 3) Total saved
+  var saved = loadGoals().reduce(function(s, g) { return s + goalSaved(g); }, 0);
+  if (saved > 0) chips += _moChip('💰', '#0ea5e9', 'Total saved', fmt(saved));
+
+  // 4) New-user nudge when there's nothing to celebrate yet
+  if (!chips && activeProfileId) {
+    chips = _moChip('👋', '#94a3b8', 'Getting started', 'Add salary & a bill');
+  }
+
+  el.innerHTML = chips;
 }
 
 // ═══════════════════════════════════════════════════
@@ -9323,7 +9441,19 @@ function _debtAmountForMonth(d, year, monthIdx) {
     var bill = d.bills.find(function(b) { return b.month === label; });
     return bill ? (parseFloat(bill.amount) || 0) : 0;
   }
-  return parseFloat(d.minPay) || 0;
+  // Fixed debt: pay minPay each cycle until the remaining balance is cleared,
+  // then it drops off automatically (no commitment after payoff). The final
+  // payment is the leftover balance (which may be smaller than minPay).
+  var minPay = parseFloat(d.minPay) || 0;
+  var rem    = parseFloat(d.remaining) || 0;
+  if (minPay <= 0 || rem <= 0) return 0;
+  var offset = (year - periodYear) * 12 + (monthIdx - periodMonthIdx);
+  // If this cycle's payment is already marked paid, the balance is post-current,
+  // so future cycles are one step further along.
+  var currentPaid    = _getDueCleared().indexOf('debt_' + d.id) !== -1;
+  var paymentsBefore = Math.max(0, currentPaid ? (offset - 1) : offset);
+  var balBefore      = rem - minPay * paymentsBefore;
+  return Math.max(0, Math.min(minPay, balBefore));
 }
 
 // Commitment total for a NON-current cycle: non-debt commitments (with their
@@ -12185,6 +12315,14 @@ function _buildPushSchedule() {
     }
   }
 
+  // 5) Weekly check-in — a gentle Sunday nudge to build the review habit.
+  var sun = new Date(today);
+  sun.setDate(sun.getDate() + ((7 - sun.getDay()) % 7)); // next Sunday (0 = Sunday)
+  for (var w = 0; w < 8; w++) {
+    var ci = new Date(sun); ci.setDate(ci.getDate() + w * 7);
+    add(ci, "weekly-checkin", "📊 Weekly money check-in", "Open the app to see how your spending went this week.");
+  }
+
   return sched;
 }
 
@@ -12468,7 +12606,6 @@ function openMonthlyReport() {
     + '.noprint{text-align:center;margin-bottom:16px;}.pbtn{background:#ef4444;color:#fff;border:none;border-radius:10px;padding:10px 22px;font-size:14px;font-weight:700;cursor:pointer;}'
     + '@media print{body{background:#fff;padding:0;}.sheet{box-shadow:none;border-radius:0;max-width:100%;}.noprint{display:none!important;}}'
     + '</style></head><body>'
-    + '<div class="noprint"><button class="pbtn" onclick="window.print()">&#128424; Save as PDF / Print</button></div>'
     + '<div class="sheet">'
     + '<div class="top"><div><div class="brand">Opmus<span>Digital</span> Tracker</div><div class="sub">Monthly Performance Report' + (profName ? ' &middot; ' + escHtml(profName) : '') + '</div></div>'
     + '<div class="per"><div class="m">' + monthLabel + '</div><div class="d">Generated ' + genDate + '</div></div></div>'
@@ -12496,9 +12633,19 @@ function openMonthlyReport() {
     + '<div class="foot">Generated by OpmusDigital Financial Tracker &middot; ' + genDate + '<br>This is a personal summary, not an official financial statement.</div>'
     + '</div></body></html>';
 
-  var w = window.open('', '_blank');
-  if (!w) { showToast('Allow pop-ups to generate the report.'); return; }
-  w.document.open(); w.document.write(doc); w.document.close();
+  document.getElementById('reportOverlay').style.display = 'flex';
+  var frame = document.getElementById('reportFrame');
+  var fdoc  = frame.contentWindow.document;
+  fdoc.open(); fdoc.write(doc); fdoc.close();
+}
+
+function closeMonthlyReport() {
+  document.getElementById('reportOverlay').style.display = 'none';
+}
+function printMonthlyReport() {
+  var frame = document.getElementById('reportFrame');
+  try { frame.contentWindow.focus(); frame.contentWindow.print(); }
+  catch (e) { window.print(); }
 }
 
 function openBudgetSettings() {
@@ -13697,6 +13844,77 @@ function _closeOnboarding() {
   if (!localStorage.getItem(APPS_HINT_KEY)) setTimeout(showAppsHint, 500);
 }
 
+// ── Sample data — let a new buyer see a fully-used app instantly ──
+function _profileHasFinData() {
+  try {
+    if (loadCommitments().length || loadDebts().length || loadExpenses().length || loadGoals().length) return true;
+    if ((parseFloat(localStorage.getItem(salaryKey)) || 0) > 0) return true;
+  } catch (e) {}
+  return false;
+}
+
+function loadSampleData() {
+  if (!activeProfileId) return;
+  if (_profileHasFinData() && !confirm('Add sample data on top of what you already have? (You can clear it afterwards.)')) return;
+
+  var t = new Date();
+  function dstr(daysAgo) { var d = new Date(t); d.setDate(d.getDate() - daysAgo); return String(d.getDate()).padStart(2, '0') + '/' + String(d.getMonth() + 1).padStart(2, '0') + '/' + d.getFullYear(); }
+
+  localStorage.setItem(SALARY_CONFIG_KEY, JSON.stringify({ gross: 3000,
+    deductions: [{ id: uid(), name: 'EPF', type: 'pct', value: 11 }, { id: uid(), name: 'SOCSO', type: 'fixed', value: 24.75 }],
+    allowances: [{ id: uid(), name: 'Transport', type: 'fixed', value: 150 }] }));
+  localStorage.setItem(SALARY_CFG_KEY, JSON.stringify({ day: 25, weekend: 'friday' }));
+  localStorage.setItem(salaryKey, '2795.25');
+  localStorage.setItem(EST_GROSS_KEY, '3000');
+
+  saveCommitments([
+    { id: uid(), name: 'House Rent', amount: 750, dueDay: 1 },
+    { id: uid(), name: 'Internet (Unifi)', amount: 139, dueDay: 5 },
+    { id: uid(), name: 'Electricity (TNB)', amount: 120, dueDay: 12, variable: true }
+  ]);
+
+  var bills = [], amts = [180, 150, 130, 110];
+  for (var i = 0; i < amts.length; i++) { var bd = new Date(t.getFullYear(), t.getMonth() + i, 1); bills.push({ id: uid(), month: ALL_MONTHS[bd.getMonth()] + ' ' + bd.getFullYear(), amount: amts[i], paid: false }); }
+  saveDebts([
+    { id: uid(), color: '#f472b6', name: 'ShopeePay Later', total: 800, remaining: 570, minPay: 0, dueDay: 9, variable: true, bills: bills },
+    { id: uid(), color: '#f59e0b', name: 'PTPTN Loan', total: 12000, remaining: 4800, minPay: 200, dueDay: 15, variable: false, bills: [] }
+  ]);
+  try { syncDebtCommitments(); } catch (e) {}
+
+  saveExpenses([
+    { id: uid(), date: dstr(0), description: 'Lunch — Nasi Lemak', amount: 8.50, category: 'food' },
+    { id: uid(), date: dstr(0), description: 'Grab to office', amount: 12.00, category: 'transport' },
+    { id: uid(), date: dstr(1), description: 'Groceries', amount: 86.30, category: 'food' },
+    { id: uid(), date: dstr(2), description: 'Netflix', amount: 17.00, category: 'entertainment' },
+    { id: uid(), date: dstr(3), description: 'Petrol', amount: 50.00, category: 'transport' },
+    { id: uid(), date: dstr(5), description: 'Pharmacy', amount: 23.40, category: 'health' },
+    { id: uid(), date: dstr(6), description: 'Shopee order', amount: 64.90, category: 'shopping' }
+  ]);
+
+  localStorage.setItem(BUDGET_KEY, JSON.stringify({ food: 600, transport: 250, entertainment: 150, shopping: 200, health: 100 }));
+  saveGoals([{ id: uid(), name: 'Emergency Fund', target: 5000, deadline: '', contributions: [{ id: uid(), amount: 1200, date: dstr(20), note: 'Starter' }] }]);
+
+  _lsSet('opmus_sample_active', '1');
+  try { _closeOnboarding(); } catch (e) {}
+  showToast('Sample data loaded — explore!');
+  setTimeout(function() { location.reload(); }, 400);
+}
+
+function clearSampleData() {
+  if (!confirm('Clear the sample data and start fresh? This removes the demo entries.')) return;
+  saveCommitments([]); saveDebts([]); saveExpenses([]); saveGoals([]);
+  [BUDGET_KEY, salaryKey, SALARY_CONFIG_KEY, SALARY_CFG_KEY, EST_GROSS_KEY, RECEIVED_KEY].forEach(function(k) { localStorage.removeItem(k); });
+  _lsRemove('opmus_sample_active');
+  try { syncDebtCommitments(); } catch (e) {}
+  showToast('Cleared — starting fresh');
+  setTimeout(function() { location.reload(); }, 400);
+}
+
+function _renderSampleBanner() {
+  var el = document.getElementById('sampleBanner');
+  if (el) el.style.display = localStorage.getItem('opmus_sample_active') === '1' ? 'flex' : 'none';
+}
+
 // ── First-time setup (no profiles exist yet) ─────────────
 function showFirstTimeSetup() {
   document.getElementById('profScreenTitle').textContent = 'Welcome';
@@ -14263,6 +14481,7 @@ _syncKey = getSyncKey();
 
     <div class="onboard-footer">
       <button class="onboard-btn-primary" onclick="submitOnboarding()">All Done — Start Tracking →</button>
+      <button class="onboard-btn-skip" onclick="loadSampleData()" style="color:#38bdf8;">🎈 Or explore with sample data first</button>
       <button class="onboard-btn-skip" onclick="dismissOnboarding()">Skip for now — I'll fill these in later</button>
     </div>
   </div>
