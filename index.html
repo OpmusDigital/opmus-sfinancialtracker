@@ -887,6 +887,40 @@
     }
     .subtab.active { color: #f1f5f9; border-bottom-color: #ef4444; }
     .subtab.green.active { color: #22c55e; border-bottom-color: #22c55e; }
+    .subtab.blue.active { color: #3b82f6; border-bottom-color: #3b82f6; }
+    /* Bank accounts */
+    .acct-card {
+      display: flex; align-items: center; gap: 0.7rem;
+      padding: 0.6rem 0.5rem; border-radius: 10px; transition: background 0.15s;
+    }
+    .acct-card:hover { background: rgba(255,255,255,0.04); }
+    .acct-dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
+    .acct-info { flex: 1; min-width: 0; }
+    .acct-name { font-size: 0.85rem; font-weight: 600; color: #e2e8f0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .acct-flow { font-size: 0.68rem; color: #64748b; }
+    .acct-bal { font-size: 0.95rem; font-weight: 700; flex-shrink: 0; }
+    .acct-edit { width: 22px; height: 22px; border-radius: 6px; border: none; background: rgba(59,130,246,0.1); color: #3b82f6; font-size: 11px; cursor: pointer; opacity: 0; transition: all 0.15s; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .acct-card:hover .acct-edit { opacity: 1; }
+    .acct-del { width: 22px; height: 22px; border-radius: 6px; border: none; background: rgba(239,68,68,0.1); color: #ef4444; font-size: 12px; cursor: pointer; opacity: 0.45; transition: all 0.15s; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .acct-card:hover .acct-del { opacity: 1; }
+    .acc-swatch { width: 26px; height: 26px; border-radius: 50%; cursor: pointer; border: 2px solid transparent; transition: transform 0.1s; }
+    .acc-swatch:hover { transform: scale(1.12); }
+    .acc-swatch.active { border-color: #f1f5f9; box-shadow: 0 0 0 2px rgba(255,255,255,0.15); }
+    .bank-chip { display: inline-flex; align-items: center; font-size: 0.6rem; font-weight: 600; padding: 1px 6px; border-radius: 99px; border: 1px solid; margin-left: 4px; white-space: nowrap; }
+    /* Premium dark dropdown (overrides the native white select) */
+    .prem-select {
+      width: 100%; -webkit-appearance: none; -moz-appearance: none; appearance: none;
+      color-scheme: dark; box-sizing: border-box;
+      background-color: rgba(255,255,255,0.05);
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+      background-repeat: no-repeat; background-position: right 11px center; background-size: 15px;
+      border: 1px solid rgba(255,255,255,0.12); border-radius: 10px;
+      color: #e2e8f0; font-size: 0.85rem; font-weight: 500; font-family: inherit;
+      padding: 10px 36px 10px 14px; outline: none; cursor: pointer; transition: border-color 0.2s;
+    }
+    .prem-select:focus { border-color: rgba(59,130,246,0.55); }
+    .prem-select:hover { border-color: rgba(255,255,255,0.2); }
+    .prem-select option { background: #1e293b; color: #e2e8f0; }
     .view-toggle { display: flex; gap: 2px; background: rgba(255,255,255,0.05); border-radius: 8px; padding: 2px; }
     .view-btn {
       padding: 4px 10px; border-radius: 6px; border: none; font-size: 0.72rem; font-weight: 500;
@@ -3632,7 +3666,7 @@
       <div id="dashIncomeExtra" style="display:none;font-size:0.62rem;color:#94a3b8;margin-top:0.18rem;line-height:1.3;"></div>
     </div>
     <div class="dash-card">
-      <div class="dash-label">Total Money Spend</div>
+      <div class="dash-label">Money You Actually Spent</div>
       <div class="dash-val" id="dashExpenses">—</div>
       <div class="dash-sub" id="dashExpensesSub">0 entries</div>
     </div>
@@ -3767,6 +3801,7 @@
       <div class="panel-subtabs">
         <button class="subtab active" id="subtabExp" onclick="switchPanelATab('expenses')">💸 Expenses</button>
         <button class="subtab green" id="subtabRec" onclick="switchPanelATab('received')">💚 Money Received</button>
+        <button class="subtab blue" id="subtabAcc" onclick="switchPanelATab('accounts')">🏦 Accounts</button>
       </div>
       <!-- Expenses content -->
       <div id="expensesTabContent" style="display:flex;flex-direction:column;flex:1;overflow:hidden;">
@@ -3785,6 +3820,18 @@
         <div class="received-total">
           <span class="received-total-label">Total Received This Month</span>
           <span class="received-total-val" id="receivedTotalVal">—</span>
+        </div>
+      </div>
+      <!-- Accounts content -->
+      <div id="accountsTabContent" style="display:none;flex-direction:column;flex:1;overflow:hidden;">
+        <div id="salaryBankRow" style="display:none;align-items:center;gap:0.5rem;padding:0.5rem 0.75rem;margin:0 0.25rem 0.25rem;background:rgba(59,130,246,0.06);border:1px solid rgba(59,130,246,0.18);border-radius:10px;flex-shrink:0;">
+          <span style="font-size:0.75rem;color:#94a3b8;white-space:nowrap;">💰 Salary paid into</span>
+          <select id="salaryBankSelect" class="prem-select" style="flex:1;padding-top:8px;padding-bottom:8px;font-size:0.8rem;" onchange="setSalaryBank(this.value)"></select>
+        </div>
+        <div class="expense-list" id="accountsList"></div>
+        <div class="received-total" style="border-top-color:rgba(59,130,246,0.25);">
+          <span class="received-total-label">Total Across Accounts</span>
+          <span class="received-total-val" id="accountsTotalVal" style="color:#3b82f6;">—</span>
         </div>
       </div>
       <div class="resize-handle rh-n"  data-dir="n"></div>
@@ -4078,6 +4125,9 @@
     <div class="field-label">Amount (RM)</div>
     <input type="number" id="expAmt" inputmode="decimal" placeholder="0.00" step="0.01" min="0" />
 
+    <div class="field-label">Paid from <span style="color:#475569;font-weight:400;">(optional)</span></div>
+    <select id="expBank" class="prem-select"></select>
+
     <div class="field-label">Category</div>
     <div class="cat-grid" id="catGrid"></div>
 
@@ -4163,6 +4213,10 @@
     <div class="form-group">
       <label class="form-label">Due Day of Month <span style="font-weight:400;color:#475569;">(optional)</span></label>
       <input class="form-input" id="commitDayInp" type="number" min="1" max="31" placeholder="e.g. 5 for every 5th" />
+    </div>
+    <div class="form-group">
+      <label class="form-label">Paid from <span style="font-weight:400;color:#475569;">(optional)</span></label>
+      <select id="commitBank" class="prem-select"></select>
     </div>
     <div class="modal-actions">
       <button class="modal-btn secondary" onclick="closeAddCommitment()">Cancel</button>
@@ -4686,6 +4740,9 @@
       <div id="debtScheduleRows" style="display:flex;flex-direction:column;gap:0.3rem;margin-bottom:0.5rem;"></div>
     </div>
 
+    <div class="field-label" style="margin-top:0.75rem;">Paid from <span style="color:#475569;">(optional)</span></div>
+    <select id="debtBank" class="prem-select" style="margin-bottom:0.5rem;"></select>
+
     <button class="modal-btn blue" id="debtSaveBtn" onclick="saveDebtEntry()">Add Debt</button>
     <button class="modal-btn secondary" onclick="closeAddDebt()">Cancel</button>
   </div>
@@ -4876,11 +4933,61 @@
     <div class="field-label">Amount (RM)</div>
     <input type="number" id="recAmt" inputmode="decimal" placeholder="0.00" step="0.01" min="0" />
 
+    <div class="field-label">Into account <span style="color:#475569;font-weight:400;">(optional)</span></div>
+    <select id="recBank" class="prem-select"></select>
+
     <button class="modal-btn" id="recSaveBtn" onclick="saveReceived()"
       style="background:linear-gradient(135deg,#22c55e,#15803d);color:#fff;width:100%;padding:12px;border:none;border-radius:12px;font-size:0.9rem;font-weight:600;cursor:pointer;">
       Add Entry
     </button>
     <button class="modal-btn secondary" onclick="closeAddReceived()">Cancel</button>
+  </div>
+</div>
+
+<!-- Add / Edit Account Modal -->
+<div class="modal-overlay" id="addAccountModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeAddAccount()">✕</button>
+    <div class="modal-icon">🏦</div>
+    <div class="modal-title" id="accModalTitle">Add Account</div>
+    <div class="modal-sub"><span style="color:#3b82f6;font-weight:600;">Track money per bank / e-wallet</span></div>
+
+    <div class="field-label">Account name</div>
+    <input type="text" id="accName" placeholder="e.g. CIMB Clicks, GXBank, RHB" />
+
+    <div class="field-label">Starting balance (RM)</div>
+    <input type="number" id="accOpening" inputmode="decimal" placeholder="0.00" step="0.01" />
+
+    <div class="field-label">Colour</div>
+    <div id="accColorSwatches" style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:4px;"></div>
+
+    <button class="modal-btn primary" id="accSaveBtn" onclick="saveAccount()">Add Account</button>
+    <button class="modal-btn secondary" onclick="closeAddAccount()">Cancel</button>
+  </div>
+</div>
+
+<!-- Transfer Between Accounts Modal -->
+<div class="modal-overlay" id="transferModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeTransferModal()">✕</button>
+    <div class="modal-icon">⇄</div>
+    <div class="modal-title">Transfer Between Banks</div>
+    <div class="modal-sub"><span style="color:#3b82f6;font-weight:600;">Move money — doesn't affect your spending</span></div>
+
+    <div class="field-label">From</div>
+    <select id="transferFrom" class="prem-select"></select>
+
+    <div class="field-label" style="margin-top:0.6rem;">To</div>
+    <select id="transferTo" class="prem-select"></select>
+
+    <div class="field-label" style="margin-top:0.6rem;">Amount (RM)</div>
+    <input type="number" id="transferAmt" inputmode="decimal" placeholder="0.00" step="0.01" min="0" />
+
+    <div class="field-label" style="margin-top:0.6rem;">Note <span style="color:#475569;font-weight:400;">(optional)</span></div>
+    <input type="text" id="transferNote" placeholder="e.g. top up GXBank" />
+
+    <button class="modal-btn primary" onclick="saveTransfer()" style="margin-top:0.85rem;">Transfer</button>
+    <button class="modal-btn secondary" onclick="closeTransferModal()">Cancel</button>
   </div>
 </div>
 
@@ -5005,6 +5112,11 @@ document.addEventListener("visibilitychange", function() {
 document.addEventListener("touchstart", function() {
   if (_pendingSync && _db && _syncKey) { clearTimeout(_syncTimer); _batchPush(); }
 }, { passive: true });
+// Back online after working offline → push everything to the cloud so nothing is
+// stranded on the device. Always reconcile on reconnect, even if no flag is pending.
+window.addEventListener("online", function() {
+  if (_db && _syncKey) { clearTimeout(_syncTimer); _batchPush(); }
+});
 
 function _fbConfigured() {
   return FIREBASE_CONFIG.apiKey && !FIREBASE_CONFIG.apiKey.startsWith('PASTE');
@@ -5217,6 +5329,48 @@ function _safeToReload() {
   return true;
 }
 
+// ── Remember scroll position across sync-reload / manual refresh (mobile) ──
+// The mobile scroll container is .app-body. A full page reload (which iOS does
+// after every sync) resets it to the top, bouncing the user back to the first
+// panel. We stash the position in sessionStorage (device-local, never synced)
+// and restore it once the page has rendered again.
+var _scrollTarget = null, _userMoved = false, _scrollSaveT = null;
+function _appBodyEl() { return document.querySelector('.app-body'); }
+function _saveScrollNow() {
+  try { var b = _appBodyEl(); if (b) sessionStorage.setItem('mft_scroll_y', String(Math.round(b.scrollTop))); } catch (e) {}
+}
+function _applyScrollTarget() {
+  if (_userMoved || _scrollTarget == null) return;
+  var b = _appBodyEl();
+  if (b) b.scrollTop = _scrollTarget;
+}
+(function () {
+  ['touchstart','wheel','keydown','mousedown'].forEach(function (ev) {
+    window.addEventListener(ev, function () { _userMoved = true; }, { passive: true });
+  });
+  window.addEventListener('pagehide', _saveScrollNow);
+  window.addEventListener('beforeunload', _saveScrollNow);
+  function attach() {
+    var b = _appBodyEl();
+    if (!b) { setTimeout(attach, 150); return; }
+    var saved = parseFloat(sessionStorage.getItem('mft_scroll_y'));
+    _scrollTarget = (!isNaN(saved) && saved > 0) ? saved : null;
+    // Only persist scroll changes once the user has actually interacted — keeps
+    // the restore target intact while late renders shift the layout height.
+    b.addEventListener('scroll', function () {
+      if (!_userMoved) return;
+      clearTimeout(_scrollSaveT);
+      _scrollSaveT = setTimeout(_saveScrollNow, 150);
+    }, { passive: true });
+    // Restore now and again after late content/sync renders settle the height.
+    _applyScrollTarget();
+    setTimeout(_applyScrollTarget, 300);
+    setTimeout(_applyScrollTarget, 700);
+  }
+  if (document.readyState === 'complete' || document.readyState === 'interactive') attach();
+  else window.addEventListener('DOMContentLoaded', attach);
+})();
+
 function _scheduleRerender() {
   clearTimeout(_rerenderTimer);
   _rerenderTimer = setTimeout(function() {
@@ -5225,6 +5379,7 @@ function _scheduleRerender() {
       // iOS Safari often doesn't repaint after JS DOM changes — reload instead.
       // Safe to reload only if no input is focused and no modal is open.
       if (_safeToReload()) {
+        _saveScrollNow();
         _showSyncToast("↻ Synced — refreshing…");
         setTimeout(function() { location.reload(); }, 900);
         return;
@@ -5343,6 +5498,10 @@ var periodRange   = _cfgDay + ' ' + periodMonthName + ' – ' + _pEndDay + ' ' +
 const salaryKey        = profilePrefix + 'mft_salary_'   + periodMonthLower + '_' + periodYear;
 const SALARY_CONFIG_KEY = profilePrefix + 'mft_salary_config';
 const expensesKey = profilePrefix + 'mft_expenses_' + periodMonthLower + '_' + periodYear;
+const ACCOUNTS_KEY         = profilePrefix + 'mft_bank_accounts'; // persistent across periods
+const SALARY_BANK_KEY      = profilePrefix + 'mft_salary_bank';   // which account salary is paid into
+const TRANSFERS_KEY        = profilePrefix + 'mft_transfers_' + periodMonthLower + '_' + periodYear; // bank-to-bank moves this cycle
+const BANK_SNAPSHOT_KEY    = profilePrefix + 'mft_bank_snapshot'; // last cycle's ending balances, for carry-forward
 const BUDGET_KEY           = profilePrefix + 'mft_budget';
 const ROSTER_START_KEY     = profilePrefix + 'mft_roster_start';
 const ROSTER_PATTERN_KEY   = profilePrefix + 'mft_roster_pattern';
@@ -5494,6 +5653,138 @@ function loadExpenses() {
 }
 function saveExpenses(arr) {
   localStorage.setItem(expensesKey, JSON.stringify(arr));
+}
+
+// ═══════════════════════════════════════════════════
+// BANK ACCOUNTS  (persistent across periods)
+// Each account: { id, name, color, opening }
+// Balances are DERIVED (never stored) by summing every expense
+// (money out) and money-received entry (money in) tagged with the
+// account's id across ALL period keys — so they survive month rolls
+// and can never drift out of sync.
+// ═══════════════════════════════════════════════════
+function loadAccounts() {
+  try { return JSON.parse(localStorage.getItem(ACCOUNTS_KEY)) || []; } catch (e) { return []; }
+}
+function saveAccounts(arr) { localStorage.setItem(ACCOUNTS_KEY, JSON.stringify(arr)); }
+function accountById(id) {
+  if (!id) return null;
+  var a = loadAccounts();
+  for (var i = 0; i < a.length; i++) { if (a[i].id === id) return a[i]; }
+  return null;
+}
+// Bank-to-bank transfers this cycle: [{ id, date, from, to, amount, note }]
+function loadTransfers() { try { return JSON.parse(localStorage.getItem(TRANSFERS_KEY)) || []; } catch (e) { return []; } }
+function saveTransfers(arr) { localStorage.setItem(TRANSFERS_KEY, JSON.stringify(arr)); }
+
+// Which account the monthly salary is paid into (or "" for none).
+function getSalaryBank() { return localStorage.getItem(SALARY_BANK_KEY) || ''; }
+function setSalaryBank(id) {
+  if (id) localStorage.setItem(SALARY_BANK_KEY, id);
+  else localStorage.removeItem(SALARY_BANK_KEY);
+  renderAccountsList();
+}
+
+// Build this cycle's per-account money in/out → { accId: { in: x, out: y } }
+// Scope is the CURRENT salary cycle, to match the rest of the app (dashboard,
+// expenses, commitments are all per-cycle). The account's "Starting balance"
+// represents whatever was in the bank at the start of the cycle.
+function _computeAccountFlows() {
+  var flows = {};
+  function bump(accId, field, amt) {
+    if (!accId) return;
+    if (!flows[accId]) flows[accId] = { in: 0, out: 0 };
+    flows[accId][field] += (parseFloat(amt) || 0);
+  }
+
+  // Salary → its account (current cycle's nett income, matches the dashboard).
+  var salaryBank = getSalaryBank();
+  if (salaryBank) {
+    var _nett = parseFloat(localStorage.getItem(salaryKey)) || 0;
+    if (_nett) bump(salaryBank, 'in', _nett);
+  }
+
+  // Expenses out / money-received in, this cycle.
+  loadExpenses().forEach(function (e) { if (e && e.bank) bump(e.bank, 'out', e.amount); });
+  loadReceived().forEach(function (e) { if (e && e.bank) bump(e.bank, 'in',  e.amount); });
+
+  // Bank-to-bank transfers: money leaves "from" and lands in "to" (net zero
+  // overall, so this never touches the dashboard — only the bank balances).
+  loadTransfers().forEach(function (t) {
+    if (!t) return;
+    if (t.from) bump(t.from, 'out', t.amount);
+    if (t.to)   bump(t.to,   'in',  t.amount);
+  });
+
+  // Commitments & debt payments leave the bank only once marked paid (✓ Done)
+  // this cycle. A debt-linked commitment falls back to the debt's tagged bank.
+  var debtBankById = {};
+  loadDebts().forEach(function (d) { debtBankById[d.id] = d.bank || ''; });
+  var cleared = _getDueCleared();
+  var actuals = _getDueActuals();
+  loadCommitments().forEach(function (c) {
+    if (cleared.indexOf(c.id) === -1) return;
+    var bank = c.bank || (c.debtId ? debtBankById[c.debtId] : '') || '';
+    if (!bank) return;
+    var amt = (actuals[c.id] != null && actuals[c.id] !== '')
+      ? (parseFloat(actuals[c.id]) || 0)
+      : _commitAmountForMonth(c, periodYear, periodMonthIdx);
+    if (amt > 0) bump(bank, 'out', amt);
+  });
+
+  return flows;
+}
+
+function _accountBalance(accId, flows) {
+  var acc = accountById(accId);
+  if (!acc) return 0;
+  var f = (flows || _computeAccountFlows())[accId] || { in: 0, out: 0 };
+  return (parseFloat(acc.opening) || 0) + f.in - f.out;
+}
+
+// Total money across ALL banks right now. Returns null when no accounts exist
+// (so callers can fall back to the salary-based figure).
+function _allBanksTotal() {
+  var accts = loadAccounts();
+  if (!accts.length) return null;
+  var flows = _computeAccountFlows();
+  return accts.reduce(function (s, a) {
+    var f = flows[a.id] || { in: 0, out: 0 };
+    return s + (parseFloat(a.opening) || 0) + f.in - f.out;
+  }, 0);
+}
+
+// Carry-forward: when a NEW salary cycle begins, each bank's Starting balance
+// becomes whatever it ended the previous cycle with — so balances persist and
+// accumulate month to month, while salary still reads as one cycle's income.
+// We keep a snapshot { cycle, bal:{accId:balance} } of the current cycle's live
+// balances; on detecting a cycle change we roll those endings into openings.
+function _syncBankCycle() {
+  var accts = loadAccounts();
+  if (!accts.length) return;
+  var curCycle = periodYear + '_' + periodMonthIdx;
+
+  var snap = null;
+  try { var raw = localStorage.getItem(BANK_SNAPSHOT_KEY); snap = raw ? JSON.parse(raw) : null; } catch (e) { snap = null; }
+
+  // New cycle since the last snapshot → roll each ending balance into its opening.
+  if (snap && snap.cycle && snap.cycle !== curCycle && snap.bal) {
+    var changed = false;
+    accts.forEach(function (a) {
+      if (snap.bal[a.id] != null) { a.opening = snap.bal[a.id]; changed = true; }
+    });
+    if (changed) { saveAccounts(accts); accts = loadAccounts(); }
+  }
+
+  // Store the current cycle's live balances (compare-and-write to avoid churn).
+  var flows = _computeAccountFlows();
+  var bal = {};
+  accts.forEach(function (a) {
+    var f = flows[a.id] || { in: 0, out: 0 };
+    bal[a.id] = (parseFloat(a.opening) || 0) + f.in - f.out;
+  });
+  var next = JSON.stringify({ cycle: curCycle, bal: bal });
+  if (next !== localStorage.getItem(BANK_SNAPSHOT_KEY)) localStorage.setItem(BANK_SNAPSHOT_KEY, next);
 }
 
 function updateHeaderStats() {
@@ -6090,6 +6381,7 @@ function openAddDebt() {
   document.getElementById('debtSaveBtn').textContent    = 'Add Debt';
   setDebtType('fixed');
   _buildDebtScheduleRows([]);
+  _populateBankSelect('debtBank', '');
   document.getElementById('addDebtModal').classList.add('open');
 }
 
@@ -6113,6 +6405,7 @@ function openEditDebt(id) {
   setDebtType(isVar ? 'variable' : 'fixed');
   _buildDebtScheduleRows(entry.bills || []);
   calcDebtLoan();
+  _populateBankSelect('debtBank', entry.bank || '');
   document.getElementById('addDebtModal').classList.add('open');
 }
 
@@ -6132,6 +6425,8 @@ function saveDebtEntry() {
   var tenure       = parseInt(document.getElementById('debtTenure').value)      || 0;
 
   var isVariable = (_debtType === 'variable');
+  var debtBankEl = document.getElementById('debtBank');
+  var debtBank   = debtBankEl ? debtBankEl.value : '';
   var dueDayFinal = isVariable
     ? (parseInt(document.getElementById('debtDueDayVar').value, 10) || 0)
     : dueDay;
@@ -6170,6 +6465,7 @@ function saveDebtEntry() {
       var updEntry = { id: existing.id, color: existing.color, name: name, total: total, remaining: remaining,
                     minPay: isVariable ? 0 : minPay, dueDay: dueDayFinal,
                     variable: isVariable, bills: mergedBills };
+      if (debtBank)     updEntry.bank         = debtBank;
       if (principal)    updEntry.principal    = principal;
       if (interestRate) updEntry.interestRate = interestRate;
       if (tenure)       updEntry.tenure       = tenure;
@@ -6183,6 +6479,7 @@ function saveDebtEntry() {
     var newEntry = { id: uid(), color: color, name: name, total: total, remaining: remaining,
                 minPay: isVariable ? 0 : minPay, dueDay: dueDayFinal,
                 variable: isVariable, bills: newBills };
+    if (debtBank)     newEntry.bank         = debtBank;
     if (principal)    newEntry.principal    = principal;
     if (interestRate) newEntry.interestRate = interestRate;
     if (tenure)       newEntry.tenure       = tenure;
@@ -6790,6 +7087,7 @@ function renderHeaderChips() {
 }
 
 function renderDashboard() {
+  try { _syncBankCycle(); } catch (e) {}
   updateHeaderStats();
   renderHeaderChips();
   updateDueAlert();
@@ -6827,26 +7125,43 @@ function renderDashboard() {
   }
 
   const totalCommit = commitTotal();
-  document.getElementById('dashExpenses').textContent = fmt(totalExp + totalCommit);
   var _expCleared  = _getDueCleared();
   var _expCommits  = loadCommitments();
   var _expPaidList = _expCommits.filter(function(c) { return _expCleared.indexOf(c.id) !== -1; });
   var _expActuals  = _getDueActuals();
   var _expPaidAmt  = _expPaidList.reduce(function(s, c) { var a = _expActuals[c.id]; return s + (a !== undefined ? a : (parseFloat(c.amount) || 0)); }, 0);
-  var _expEntriesPart = expenses.length + (expenses.length === 1 ? " entry" : " entries") + " (" + fmt(totalExp) + ")";
-  var _expCommitPart  = _expCommits.length > 0 ? " · " + _expCommits.length + (_expCommits.length === 1 ? " commitment" : " commitments") + (_expPaidList.length > 0 ? " (" + _expPaidList.length + " paid · " + fmt(_expPaidAmt) + ")" : "") : "";
-  var _expSub = _expEntriesPart + _expCommitPart;
+  var _expUnpaidAmt = _expCommits.filter(function(c) { return _expCleared.indexOf(c.id) === -1; })
+    .reduce(function(s, c) { return s + _commitAmountForMonth(c, periodYear, periodMonthIdx); }, 0);
+
+  // Grey card headline = money ACTUALLY spent this cycle: expenses + commitments
+  // already marked paid (unpaid/upcoming bills are not "spent" yet).
+  document.getElementById('dashExpenses').textContent = fmt(totalExp + _expPaidAmt);
+  // Small description = the expenses + commitments breakdown.
+  var _expSub = fmt(totalExp) + ' expenses + ' + fmt(_expPaidAmt) + ' bills paid'
+    + (_expUnpaidAmt > 0 ? ' · ' + fmt(_expUnpaidAmt) + ' bills due' : '');
   document.getElementById("dashExpensesSub").textContent = _expSub;
   const remain = salary + totalReceived - totalExp - totalCommit;
   var incLabel = document.getElementById('dashIncomeLabel');
   if (incLabel && incLabel.firstChild) incLabel.firstChild.textContent = periodMonthName;
   var remLabel = document.getElementById('dashRemainLabel');
-  if (remLabel && remLabel.firstChild) remLabel.firstChild.textContent = periodMonthName;
-  document.getElementById('dashRemain').textContent = salary > 0 ? fmt(remain) : fmtCurDash();
-  document.getElementById('dashRemainSub').textContent =
-    salary > 0
-      ? (totalCommit > 0 ? 'after ' + fmt(totalCommit) + ' commitments' : (remain >= 0 ? 'left to spend' : 'over budget!'))
-      : 'set salary first';
+  var _banksTotal = _allBanksTotal();
+  if (_banksTotal !== null) {
+    // Green card = total money across ALL banks right now.
+    if (remLabel) remLabel.innerHTML = '💰 Total Across Banks';
+    document.getElementById('dashRemain').textContent = fmt(_banksTotal);
+    // Description = what's left once every remaining bill is paid.
+    document.getElementById('dashRemainSub').textContent = _expUnpaidAmt > 0
+      ? fmt(_banksTotal - _expUnpaidAmt) + ' left after all bills paid'
+      : 'all bills paid ✓';
+  } else {
+    // No bank accounts yet — fall back to the salary-based income remaining.
+    if (remLabel) remLabel.innerHTML = '<span id="dashRemainMonth" class="dash-month-hl">' + periodMonthName + '</span>\'s Income Remaining';
+    document.getElementById('dashRemain').textContent = salary > 0 ? fmt(remain) : fmtCurDash();
+    document.getElementById('dashRemainSub').textContent =
+      salary > 0
+        ? (totalCommit > 0 ? 'after ' + fmt(totalCommit) + ' commitments' : (remain >= 0 ? 'left to spend' : 'over budget!'))
+        : 'set salary first';
+  }
 
   // Est. Income card (optional)
   var estCard = document.getElementById('dashEstIncomeCard');
@@ -6900,6 +7215,7 @@ function renderDashboard() {
   try { renderCommitments();   } catch (e) {}
   try { renderMomentum();      } catch (e) {}
   try { _renderSampleBanner(); } catch (e) {}
+  if (_panelATab === 'accounts') { try { renderAccountsList(); } catch (e) {} }
 }
 
 // ── Momentum / wins strip — motivating "you're making progress" chips ──
@@ -7038,7 +7354,7 @@ function renderPanelA() {
     }
     _gh += "<div class=\"expense-row\">" +
       "<div class=\"cat-dot\" style=\"background:" + cat.color + "\"></div>" +
-      "<div class=\"exp-desc\" title=\"" + escHtml(exp.description) + "\">" + escHtml(exp.description) + "</div>" +
+      "<div class=\"exp-desc\" title=\"" + escHtml(exp.description) + "\">" + escHtml(exp.description) + _bankChip(exp.bank) + "</div>" +
       "<div class=\"exp-date\">" + escHtml(exp.date || "") + "</div>" +
       "<div class=\"exp-amt\">" + fmt(exp.amount) + "</div>" +
       "<button class=\"exp-edit\" onclick=\"openEditExpense(" + i + ")\" title=\"Edit\">✏</button>" +
@@ -7047,6 +7363,7 @@ function renderPanelA() {
   });
   el.innerHTML = _gh;
 
+  if (_panelATab === 'accounts') { try { renderAccountsList(); } catch (e) {} }
   renderDashboard();
   renderBudget();
 }
@@ -7243,6 +7560,237 @@ function deleteExpenseAt(sortedIdx) {
 }
 
 // ═══════════════════════════════════════════════════
+// BANK ACCOUNTS — UI
+// ═══════════════════════════════════════════════════
+var _ACCOUNT_COLORS = ["#3b82f6","#06b6d4","#22c55e","#a855f7","#ec4899","#f97316","#eab308","#14b8a6","#ef4444","#84cc16"];
+var _accEditorColor = _ACCOUNT_COLORS[0];
+var _editAccountId  = null;
+
+function renderAccountsList() {
+  var el = document.getElementById('accountsList');
+  if (!el) return;
+  try { _syncBankCycle(); } catch (e) {}
+  var accts = loadAccounts();
+  var salRow = document.getElementById('salaryBankRow');
+
+  if (accts.length === 0) {
+    el.innerHTML = '<div class="empty-state"><div class="big">🏦</div><div class="msg">No accounts yet.<br>Tap + Add to create one (e.g. CIMB, GXBank, RHB).</div></div>';
+    var tEl0 = document.getElementById('accountsTotalVal');
+    if (tEl0) tEl0.textContent = fmt(0);
+    if (salRow) salRow.style.display = 'none';
+    return;
+  }
+
+  // Salary-bank selector
+  var salBank = getSalaryBank();
+  if (salRow) {
+    salRow.style.display = 'flex';
+    _populateBankSelect('salaryBankSelect', salBank);
+  }
+
+  var flows = _computeAccountFlows();
+  var nameById = {}; accts.forEach(function (a) { nameById[a.id] = a; });
+  var grand = 0;
+  var cardsHtml = accts.map(function (a) {
+    var f   = flows[a.id] || { in: 0, out: 0 };
+    var bal = (parseFloat(a.opening) || 0) + f.in - f.out;
+    grand  += bal;
+    var balColor = bal < 0 ? '#ef4444' : '#f1f5f9';
+    var salBadge = (a.id === salBank) ? '<span class="bank-chip" style="background:#22c55e22;color:#22c55e;border-color:#22c55e55;">💰 Salary</span>' : '';
+    return '<div class="acct-card">' +
+        '<div class="acct-dot" style="background:' + a.color + '"></div>' +
+        '<div class="acct-info">' +
+          '<div class="acct-name" title="' + escHtml(a.name) + '">' + escHtml(a.name) + salBadge + '</div>' +
+          '<div class="acct-flow">+' + fmt(f.in) + ' in · −' + fmt(f.out) + ' out</div>' +
+        '</div>' +
+        '<div class="acct-bal" style="color:' + balColor + ';">' + fmt(bal) + '</div>' +
+        '<button class="acct-edit" onclick="openEditAccount(\'' + a.id + '\')" title="Edit">✏</button>' +
+        '<button class="acct-del" onclick="deleteAccount(\'' + a.id + '\')" title="Delete">✕</button>' +
+      '</div>';
+  }).join('');
+
+  // Transfers this cycle
+  var transfers = loadTransfers();
+  var xferHtml = '';
+  if (transfers.length) {
+    xferHtml += '<div style="font-size:0.65rem;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:0.07em;margin:0.6rem 0.5rem 0.3rem;">⇄ Transfers this cycle</div>';
+    xferHtml += transfers.slice().reverse().map(function (t) {
+      var fromA = nameById[t.from], toA = nameById[t.to];
+      var fromN = fromA ? escHtml(fromA.name) : 'deleted';
+      var toN   = toA ? escHtml(toA.name) : 'deleted';
+      return '<div class="acct-card" style="padding-top:0.45rem;padding-bottom:0.45rem;">' +
+          '<div style="font-size:13px;flex-shrink:0;width:20px;text-align:center;">⇄</div>' +
+          '<div class="acct-info">' +
+            '<div class="acct-name" style="font-weight:500;font-size:0.8rem;">' + fromN + ' <span style="color:#475569;">→</span> ' + toN + '</div>' +
+            '<div class="acct-flow">' + escHtml(t.date || '') + (t.note ? ' · ' + escHtml(t.note) : '') + '</div>' +
+          '</div>' +
+          '<div class="acct-bal" style="color:#94a3b8;font-size:0.85rem;">' + fmt(t.amount) + '</div>' +
+          '<button class="acct-del" onclick="deleteTransfer(\'' + t.id + '\')" title="Remove transfer">✕</button>' +
+        '</div>';
+    }).join('');
+  }
+
+  el.innerHTML = cardsHtml + xferHtml;
+
+  var tEl = document.getElementById('accountsTotalVal');
+  if (tEl) tEl.textContent = fmt(grand);
+}
+
+function _renderAccColorSwatches() {
+  var wrap = document.getElementById('accColorSwatches');
+  if (!wrap) return;
+  var isPreset = _ACCOUNT_COLORS.indexOf(_accEditorColor) !== -1;
+  var html = _ACCOUNT_COLORS.map(function (c) {
+    return '<div class="acc-swatch' + (c === _accEditorColor ? ' active' : '') + '" data-color="' + c + '" style="background:' + c + ';" onclick="selectAccountColor(\'' + c + '\')"></div>';
+  }).join('');
+  // Custom "any colour" picker — the native swatch opens the full colour wheel.
+  // Use 'change' (fires once when the picker closes) not 'input', and update the
+  // swatch in place — re-rendering mid-pick would destroy the input and close the wheel.
+  html += '<label class="acc-swatch acc-swatch-custom' + (!isPreset ? ' active' : '') + '" id="accCustomSwatch" title="Custom colour" ' +
+            'style="background:' + (!isPreset ? _accEditorColor : 'conic-gradient(red,orange,yellow,lime,cyan,blue,magenta,red)') + ';position:relative;overflow:hidden;">' +
+            '<input type="color" value="' + _accEditorColor + '" oninput="_accLiveColor(this.value)" onchange="selectAccountColor(this.value)" ' +
+            'style="position:absolute;inset:0;opacity:0;width:100%;height:100%;cursor:pointer;border:none;padding:0;" />' +
+          '</label>';
+  wrap.innerHTML = html;
+}
+
+// Live preview while the wheel is open — updates ONLY the custom swatch's colour,
+// no full re-render, so the open picker stays alive.
+function _accLiveColor(hex) {
+  _accEditorColor = hex;
+  var sw = document.getElementById('accCustomSwatch');
+  if (sw) { sw.style.background = hex; sw.classList.add('active'); }
+  document.querySelectorAll('#accColorSwatches .acc-swatch:not(#accCustomSwatch)').forEach(function (s) {
+    s.classList.remove('active');
+  });
+}
+
+function selectAccountColor(hex) {
+  _accEditorColor = hex;
+  _renderAccColorSwatches();
+}
+
+function openAddAccount() {
+  _editAccountId = null;
+  _accEditorColor = _ACCOUNT_COLORS[loadAccounts().length % _ACCOUNT_COLORS.length];
+  document.getElementById('accModalTitle').textContent = 'Add Account';
+  document.getElementById('accSaveBtn').textContent    = 'Add Account';
+  document.getElementById('accName').value    = '';
+  document.getElementById('accOpening').value  = '';
+  _renderAccColorSwatches();
+  document.getElementById('addAccountModal').classList.add('open');
+  setTimeout(function () { document.getElementById('accName').focus(); }, 100);
+}
+
+function openEditAccount(id) {
+  var a = accountById(id);
+  if (!a) return;
+  _editAccountId  = id;
+  _accEditorColor = a.color || _ACCOUNT_COLORS[0];
+  document.getElementById('accModalTitle').textContent = 'Edit Account';
+  document.getElementById('accSaveBtn').textContent    = 'Save Changes';
+  document.getElementById('accName').value    = a.name || '';
+  document.getElementById('accOpening').value = (a.opening === 0 || a.opening) ? a.opening : '';
+  _renderAccColorSwatches();
+  document.getElementById('addAccountModal').classList.add('open');
+  setTimeout(function () { document.getElementById('accName').focus(); }, 100);
+}
+
+function closeAddAccount() {
+  _editAccountId = null;
+  document.getElementById('addAccountModal').classList.remove('open');
+}
+
+function saveAccount() {
+  var name    = document.getElementById('accName').value.trim();
+  var opening = parseFloat(document.getElementById('accOpening').value);
+  if (!name) { showToast('Please enter an account name'); return; }
+  if (isNaN(opening)) opening = 0;
+
+  var accts = loadAccounts();
+  if (_editAccountId) {
+    var idx = accts.findIndex(function (a) { return a.id === _editAccountId; });
+    if (idx !== -1) {
+      accts[idx].name    = name;
+      accts[idx].opening = opening;
+      accts[idx].color   = _accEditorColor;
+    }
+    showToast('Account updated');
+  } else {
+    accts.push({ id: uid(), name: name, color: _accEditorColor, opening: opening });
+    showToast('Account added');
+  }
+  saveAccounts(accts);
+  closeAddAccount();
+  renderAccountsList();
+}
+
+function deleteAccount(id) {
+  var a = accountById(id);
+  if (!a) return;
+  if (!confirm('Delete "' + a.name + '"? Expenses paid from it stay logged but lose their bank tag.')) return;
+  saveAccounts(loadAccounts().filter(function (x) { return x.id !== id; }));
+  if (getSalaryBank() === id) localStorage.removeItem(SALARY_BANK_KEY); // drop dangling salary tag
+  renderAccountsList();
+  showToast('Account deleted');
+}
+
+function openTransferModal() {
+  var accts = loadAccounts();
+  if (accts.length < 2) { showToast('Add at least 2 accounts to transfer'); return; }
+  _populateBankSelect('transferFrom', accts[0].id);
+  _populateBankSelect('transferTo', accts[1].id);
+  document.getElementById('transferAmt').value  = '';
+  document.getElementById('transferNote').value = '';
+  document.getElementById('transferModal').classList.add('open');
+}
+function closeTransferModal() { document.getElementById('transferModal').classList.remove('open'); }
+
+function saveTransfer() {
+  var from = document.getElementById('transferFrom').value;
+  var to   = document.getElementById('transferTo').value;
+  var amt  = parseFloat(document.getElementById('transferAmt').value);
+  var note = document.getElementById('transferNote').value.trim();
+  if (!from || !to) { showToast('Pick both accounts'); return; }
+  if (from === to)  { showToast('Pick two different accounts'); return; }
+  if (!amt || amt <= 0) { showToast('Enter a valid amount'); return; }
+  var d = new Date();
+  var dateStr = String(d.getDate()).padStart(2, '0') + '/' + String(d.getMonth() + 1).padStart(2, '0') + '/' + d.getFullYear();
+  var list = loadTransfers();
+  list.push({ id: uid(), date: dateStr, from: from, to: to, amount: amt, note: note });
+  saveTransfers(list);
+  closeTransferModal();
+  renderAccountsList();
+  showToast('Transferred ' + fmt(amt));
+}
+
+function deleteTransfer(id) {
+  saveTransfers(loadTransfers().filter(function (t) { return t.id !== id; }));
+  renderAccountsList();
+  showToast('Transfer removed');
+}
+
+// Populate a <select> with the buyer's accounts (used in expense / received modals).
+function _populateBankSelect(selectId, currentVal) {
+  var sel = document.getElementById(selectId);
+  if (!sel) return;
+  var accts = loadAccounts();
+  var opts = '<option value="">— None —</option>';
+  opts += accts.map(function (a) {
+    return '<option value="' + a.id + '"' + (a.id === currentVal ? ' selected' : '') + '>' + escHtml(a.name) + '</option>';
+  }).join('');
+  sel.innerHTML = opts;
+  sel.value = currentVal || '';
+}
+
+// Small coloured chip naming the account an entry was paid from / into.
+function _bankChip(accId) {
+  var a = accountById(accId);
+  if (!a) return '';
+  return '<span class="bank-chip" style="background:' + a.color + '22;color:' + a.color + ';border-color:' + a.color + '55;">🏦 ' + escHtml(a.name) + '</span>';
+}
+
+// ═══════════════════════════════════════════════════
 // ═══════════════════════════════════════════════════
 // PANEL A SUB-TAB
 // ═══════════════════════════════════════════════════
@@ -7252,8 +7800,12 @@ function switchPanelATab(tab) {
   _panelATab = tab;
   document.getElementById('subtabExp').classList.toggle('active', tab === 'expenses');
   document.getElementById('subtabRec').classList.toggle('active', tab === 'received');
+  var subtabAcc = document.getElementById('subtabAcc');
+  if (subtabAcc) subtabAcc.classList.toggle('active', tab === 'accounts');
   document.getElementById('expensesTabContent').style.display = tab === 'expenses' ? 'flex' : 'none';
   document.getElementById('receivedTabContent').style.display = tab === 'received' ? 'flex' : 'none';
+  var accContent = document.getElementById('accountsTabContent');
+  if (accContent) accContent.style.display = tab === 'accounts' ? 'flex' : 'none';
 
   // Swap header actions
   const actions = document.getElementById('panelAActions');
@@ -7265,12 +7817,19 @@ function switchPanelATab(tab) {
       '</div>' +
       '<button class="btn-scan" onclick="openTemplatesModal()">⚡ Templates</button>' +
       '<button class="icon-btn red" onclick="openAddExpense()" title="Add expense">+</button>';
-  } else {
+  } else if (tab === 'received') {
     actions.innerHTML =
       '<button class="icon-btn" onclick="openAddReceived()" title="Add received money" ' +
       'style="background:rgba(34,197,94,0.15);border-color:rgba(34,197,94,0.3);color:#22c55e;width:auto;padding:0 10px;font-size:0.75rem;font-weight:600;">+ Add</button>';
+  } else {
+    actions.innerHTML =
+      '<button class="icon-btn" onclick="openTransferModal()" title="Transfer between banks" ' +
+      'style="background:rgba(148,163,184,0.12);border-color:rgba(148,163,184,0.25);color:#cbd5e1;width:auto;padding:0 10px;font-size:0.75rem;font-weight:600;">⇄ Transfer</button>' +
+      '<button class="icon-btn" onclick="openAddAccount()" title="Add account" ' +
+      'style="background:rgba(59,130,246,0.15);border-color:rgba(59,130,246,0.3);color:#3b82f6;width:auto;padding:0 10px;font-size:0.75rem;font-weight:600;">+ Add</button>';
   }
   if (tab === 'received') renderReceivedList();
+  if (tab === 'accounts') renderAccountsList();
 }
 
 // ═══════════════════════════════════════════════════
@@ -7313,7 +7872,7 @@ function renderReceivedList() {
     return '<div class="received-row">' +
       '<div class="rec-icon">💸</div>' +
       '<div class="rec-info">' +
-        '<div class="rec-desc" title="' + escHtml(e.description) + '">' + escHtml(e.description) + '</div>' +
+        '<div class="rec-desc" title="' + escHtml(e.description) + '">' + escHtml(e.description) + _bankChip(e.bank) + '</div>' +
         '<div class="rec-date">' + escHtml(e.date || '') + '</div>' +
       '</div>' +
       '<div class="rec-amt">+' + fmt(e.amount) + '</div>' +
@@ -7345,6 +7904,7 @@ function openAddReceived() {
   document.getElementById('recYear').value  = d.getFullYear();
   document.getElementById('recDesc').value  = '';
   document.getElementById('recAmt').value   = '';
+  _populateBankSelect('recBank', '');
   document.getElementById('recModalTitle').textContent = 'Money Received';
   document.getElementById('recSaveBtn').textContent    = 'Add Entry';
   document.getElementById('recModalMonth').textContent = periodLabel + '  ·  ' + periodRange;
@@ -7362,6 +7922,7 @@ function openEditReceived(idx) {
   document.getElementById('recYear').value  = parts[2] || '';
   document.getElementById('recDesc').value  = e.description || '';
   document.getElementById('recAmt').value   = e.amount || '';
+  _populateBankSelect('recBank', e.bank || '');
   document.getElementById('recModalTitle').textContent = 'Edit Entry';
   document.getElementById('recSaveBtn').textContent    = 'Save Changes';
   document.getElementById('recModalMonth').textContent = periodLabel + '  ·  ' + periodRange;
@@ -7386,6 +7947,8 @@ function saveReceived() {
   if (!day || !mon || !yr) { showToast('Please enter a valid date'); return; }
 
   const dateStr = String(day).padStart(2,'0') + '/' + String(mon).padStart(2,'0') + '/' + yr;
+  const recBankEl = document.getElementById('recBank');
+  const recBank   = recBankEl ? recBankEl.value : '';
   const list = loadReceived();
 
   if (_editReceivedTarget) {
@@ -7393,14 +7956,14 @@ function saveReceived() {
       return e === _editReceivedTarget ||
         (e.date === _editReceivedTarget.date && e.description === _editReceivedTarget.description && String(e.amount) === String(_editReceivedTarget.amount));
     });
-    if (idx !== -1) list[idx] = { id: list[idx].id || uid(), date: dateStr, description: desc, amount: amt };
+    if (idx !== -1) list[idx] = { id: list[idx].id || uid(), date: dateStr, description: desc, amount: amt, bank: recBank };
     saveReceivedList(list);
     closeAddReceived();
     renderReceivedList();
     renderDashboard();
     showToast('Entry updated');
   } else {
-    list.push({ id: uid(), date: dateStr, description: desc, amount: amt });
+    list.push({ id: uid(), date: dateStr, description: desc, amount: amt, bank: recBank });
     saveReceivedList(list);
     closeAddReceived();
     renderReceivedList();
@@ -7617,6 +8180,7 @@ function openAddExpense() {
   document.getElementById('expAmt').value   = '';
   selectedCat = 'food';
   renderCatGrid('catGrid', 'food');
+  _populateBankSelect('expBank', '');
   document.getElementById('expModalTitle').textContent = 'Add Expense';
   document.getElementById('expSaveBtn').textContent    = 'Add Expense';
   document.getElementById('addExpenseModal').classList.add('open');
@@ -7636,6 +8200,7 @@ function openEditExpense(sortedIdx) {
   document.getElementById('expAmt').value   = exp.amount || '';
   selectedCat = exp.category || 'others';
   renderCatGrid('catGrid', selectedCat);
+  _populateBankSelect('expBank', exp.bank || '');
   document.getElementById('expModalTitle').textContent = 'Edit Expense';
   document.getElementById('expSaveBtn').textContent    = 'Save Changes';
   document.getElementById('addExpenseModal').classList.add('open');
@@ -7862,6 +8427,9 @@ function saveExpense() {
   const dateStr = String(day).padStart(2,'0') + '/' +
                   String(month).padStart(2,'0') + '/' + year;
 
+  const bankEl = document.getElementById('expBank');
+  const bank   = bankEl ? bankEl.value : '';
+
   const list = loadExpenses();
 
   if (_editExpenseTarget) {
@@ -7873,7 +8441,7 @@ function saveExpense() {
          String(e.amount) === String(_editExpenseTarget.amount));
     });
     if (idx !== -1) {
-      list[idx] = { id: list[idx].id || uid(), date: dateStr, description: desc, amount: amt, category: selectedCat };
+      list[idx] = { id: list[idx].id || uid(), date: dateStr, description: desc, amount: amt, category: selectedCat, bank: bank };
     }
     saveExpenses(list);
     closeAddExpense();
@@ -7883,7 +8451,7 @@ function saveExpense() {
     showToast('Expense updated');
   } else {
     // Add mode
-    list.push({ id: uid(), date: dateStr, description: desc, amount: amt, category: selectedCat });
+    list.push({ id: uid(), date: dateStr, description: desc, amount: amt, category: selectedCat, bank: bank });
     saveExpenses(list);
     closeAddExpense();
     renderPanelA();
@@ -9714,15 +10282,18 @@ function renderCommitments() {
     var periodKey = periodYear + '_' + periodMonthIdx;
     var paidPct   = count > 0 ? (paid.length / count) * 100 : 0;
 
-    // Amount totals
-    var totalToPay = sortedList.reduce(function(s, c) {
-      return s + _commitAmountForMonth(c, periodYear, periodMonthIdx);
-    }, 0);
+    // "Total" = the full estimated commitments (same figure as the List tab and
+    // dashboard, so the tabs always agree). "Paid" = what you actually paid.
+    // "Left" = only the bills NOT yet ticked, so it reads "All clear" at 0 once
+    // everything is marked paid (no phantom estimate-vs-actual gap).
+    var totalToPay = total;
     var paidAmt = paid.reduce(function(s, c) {
       var actual = actuals[c.id];
       return s + (actual !== undefined ? actual : (parseFloat(c.amount) || 0));
     }, 0);
-    var remainAmt = Math.max(0, totalToPay - paidAmt);
+    var remainAmt = unpaid.reduce(function(s, c) {
+      return s + _commitAmountForMonth(c, periodYear, periodMonthIdx);
+    }, 0);
 
     html += '<div class="commit-list" style="padding-top:0.6rem;">';
 
@@ -9888,6 +10459,7 @@ function openAddCommitment() {
   document.getElementById('commitDayInp').value   = '';
   document.getElementById('commitVarInp').checked = false;
   _toggleCommitVarMode();
+  _populateBankSelect('commitBank', '');
   document.getElementById('addCommitModal').classList.add('open');
   setTimeout(function() { document.getElementById('commitNameInp').focus(); }, 80);
 }
@@ -9902,6 +10474,7 @@ function openEditCommitment(id) {
   document.getElementById('commitDayInp').value   = c.dueDay || '';
   document.getElementById('commitVarInp').checked = !!c.variable;
   _toggleCommitVarMode(c.schedule || null);
+  _populateBankSelect('commitBank', c.bank || '');
   document.getElementById('addCommitModal').classList.add('open');
   setTimeout(function() { document.getElementById('commitNameInp').focus(); }, 80);
 }
@@ -9920,6 +10493,8 @@ function saveCommitment() {
 
   var isVar    = document.getElementById('commitVarInp').checked;
   var schedule = isVar ? _readScheduleFromModal() : null;
+  var commitBankEl = document.getElementById('commitBank');
+  var commitBank   = commitBankEl ? commitBankEl.value : '';
   var list = loadCommitments();
   if (_editCommitId) {
     list = list.map(function(c) {
@@ -9928,11 +10503,13 @@ function saveCommitment() {
       if (schedule)     updated.schedule  = schedule;
       if (c.debtId)     updated.debtId    = c.debtId;
       if (c.debtColor)  updated.debtColor = c.debtColor;
+      if (commitBank)   updated.bank      = commitBank;
       return updated;
     });
   } else {
     var entry = { id: uid(), name: name, amount: amt, dueDay: dueDay, variable: isVar };
-    if (schedule) entry.schedule = schedule;
+    if (schedule)   entry.schedule = schedule;
+    if (commitBank) entry.bank     = commitBank;
     list.push(entry);
   }
   saveCommitments(list);
