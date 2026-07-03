@@ -1610,21 +1610,32 @@
     }
     .mpanel-tab-grp.active .mpanel-tab-add { color: #f87171; }
 
-    /* ── Tab mode: one app per screen, tab bar pinned to the bottom (any size) ── */
+    /* ── Tab mode: one app per screen, premium tab bar pinned to the TOP ── */
+    body.tabmode .app-body { overflow-y: auto; }
+    body.tabmode #mpanelTabs { order: -1; }
     body.tabmode .mpanel-tabs {
-      display: flex !important; position: fixed; left: 0; right: 0; bottom: 0; top: auto; margin: 0;
-      z-index: 90; border-radius: 0; border-left: none; border-right: none; border-bottom: none;
-      background: rgba(15,23,42,0.97); backdrop-filter: blur(10px);
-      padding: 6px 0.5rem calc(6px + env(safe-area-inset-bottom, 0px));
+      display: flex !important; position: sticky; top: 0; bottom: auto; left: 0; right: 0; margin: 0;
+      z-index: 95; border-radius: 0; border: none; border-bottom: 1px solid rgba(255,255,255,0.06);
+      background: linear-gradient(180deg, rgba(17,24,39,0.98), rgba(15,23,42,0.9));
+      backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+      padding: 9px 0.7rem; gap: 6px; box-shadow: 0 8px 22px rgba(0,0,0,0.3);
     }
-    body.tabmode .app-body { overflow-y: auto; padding-bottom: 66px; }
+    body.tabmode .mpanel-tab-add { display: none !important; } /* + lives in each app + Overview */
+    body.tabmode .mpanel-tab-grp { border-radius: 11px; transition: background 0.18s, box-shadow 0.18s; }
+    body.tabmode .mpanel-tab-grp .mpanel-tab-lbl { padding: 8px 15px; color: #94a3b8; font-weight: 700; font-size: 0.8rem; }
+    body.tabmode .mpanel-tab-grp:hover { background: rgba(255,255,255,0.05); }
+    body.tabmode .mpanel-tab-grp.active {
+      background: linear-gradient(135deg, #0ea5e9, #2563eb);
+      box-shadow: 0 4px 14px rgba(37,99,235,0.45);
+    }
+    body.tabmode .mpanel-tab-grp.active .mpanel-tab-lbl { color: #fff; }
     /* Each app fills its own dedicated space instead of floating like a canvas card */
     body.tabmode .panels-row { overflow: visible; position: static; padding: 0; }
     body.tabmode [data-panel] {
       position: static !important; width: auto !important; min-width: 0 !important;
       margin: 0 !important; border-radius: 0 !important; border-left: none !important; border-right: none !important;
       display: flex; flex-direction: column;
-      height: calc(100vh - 138px); min-height: 300px;
+      min-height: calc(100vh - 128px);
     }
     /* Let the scrolling body of each app use the full height (no canvas caps) */
     body.tabmode .expense-list, body.tabmode .budget-list, body.tabmode .commit-list,
