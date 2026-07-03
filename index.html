@@ -616,6 +616,17 @@
     /* Settings modal sections */
     .settings-section { border: 1px solid rgba(255,255,255,0.07); border-radius: 12px; padding: 0.85rem 1rem; margin-top: 0.75rem; }
     .settings-section-title { font-size: 0.67rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: #64748b; margin-bottom: 0.65rem; }
+    .lm-toggle { display: flex; gap: 3px; background: rgba(255,255,255,0.05); border-radius: 9px; padding: 3px; flex-shrink: 0; }
+    .lm-seg { border: none; background: none; color: #94a3b8; font-size: 0.72rem; font-weight: 700; padding: 6px 10px; border-radius: 7px; cursor: pointer; font-family: inherit; white-space: nowrap; }
+    .lm-seg.active { background: rgba(56,189,248,0.2); color: #7dd3fc; }
+    /* First-run layout picker cards */
+    .lp-choices { display: flex; flex-direction: column; gap: 0.65rem; margin-top: 1rem; }
+    .lp-card { text-align: left; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); border-radius: 14px; padding: 1rem 1.1rem; cursor: pointer; font-family: inherit; transition: all 0.15s; }
+    .lp-card:hover { background: rgba(56,189,248,0.08); border-color: rgba(56,189,248,0.45); transform: translateY(-1px); }
+    .lp-ico { font-size: 1.6rem; line-height: 1; margin-bottom: 0.4rem; }
+    .lp-name { font-size: 0.95rem; font-weight: 800; color: #f1f5f9; display: flex; align-items: center; gap: 0.5rem; }
+    .lp-badge { font-size: 0.58rem; font-weight: 800; color: #052e16; background: #4ade80; border-radius: 6px; padding: 2px 7px; text-transform: uppercase; letter-spacing: 0.04em; }
+    .lp-desc { font-size: 0.76rem; color: #94a3b8; margin-top: 0.3rem; line-height: 1.5; }
     .settings-row { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; padding: 0.45rem 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
     .settings-row-label { font-size: 0.84rem; color: #e2e8f0; font-weight: 500; }
     .settings-row-sub { font-size: 0.7rem; color: #475569; margin-top: 0.1rem; }
@@ -1503,6 +1514,22 @@
       z-index: 200; opacity: 0; transition: opacity 0.3s; pointer-events: none;
     }
     #toast.show { opacity: 1; }
+    #undoToast {
+      position: fixed; bottom: calc(2rem + env(safe-area-inset-bottom, 0px)); left: 50%; transform: translateX(-50%);
+      display: flex; align-items: center; gap: 0.85rem;
+      background: #1e1e1e; border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 12px; padding: 8px 10px 8px 18px; font-size: 0.82rem; color: #e2e8f0;
+      z-index: 260; opacity: 0; transition: opacity 0.25s, transform 0.25s; pointer-events: none;
+      box-shadow: 0 8px 26px rgba(0,0,0,0.4); max-width: calc(100vw - 2rem);
+    }
+    #undoToast.show { opacity: 1; pointer-events: auto; }
+    #undoToastMsg { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    #undoToastBtn {
+      flex-shrink: 0; background: rgba(56,189,248,0.15); border: 1px solid rgba(56,189,248,0.4);
+      color: #7dd3fc; border-radius: 8px; padding: 5px 14px; font-size: 0.78rem; font-weight: 700;
+      cursor: pointer; font-family: inherit;
+    }
+    #undoToastBtn:hover { background: rgba(56,189,248,0.25); }
 
     /* Scrollbar for modal */
     .modal-overlay::-webkit-scrollbar { width: 0; }
@@ -1582,6 +1609,40 @@
       font-family: 'Inter', system-ui; transition: color 0.2s; display: flex; align-items: center;
     }
     .mpanel-tab-grp.active .mpanel-tab-add { color: #f87171; }
+
+    /* ── Tab mode: one app per screen, tab bar pinned to the bottom (any size) ── */
+    body.tabmode .mpanel-tabs {
+      display: flex !important; position: fixed; left: 0; right: 0; bottom: 0; top: auto; margin: 0;
+      z-index: 90; border-radius: 0; border-left: none; border-right: none; border-bottom: none;
+      background: rgba(15,23,42,0.97); backdrop-filter: blur(10px);
+      padding: 6px 0.5rem calc(6px + env(safe-area-inset-bottom, 0px));
+    }
+    body.tabmode .app-body { overflow-y: auto; padding-bottom: 66px; }
+    /* Each app fills its own dedicated space instead of floating like a canvas card */
+    body.tabmode .panels-row { overflow: visible; position: static; padding: 0; }
+    body.tabmode [data-panel] {
+      position: static !important; width: auto !important; min-width: 0 !important;
+      margin: 0 !important; border-radius: 0 !important; border-left: none !important; border-right: none !important;
+      display: flex; flex-direction: column;
+      height: calc(100vh - 138px); min-height: 300px;
+    }
+    /* Let the scrolling body of each app use the full height (no canvas caps) */
+    body.tabmode .expense-list, body.tabmode .budget-list, body.tabmode .commit-list,
+    body.tabmode .goals-scroll, body.tabmode .debt-scroll, body.tabmode .ot-scroll,
+    body.tabmode .wp-scroll, body.tabmode .wp-check-scroll, body.tabmode .sp-scroll,
+    body.tabmode .chart-wrap {
+      max-height: none !important; flex: 1 1 auto !important; min-height: 0 !important;
+    }
+    body.tabmode .resize-handle { display: none !important; }
+    body.tabmode .drag-handle { display: none !important; }
+    .ov-shortcuts { display: none; }
+    body.tabmode .ov-shortcuts { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; padding: 0.15rem 1rem 0.7rem; max-width: 640px; }
+    body.tabmode .ov-shortcuts button {
+      display: flex; align-items: center; gap: 0.55rem; padding: 0.75rem 0.85rem; border-radius: 12px;
+      background: rgba(255,255,255,0.045); border: 1px solid rgba(255,255,255,0.08); color: #e2e8f0;
+      font-size: 0.82rem; font-weight: 700; cursor: pointer; font-family: inherit;
+    }
+    body.tabmode .ov-shortcuts .ovs-ico { font-size: 1.15rem; }
 
     /* ══════════════════════════════════════════════════
        RESPONSIVE — Mobile (≤ 768px)
@@ -2733,6 +2794,17 @@
 
       <div class="settings-row">
         <div>
+          <div class="settings-row-label">Layout Style</div>
+          <div class="settings-row-sub">Free canvas, or one app per tab</div>
+        </div>
+        <div class="lm-toggle">
+          <button id="lmToggleCanvas" class="lm-seg" onclick="setLayoutMode('canvas')">🎨 Canvas</button>
+          <button id="lmToggleTabs" class="lm-seg" onclick="setLayoutMode('tabs')">📑 Tabs</button>
+        </div>
+      </div>
+
+      <div class="settings-row">
+        <div>
           <div class="settings-row-label">Customize Dashboard</div>
           <div class="settings-row-sub">Drag &amp; resize panels freely</div>
         </div>
@@ -3784,9 +3856,19 @@
   </style>
   <div class="sample-banner" id="sampleBanner"><span>🎈 You're exploring with <b>sample data</b></span><button onclick="clearSampleData()">Clear &amp; start fresh</button></div>
   <div class="momentum-strip" id="momentumStrip"></div>
+  <!-- Quick shortcuts (Tab-mode Overview only) -->
+  <div class="ov-shortcuts" id="ovShortcuts">
+    <button onclick="openAddExpense()"><span class="ovs-ico">💸</span>Add Expense</button>
+    <button onclick="openAddReceived()"><span class="ovs-ico">💚</span>Add Income</button>
+    <button onclick="openAddCommitment()"><span class="ovs-ico">📅</span>Add Bill</button>
+    <button onclick="openAddGoal()"><span class="ovs-ico">🎯</span>Add Goal</button>
+  </div>
 
   <!-- Mobile panel tabs (inside app-body so they're visible over the fixed overlay) -->
   <div class="mpanel-tabs" id="mpanelTabs">
+    <div class="mpanel-tab-grp" data-mpanel="overview">
+      <button class="mpanel-tab-lbl" onclick="switchMPanel('overview')">🏠 Overview</button>
+    </div>
     <div class="mpanel-tab-grp active" data-mpanel="expenses">
       <button class="mpanel-tab-lbl" onclick="switchMPanel('expenses')">💸 Expenses</button>
       <button class="mpanel-tab-add" onclick="openAddExpense()">+</button>
@@ -5079,7 +5161,29 @@
   </div>
 </div>
 
+<!-- First-run layout picker -->
+<div class="modal-overlay" id="layoutPickerModal" style="z-index:9500;">
+  <div class="modal" style="max-width:430px;">
+    <div class="modal-icon">🎛️</div>
+    <div class="modal-title">How do you want your app?</div>
+    <div class="modal-sub">Pick a layout — you can switch anytime in Settings.</div>
+    <div class="lp-choices">
+      <button class="lp-card" onclick="pickLayout('tabs')">
+        <div class="lp-ico">📑</div>
+        <div class="lp-name">Simple Tabs <span class="lp-badge">Easiest</span></div>
+        <div class="lp-desc">One app per screen with a menu at the bottom — like your e-wallet apps.</div>
+      </button>
+      <button class="lp-card" onclick="pickLayout('canvas')">
+        <div class="lp-ico">🎨</div>
+        <div class="lp-name">Free Canvas</div>
+        <div class="lp-desc">See everything at once and drag/resize panels however you like.</div>
+      </button>
+    </div>
+  </div>
+</div>
+
 <div id="toast"></div>
+<div id="undoToast"><span id="undoToastMsg"></span><button id="undoToastBtn" onclick="_doUndo()">Undo</button></div>
 
 <!-- ══════════════════════════════════════════════════════
      SCRIPT
@@ -5717,6 +5821,35 @@ function showToast(msg, ms) {
   t.textContent = msg;
   t.classList.add('show');
   setTimeout(function() { t.classList.remove('show'); }, ms || 2500);
+}
+
+// ── Undo toast: shown after a delete so it can be reversed for a few seconds ──
+var _undoFn = null, _undoTimer = null;
+function showUndoToast(msg, restoreFn) {
+  _undoFn = restoreFn || null;
+  var t = document.getElementById('undoToast');
+  var m = document.getElementById('undoToastMsg');
+  if (m) m.textContent = msg || 'Deleted';
+  if (t) t.classList.add('show');
+  clearTimeout(_undoTimer);
+  _undoTimer = setTimeout(_hideUndo, 5000);
+}
+function _hideUndo() {
+  _undoFn = null; clearTimeout(_undoTimer);
+  var t = document.getElementById('undoToast');
+  if (t) t.classList.remove('show');
+}
+function _doUndo() {
+  var fn = _undoFn; _undoFn = null;
+  _hideUndo();
+  if (fn) { try { fn(); } catch (e) {} }
+}
+// Confirm → delete → offer Undo. opts: { confirm, label, remove, restore }
+function deleteWithUndo(opts) {
+  if (opts.confirm && !confirm(opts.confirm)) return false;
+  try { opts.remove(); } catch (e) { return false; }
+  showUndoToast(opts.label || 'Deleted · you can undo', opts.restore);
+  return true;
 }
 
 // Tap-friendly help tooltip: tapping a "?" dot shows a small bubble near it.
@@ -6622,13 +6755,23 @@ function saveDebtEntry() {
 }
 
 function deleteDebt(id) {
-  if (!confirm('Remove this debt entry?')) return;
-  saveDebts(loadDebts().filter(function(e) { return e.id !== id; }));
-  syncDebtCommitments();
-  renderDebtPanel();
-  renderCommitments();
-  renderDashboard();
-  showToast('Debt removed');
+  var target = loadDebts().find(function(e) { return e.id === id; });
+  if (!target) return;
+  deleteWithUndo({
+    confirm: 'Remove this debt entry?',
+    label: 'Debt deleted',
+    remove: function() {
+      saveDebts(loadDebts().filter(function(e) { return e.id !== id; }));
+      syncDebtCommitments();
+      renderDebtPanel(); renderCommitments(); renderDashboard();
+    },
+    restore: function() {
+      var l = loadDebts(); l.push(target); saveDebts(l);
+      syncDebtCommitments();
+      renderDebtPanel(); renderCommitments(); renderDashboard();
+      showToast('Debt restored');
+    }
+  });
 }
 
 function syncDebtCommitments() {
@@ -7689,22 +7832,29 @@ function deleteExpenseAt(sortedIdx) {
   const target = _lastExpenseList[sortedIdx];
   if (!target) { showToast('Entry not found — try refreshing'); return; }
 
-  // Use object-reference equality (shallow copy from .slice() shares refs)
-  const newList = loadExpenses().filter(function(e) {
-    // Primary: same object reference
-    if (e === target) return false;
-    // Fallback: match by all fields (catches cross-render edge cases)
-    if (e.date === target.date &&
-        e.description === target.description &&
-        String(e.amount) === String(target.amount) &&
-        e.category === target.category) return false;
-    return true;
+  deleteWithUndo({
+    confirm: 'Delete this expense?',
+    label: 'Expense deleted',
+    remove: function() {
+      // Use object-reference equality (shallow copy from .slice() shares refs)
+      var newList = loadExpenses().filter(function(e) {
+        if (e === target) return false;
+        if (e.date === target.date &&
+            e.description === target.description &&
+            String(e.amount) === String(target.amount) &&
+            e.category === target.category) return false;
+        return true;
+      });
+      saveExpenses(newList);
+      renderPanelA();
+      renderBudget();
+    },
+    restore: function() {
+      var list = loadExpenses(); list.push(target); saveExpenses(list);
+      renderPanelA(); renderBudget();
+      showToast('Expense restored');
+    }
   });
-
-  saveExpenses(newList);
-  renderPanelA();
-  renderBudget();
-  showToast('Expense removed');
 }
 
 // ═══════════════════════════════════════════════════
@@ -7876,11 +8026,22 @@ function saveAccount() {
 function deleteAccount(id) {
   var a = accountById(id);
   if (!a) return;
-  if (!confirm('Delete "' + a.name + '"? Expenses paid from it stay logged but lose their bank tag.')) return;
-  saveAccounts(loadAccounts().filter(function (x) { return x.id !== id; }));
-  if (getSalaryBank() === id) localStorage.removeItem(SALARY_BANK_KEY); // drop dangling salary tag
-  renderAccountsList();
-  showToast('Account deleted');
+  var idx = loadAccounts().findIndex(function (x) { return x.id === id; });
+  var wasSalaryBank = (getSalaryBank() === id);
+  deleteWithUndo({
+    confirm: 'Delete "' + a.name + '"? Expenses paid from it stay logged but lose their bank tag.',
+    label: 'Account deleted',
+    remove: function() {
+      saveAccounts(loadAccounts().filter(function (x) { return x.id !== id; }));
+      if (wasSalaryBank) localStorage.removeItem(SALARY_BANK_KEY); // drop dangling salary tag
+      renderAccountsList();
+    },
+    restore: function() {
+      var l = loadAccounts(); l.splice(Math.max(0, Math.min(idx, l.length)), 0, a); saveAccounts(l);
+      if (wasSalaryBank) localStorage.setItem(SALARY_BANK_KEY, id);
+      renderAccountsList(); showToast('Account restored');
+    }
+  });
 }
 
 function openTransferModal() {
@@ -7913,9 +8074,20 @@ function saveTransfer() {
 }
 
 function deleteTransfer(id) {
-  saveTransfers(loadTransfers().filter(function (t) { return t.id !== id; }));
-  renderAccountsList();
-  showToast('Transfer removed');
+  var target = loadTransfers().find(function (t) { return t.id === id; });
+  if (!target) return;
+  deleteWithUndo({
+    confirm: 'Delete this transfer?',
+    label: 'Transfer deleted',
+    remove: function() {
+      saveTransfers(loadTransfers().filter(function (t) { return t.id !== id; }));
+      renderAccountsList();
+    },
+    restore: function() {
+      var l = loadTransfers(); l.push(target); saveTransfers(l);
+      renderAccountsList(); showToast('Transfer restored');
+    }
+  });
 }
 
 // Populate a <select> with the buyer's accounts (used in expense / received modals).
@@ -8033,15 +8205,25 @@ function renderReceivedList() {
 function deleteReceived(idx) {
   const target = _lastReceivedList[idx];
   if (!target) return;
-  const list = loadReceived().filter(function(e) {
-    if (e === target) return false;
-    if (e.date === target.date && e.description === target.description && String(e.amount) === String(target.amount)) return false;
-    return true;
+  deleteWithUndo({
+    confirm: 'Delete this entry?',
+    label: 'Entry deleted',
+    remove: function() {
+      var list = loadReceived().filter(function(e) {
+        if (e === target) return false;
+        if (e.date === target.date && e.description === target.description && String(e.amount) === String(target.amount)) return false;
+        return true;
+      });
+      saveReceivedList(list);
+      renderReceivedList();
+      renderDashboard();
+    },
+    restore: function() {
+      var list = loadReceived(); list.push(target); saveReceivedList(list);
+      renderReceivedList(); renderDashboard();
+      showToast('Entry restored');
+    }
   });
-  saveReceivedList(list);
-  renderReceivedList();
-  renderDashboard();
-  showToast('Entry removed');
 }
 
 function openAddReceived() {
@@ -8818,7 +9000,8 @@ function applyModuleVisibility() {
     var on = _activeModules.indexOf(id) >= 0 && isModuleUnlocked(id);
     if (!isMobile) el.style.display = on ? '' : 'none';
   });
-  if (isMobile) _initMobilePanels();
+  if (getLayoutMode() === 'tabs') { applyLayoutMode(); }
+  else if (isMobile) { _initMobilePanels(); }
 }
 
 function addModule(id) {
@@ -9766,6 +9949,49 @@ function initModuleRemoveButtons() {
 // FREE-FORM PANEL LAYOUT
 // ═══════════════════════════════════════════════════
 var LAYOUT_KEY     = (activeProfileId ? activeProfileId + '__' : '') + 'mft_layout';
+var LAYOUT_MODE_KEY = (activeProfileId ? activeProfileId + '__' : '') + 'mft_layout_mode';
+// 'canvas' (free-form drag) or 'tabs' (one app per screen). '' = not chosen yet.
+function getLayoutMode() { return localStorage.getItem(LAYOUT_MODE_KEY) || 'canvas'; }
+function setLayoutMode(m) {
+  localStorage.setItem(LAYOUT_MODE_KEY, m);
+  var t = document.getElementById('lmToggleCanvas'), b = document.getElementById('lmToggleTabs');
+  if (t) t.classList.toggle('active', m === 'canvas');
+  if (b) b.classList.toggle('active', m === 'tabs');
+  applyLayoutMode();
+}
+// First-run picker: ask the buyer to choose Tabs or Canvas once.
+function pickLayout(mode) {
+  setLayoutMode(mode);
+  var m = document.getElementById('layoutPickerModal');
+  if (m) m.classList.remove('open');
+  showToast(mode === 'tabs' ? '📑 Tab layout on — switch anytime in Settings' : '🎨 Canvas layout on');
+}
+function checkLayoutPicker() {
+  if (!activeProfileId) return;
+  if (localStorage.getItem(LAYOUT_MODE_KEY) !== null) return;       // already chosen
+  if (!localStorage.getItem(ONBOARDED_KEY)) return;                 // finish onboarding first
+  setTimeout(function() {
+    var m = document.getElementById('layoutPickerModal');
+    if (m) m.classList.add('open');
+  }, 650);
+}
+
+function applyLayoutMode() {
+  var tabs = getLayoutMode() === 'tabs';
+  document.body.classList.toggle('tabmode', tabs);
+  if (tabs) {
+    // Tab mode works at any width — clear any canvas positioning so the active
+    // panel flows and fills the screen.
+    document.querySelectorAll('[data-panel]').forEach(function(el) {
+      el.style.top = ''; el.style.left = ''; el.style.width = ''; el.style.height = '';
+    });
+    _initMobilePanels();
+  } else if (window.innerWidth <= 768) {
+    _initMobilePanels();
+  } else {
+    applyLayout();
+  }
+}
 var _layoutEditing = false;
 var _dragging      = null;
 var _resizing      = null;
@@ -9969,6 +10195,10 @@ function openSettings() {
   if (estBtn) { estBtn.textContent = _showEstIncome ? '● On' : '○ Off'; estBtn.classList.toggle('active', _showEstIncome); }
   var layoutBtn = document.getElementById('btnLayoutSettings');
   if (layoutBtn) { layoutBtn.textContent = _layoutEditing ? '✓ Active' : '⊞ Customize'; layoutBtn.classList.toggle('active', _layoutEditing); }
+  var _lm = getLayoutMode();
+  var lmC = document.getElementById('lmToggleCanvas'), lmT = document.getElementById('lmToggleTabs');
+  if (lmC) lmC.classList.toggle('active', _lm === 'canvas');
+  if (lmT) lmT.classList.toggle('active', _lm === 'tabs');
   // Sync currency picker
   var sel = document.getElementById('currencySelect');
   if (sel) {
@@ -10751,11 +10981,21 @@ function saveCommitment() {
 
 function deleteCommitment(id) {
   var c = loadCommitments().find(function(x) { return x.id === id; });
-  if (c && c.debtId) { showToast('This is a debt payment — edit it in the Debt Tracker module'); return; }
-  if (!confirm('Remove this commitment?')) return;
-  saveCommitments(loadCommitments().filter(function(c) { return c.id !== id; }));
-  renderCommitments();
-  renderDashboard();
+  if (!c) return;
+  if (c.debtId) { showToast('This is a debt payment — edit it in the Debt Tracker module'); return; }
+  var idx = loadCommitments().findIndex(function(x) { return x.id === id; });
+  deleteWithUndo({
+    confirm: 'Remove this commitment?',
+    label: 'Commitment deleted',
+    remove: function() {
+      saveCommitments(loadCommitments().filter(function(x) { return x.id !== id; }));
+      renderCommitments(); renderDashboard();
+    },
+    restore: function() {
+      var l = loadCommitments(); l.splice(Math.max(0, Math.min(idx, l.length)), 0, c); saveCommitments(l);
+      renderCommitments(); renderDashboard(); showToast('Commitment restored');
+    }
+  });
 }
 
 // ═══════════════════════════════════════════════════
@@ -11071,12 +11311,22 @@ function saveGoal() {
 }
 
 function deleteGoal(id) {
-  if (!confirm('Delete this goal and all its contributions?')) return;
-  saveGoals(loadGoals().filter(function(g) { return g.id !== id; }));
-  delete _expandedGoals[id];
-  delete _goalAdviceOpen[id];
-  delete _goalAdviceFreq[id];
-  renderPanelB();
+  var target = loadGoals().find(function(g) { return g.id === id; });
+  if (!target) return;
+  var idx = loadGoals().findIndex(function(g) { return g.id === id; });
+  deleteWithUndo({
+    confirm: 'Delete this goal and all its contributions?',
+    label: 'Goal deleted',
+    remove: function() {
+      saveGoals(loadGoals().filter(function(g) { return g.id !== id; }));
+      delete _expandedGoals[id]; delete _goalAdviceOpen[id]; delete _goalAdviceFreq[id];
+      renderPanelB();
+    },
+    restore: function() {
+      var l = loadGoals(); l.splice(Math.max(0, Math.min(idx, l.length)), 0, target); saveGoals(l);
+      renderPanelB(); showToast('Goal restored');
+    }
+  });
 }
 
 // ── Log Contribution ──
@@ -12077,24 +12327,52 @@ var _activeMPanel  = "expenses";
 function switchMPanel(name) {
   _activeMPanel = name;
   _initMobilePanels();
-  // Scroll the tapped panel into view smoothly
-  var el = document.querySelector('[data-panel="' + name + '"]');
-  if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  if (getLayoutMode() === 'tabs') {
+    var ab = document.querySelector('.app-body'); if (ab) ab.scrollTop = 0;
+  } else {
+    var el = document.querySelector('[data-panel="' + name + '"]');
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+}
+
+// The Overview cluster = greeting + dashboard + momentum + shortcuts.
+function _overviewEls() {
+  var els = ['mobileGreeting', 'momentumStrip', 'ovShortcuts'].map(function(id) { return document.getElementById(id); });
+  els.push(document.querySelector('.dashboard'));
+  return els;
 }
 
 function _initMobilePanels() {
-  if (window.innerWidth <= 768) {
-    // Show ALL enabled panels — user scrolls through them
+  var tabMode = getLayoutMode() === 'tabs';
+  if (!tabMode && window.innerWidth > 768) return; // desktop canvas handled by applyLayout
+  var cluster = _overviewEls();
+
+  if (tabMode) {
+    // One screen at a time: Overview, or a single module panel.
+    if (_activeMPanel !== 'overview' && _activeModules.indexOf(_activeMPanel) < 0) _activeMPanel = 'overview';
+    var showOverview = (_activeMPanel === 'overview');
+    cluster.forEach(function(el) { if (el) el.style.display = showOverview ? '' : 'none'; });
     document.querySelectorAll('[data-panel]').forEach(function(el) {
       var p = el.dataset.panel;
-      var isEnabled = (_activeModules.indexOf(p) >= 0);
-      el.style.display = isEnabled ? 'flex' : 'none';
+      el.style.display = (!showOverview && p === _activeMPanel && _activeModules.indexOf(p) >= 0) ? 'flex' : 'none';
     });
-    // Highlight active tab but don't hide any enabled tab
     document.querySelectorAll('.mpanel-tab-grp').forEach(function(grp) {
       var p = grp.dataset.mpanel;
-      var enabled = _activeModules.indexOf(p) >= 0;
-      grp.style.display = enabled ? '' : 'none';
+      var vis = (p === 'overview') || (_activeModules.indexOf(p) >= 0);
+      grp.style.display = vis ? '' : 'none';
+      grp.classList.toggle('active', p === _activeMPanel);
+    });
+  } else {
+    // Canvas mode on mobile — show ALL enabled panels stacked (original behaviour).
+    cluster.forEach(function(el) { if (el) el.style.display = ''; });
+    document.querySelectorAll('[data-panel]').forEach(function(el) {
+      var p = el.dataset.panel;
+      el.style.display = (_activeModules.indexOf(p) >= 0) ? 'flex' : 'none';
+    });
+    document.querySelectorAll('.mpanel-tab-grp').forEach(function(grp) {
+      var p = grp.dataset.mpanel;
+      var vis = (p !== 'overview') && (_activeModules.indexOf(p) >= 0); // no Overview tab in canvas
+      grp.style.display = vis ? '' : 'none';
       grp.classList.toggle('active', p === _activeMPanel);
     });
   }
@@ -13520,6 +13798,7 @@ function mobileFabClick() {
 
 // Restore panel visibility when switching between mobile and desktop
 window.addEventListener("resize", function() {
+  if (getLayoutMode() === 'tabs') { applyLayoutMode(); return; }
   if (window.innerWidth > 768) {
     document.querySelectorAll("[data-panel]").forEach(function(el) {
       el.style.display = "";
@@ -14585,6 +14864,7 @@ function _renderWnRelease(r) {
 function checkWhatsNew() {
   if (!activeProfileId) return;
   if (!localStorage.getItem(ONBOARDED_KEY)) return; // brand-new users get onboarding, not this
+  if (localStorage.getItem(LAYOUT_MODE_KEY) === null) return; // let the layout picker go first
   if (!CHANGELOG.length) return;
   if (localStorage.getItem(SEEN_CHANGELOG_KEY) === _latestChangelogId()) return;
   var body = document.getElementById("whatsNewBody");
@@ -14661,6 +14941,8 @@ function _closeOnboarding() {
   localStorage.setItem(ONBOARDED_KEY, '1');
   var el = document.getElementById('onboardingOverlay');
   if (el) el.classList.remove('open');
+  // New buyers: after onboarding, let them pick their layout.
+  if (localStorage.getItem(LAYOUT_MODE_KEY) === null) { checkLayoutPicker(); return; }
   if (!localStorage.getItem(APPS_HINT_KEY)) setTimeout(showAppsHint, 500);
 }
 
@@ -15235,7 +15517,7 @@ _syncKey = getSyncKey();
   applyModuleVisibility();
   initModuleRemoveButtons();
   applyLayout();
-  _initMobilePanels();
+  applyLayoutMode();
   loadSnapPref();
   loadEstIncomePref();
   loadNotifPref();
@@ -15243,6 +15525,7 @@ _syncKey = getSyncKey();
   enablePushNotifications();
   checkAccessStatus();
   updateTrialCountdown();
+  checkLayoutPicker();
   checkWhatsNew();
   var sellerSection = document.getElementById("sellerToolsSection");
   if (sellerSection && isSellerMode()) sellerSection.style.display = "";
@@ -15251,7 +15534,7 @@ _syncKey = getSyncKey();
   initResize();
   applyFinVisibility();
   // Re-apply layout on orientation/resize so mobile ↔ desktop works
-  window.addEventListener('resize', function() { applyLayout(); });
+  window.addEventListener('resize', function() { applyLayoutMode(); });
 })();
 </script>
 <!-- ── First-login Onboarding ─────────────────────────── -->
