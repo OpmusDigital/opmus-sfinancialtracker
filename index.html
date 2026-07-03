@@ -1621,6 +1621,10 @@
       .dash-label { font-size: 0.65rem; }
       .dash-hero { min-width: 100%; }
       .dash-hero .dash-val { font-size: 2rem; }
+      /* Give the performance chips room to breathe (was cramped between the
+         dashboard and the mobile tab bar) */
+      .momentum-strip { padding: 0.55rem 1rem 0.8rem; margin: 0.1rem 0 0.2rem; gap: 0.55rem; }
+      .mo-chip { padding: 0.6rem 0.9rem; }
 
       /* ─ Mobile panel tabs visible ─ */
       .mpanel-tabs { display: flex; }
@@ -10249,7 +10253,9 @@ function _cniViewData() {
     if (!(curNett > 0)) curNett = _calcNett(loadSalaryConfig());
     income = curNett + _receivedForMonth(y, mi);
   } else {
-    income = _basicNettIncome();
+    // Basic nett income for the month, plus any money received logged that month
+    // (0 for future months) — keeps each month's CNI stable and consistent.
+    income = _basicNettIncome() + _receivedForMonth(y, mi);
   }
   var pct = income > 0 ? (commit / income) * 100 : 0;
   return { y: y, mi: mi, isNow: isNow, commit: commit, income: income, pct: pct, band: _cniBand(pct), label: ALL_MONTHS[mi] + ' ' + y };
@@ -10297,6 +10303,10 @@ function openCniPlan() {
   html += '<div style="font-size:2.2rem;font-weight:800;line-height:1.1;color:' + vd.band.color + ';margin-top:0.2rem;">' + vd.pct.toFixed(1) + '%</div>';
   html += '<div style="font-size:0.8rem;font-weight:700;color:' + vd.band.color + ';">' + vd.band.label + '</div>';
   html += '<div style="font-size:0.72rem;color:#94a3b8;margin-top:0.3rem;">' + fmt(vd.commit) + ' commitments &middot; ' + fmt(vd.income) + ' income</div>';
+  var _cniRcv = _receivedForMonth(vd.y, vd.mi);
+  if (_cniRcv > 0) {
+    html += '<div style="font-size:0.63rem;color:#22c55e;margin-top:2px;">includes + ' + fmt(_cniRcv) + ' money received &middot; ' + fmt(vd.income - _cniRcv) + ' pay</div>';
+  }
   html += '</div>';
 
   // Per-commitment breakdown for the viewed month.
