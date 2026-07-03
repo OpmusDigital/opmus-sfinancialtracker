@@ -443,13 +443,24 @@
     /* Dashboard strip */
     .dashboard {
       padding: 1.25rem 2rem 1rem;
-      display: flex; gap: 1rem; align-items: stretch; flex-shrink: 0;
+      display: flex; flex-direction: column; gap: 0.75rem; align-items: stretch; flex-shrink: 0;
     }
+    .dash-details { display: flex; gap: 1rem; align-items: stretch; }
     .dash-card {
       background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
       border-radius: 14px; padding: 1rem 1.25rem; flex: 1;
       display: flex; flex-direction: column; gap: 0.25rem;
     }
+    /* Hero (green) card — the one number that matters */
+    .dash-hero { cursor: pointer; align-items: center; text-align: center; padding: 1.35rem 1.25rem; transition: background 0.15s; }
+    .dash-hero:hover { background: rgba(34,197,94,0.1); }
+    .dash-hero .dash-val { font-size: 2.5rem; line-height: 1.05; }
+    .dash-hero .dash-sub { font-size: 0.78rem; }
+    .dash-hero-caret { font-size: 0.62rem; color: #64748b; margin-top: 0.4rem; letter-spacing: 0.05em; text-transform: uppercase; font-weight: 600; }
+    /* Tap-friendly help tooltips ("?" bubbles) */
+    .help-dot { display: inline-flex; align-items: center; justify-content: center; width: 15px; height: 15px; border-radius: 50%; background: rgba(148,163,184,0.22); color: #94a3b8; font-size: 0.6rem; font-weight: 800; cursor: pointer; margin-left: 5px; vertical-align: middle; user-select: none; flex-shrink: 0; }
+    .help-dot:hover { background: rgba(148,163,184,0.4); color: #e2e8f0; }
+    .help-pop { position: fixed; z-index: 10060; max-width: 240px; background: #1e293b; border: 1px solid rgba(255,255,255,0.14); border-radius: 10px; padding: 0.6rem 0.75rem; font-size: 0.72rem; line-height: 1.5; color: #e2e8f0; box-shadow: 0 8px 26px rgba(0,0,0,0.45); display: none; text-transform: none; letter-spacing: normal; font-weight: 400; }
     .dash-card.red { border-color: rgba(239,68,68,0.25); background: rgba(239,68,68,0.06); }
     .dash-card.green { border-color: rgba(34,197,94,0.25); background: rgba(34,197,94,0.06); }
     .dash-card.blue { border-color: rgba(59,130,246,0.25); background: rgba(59,130,246,0.06); }
@@ -1601,12 +1612,15 @@
       .mg-tablet-row { display: flex; }
 
       /* ─ Dashboard: full-width cards ─ */
-      .dashboard { padding: 0.75rem 1rem 0.5rem; flex-wrap: wrap; gap: 0.5rem; }
+      .dashboard { padding: 0.75rem 1rem 0.5rem; gap: 0.5rem; }
+      .dash-details { flex-wrap: wrap; gap: 0.5rem; }
       .dash-card { min-width: calc(50% - 0.25rem); flex: 1 1 calc(50% - 0.25rem); padding: 0.75rem 1rem; }
       /* If there's an odd card out (e.g. grey card alone in a row), stretch it full width */
-      .dash-card:last-child:nth-child(odd) { min-width: 100%; flex: 1 1 100%; }
+      .dash-details .dash-card:last-child:nth-child(odd) { min-width: 100%; flex: 1 1 100%; }
       .dash-val { font-size: 1.1rem; }
       .dash-label { font-size: 0.65rem; }
+      .dash-hero { min-width: 100%; }
+      .dash-hero .dash-val { font-size: 2rem; }
 
       /* ─ Mobile panel tabs visible ─ */
       .mpanel-tabs { display: flex; }
@@ -2982,7 +2996,72 @@
           </div>
         </div>
 
-        <div class="guide-tip">💡 <b>Tip:</b> Expenses you log here automatically count towards your Budget Planner categories and your Dashboard's "Total Money Spend" — no need to enter anything twice.</div>
+        <div class="guide-tip">💡 <b>Tip:</b> Expenses you log here automatically count towards your Budget Planner categories and your Dashboard's "Money You Actually Spent" — no need to enter anything twice.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="guide-acc-item" data-guide-id="accounts">
+        <button class="guide-acc-header" onclick="toggleGuideSection('accounts')">
+          <span class="guide-acc-icon" style="background:rgba(59,130,246,0.14); color:#3b82f6;">🏦</span>
+          <span class="guide-acc-title">Bank Accounts <span class="guide-acc-new" style="font-size:0.6rem;font-weight:700;color:#22c55e;background:rgba(34,197,94,0.12);border-radius:6px;padding:1px 6px;margin-left:4px;">NEW</span><span class="guide-acc-sub">Track how much money is in each bank</span></span>
+          <span class="guide-acc-chevron">⌄</span>
+        </button>
+        <div class="guide-acc-content" id="guideContent-accounts">
+          <div class="guide-acc-inner">
+        <div class="guide-intro">Inside the Expense Tracker there's a new <b>🏦 Accounts</b> tab. Create your banks and e-wallets (CIMB, GXBank, Maybank, Bank Islam…) and the app tracks how much money is left in each one — separately from the dashboard totals.</div>
+
+        <div class="guide-h3">Setting Up Your Banks</div>
+        <div class="guide-item">
+          <div class="guide-item-icon">➕</div>
+          <div class="guide-item-body">
+            <div class="guide-item-title">+ Add</div>
+            <div class="guide-item-desc">Create an account with a name, its <b>Starting balance</b> (how much is in it right now), and a colour. You can pick any colour using the rainbow "custom" swatch. Tap ✎ to edit or ✕ to delete later.</div>
+          </div>
+        </div>
+        <div class="guide-item">
+          <div class="guide-item-icon">💰</div>
+          <div class="guide-item-body">
+            <div class="guide-item-title">Salary paid into</div>
+            <div class="guide-item-desc">At the top of the Accounts tab, choose which bank your monthly salary lands in. That account then adds your cycle's nett income as money in (and shows a green 💰 Salary badge).</div>
+          </div>
+        </div>
+
+        <div class="guide-h3">Tagging Where Money Comes &amp; Goes</div>
+        <div class="guide-item">
+          <div class="guide-item-icon">🏷️</div>
+          <div class="guide-item-body">
+            <div class="guide-item-title">"Paid from" / "Into account"</div>
+            <div class="guide-item-desc">When adding an <b>expense</b>, a <b>commitment/bill</b>, or a <b>debt</b>, pick the bank it's paid from — that amount is deducted from that bank. When adding <b>Money Received</b>, pick the bank it went into. These tags are optional and never change your dashboard numbers.</div>
+          </div>
+        </div>
+        <div class="guide-item">
+          <div class="guide-item-icon">✓</div>
+          <div class="guide-item-body">
+            <div class="guide-item-title">Bills leave when paid</div>
+            <div class="guide-item-desc">A tagged bill only comes out of its bank once you mark it <b>✓ Done</b> in Commitments — because that's when the money actually leaves. For variable bills it uses the actual amount you entered.</div>
+          </div>
+        </div>
+
+        <div class="guide-h3">Moving Money Between Banks</div>
+        <div class="guide-item">
+          <div class="guide-item-icon">⇄</div>
+          <div class="guide-item-body">
+            <div class="guide-item-title">⇄ Transfer</div>
+            <div class="guide-item-desc">Moving money from one of your banks to another isn't spending. Use <b>⇄ Transfer</b> (top of the Accounts tab) to move an amount from one bank to another — it leaves one and lands in the other, and your dashboard stays untouched. Transfers this cycle are listed below your accounts with a ✕ to undo.</div>
+          </div>
+        </div>
+
+        <div class="guide-h3">Dashboard Cards</div>
+        <div class="guide-item">
+          <div class="guide-item-icon">🟢</div>
+          <div class="guide-item-body">
+            <div class="guide-item-title">Total Across Banks (green card)</div>
+            <div class="guide-item-desc">Once you have banks set up, the green dashboard card shows your total money across all of them, with the description showing what's left after all remaining bills are paid.</div>
+          </div>
+        </div>
+
+        <div class="guide-tip">💡 <b>How balances carry over:</b> Balances are tracked per salary cycle, and when a new cycle begins each bank automatically keeps whatever it ended the previous cycle with — so your money carries forward and grows month to month, like a real bank. For it to stay accurate, remember to tag your expenses/bills and mark bills ✓ Done.</div>
           </div>
         </div>
       </div>
@@ -3659,26 +3738,31 @@
 
   <!-- Dashboard -->
   <div class="dashboard">
-    <div class="dash-card red">
-      <div class="dash-label" id="dashIncomeLabel"><span id="dashIncomeMonth" class="dash-month-hl-red"></span> Nett Income</div>
-      <div class="dash-val red" id="dashIncome">—</div>
-      <div class="dash-sub" id="dashIncomeSub">tap to configure</div>
-      <div id="dashIncomeExtra" style="display:none;font-size:0.62rem;color:#94a3b8;margin-top:0.18rem;line-height:1.3;"></div>
-    </div>
-    <div class="dash-card">
-      <div class="dash-label">Money You Actually Spent</div>
-      <div class="dash-val" id="dashExpenses">—</div>
-      <div class="dash-sub" id="dashExpensesSub">0 entries</div>
-    </div>
-    <div class="dash-card green">
+    <!-- Hero: the one number that matters — tap to reveal the rest -->
+    <div class="dash-card green dash-hero" id="dashHeroCard" onclick="toggleDashDetails()">
       <div class="dash-label" id="dashRemainLabel"><span id="dashRemainMonth" class="dash-month-hl"></span>'s Income Remaining</div>
       <div class="dash-val green" id="dashRemain">—</div>
       <div class="dash-sub" id="dashRemainSub">—</div>
+      <div class="dash-hero-caret" id="dashHeroCaret">Tap for details ⌄</div>
     </div>
-    <div class="dash-card" id="dashEstIncomeCard" style="display:none;border-color:rgba(234,179,8,0.25);background:rgba(234,179,8,0.06);cursor:pointer;" onclick="openEstIncomeModal()" title="Click to set basic pay & deductions">
-      <div class="dash-label" id="dashProjectedLabel">Est. Income</div>
-      <div class="dash-val" style="color:#eab308;" id="dashProjected">—</div>
-      <div class="dash-sub" id="dashProjectedSub">tap to configure</div>
+    <!-- Detail cards — hidden until the hero is tapped -->
+    <div class="dash-details" id="dashDetailCards" style="display:none;">
+      <div class="dash-card red">
+        <div class="dash-label" id="dashIncomeLabel"><span id="dashIncomeMonth" class="dash-month-hl-red"></span> Nett Income<span class="help-dot" onclick="showHelpKey(event,'nett')">?</span></div>
+        <div class="dash-val red" id="dashIncome">—</div>
+        <div class="dash-sub" id="dashIncomeSub">tap to configure</div>
+        <div id="dashIncomeExtra" style="display:none;font-size:0.62rem;color:#94a3b8;margin-top:0.18rem;line-height:1.3;"></div>
+      </div>
+      <div class="dash-card" id="dashEstIncomeCard" style="display:none;border-color:rgba(234,179,8,0.25);background:rgba(234,179,8,0.06);cursor:pointer;" onclick="openEstIncomeModal()" title="Click to set basic pay & deductions">
+        <div class="dash-label" id="dashProjectedLabel">Est. Income</div>
+        <div class="dash-val" style="color:#eab308;" id="dashProjected">—</div>
+        <div class="dash-sub" id="dashProjectedSub">tap to configure</div>
+      </div>
+      <div class="dash-card">
+        <div class="dash-label">Money You Actually Spent<span class="help-dot" onclick="showHelpKey(event,'spent')">?</span></div>
+        <div class="dash-val" id="dashExpenses">—</div>
+        <div class="dash-sub" id="dashExpensesSub">0 entries</div>
+      </div>
     </div>
   </div>
 
@@ -3738,7 +3822,7 @@
         <span class="drag-handle" title="Drag to move">⠿</span>
         <div class="panel-label">
           <div class="panel-badge"><i class="ph-fill ph-chart-pie-slice"></i></div>
-          <span class="panel-name">Budget Planner</span>
+          <span class="panel-name">Budget Planner</span><span class="help-dot" onclick="showHelpKey(event,'m_budget')">?</span>
         </div>
         <div class="panel-actions">
           <button class="icon-btn" onclick="openBudgetSettings()" title="Set budgets">⚙</button>
@@ -3761,7 +3845,7 @@
         <span class="drag-handle" title="Drag to move">⠿</span>
         <div class="panel-label">
           <div class="panel-badge"><i class="ph-fill ph-calendar-check"></i></div>
-          <span class="panel-name">Commitments</span>
+          <span class="panel-name">Commitments</span><span class="help-dot" onclick="showHelpKey(event,'m_commit')">?</span>
         </div>
         <div class="panel-actions">
           <button class="icon-btn red" onclick="openAddCommitment()" title="Add commitment">+</button>
@@ -3784,7 +3868,7 @@
         <span class="drag-handle" title="Drag to move">⠿</span>
         <div class="panel-label">
           <div class="panel-badge" id="panelABadge"><i class="ph-fill ph-receipt"></i></div>
-          <span class="panel-name" id="panelAName">Expense Tracker</span>
+          <span class="panel-name" id="panelAName">Expense Tracker</span><span class="help-dot" onclick="showHelpKey(event,'m_expenses')">?</span>
         </div>
         <div class="panel-actions" id="panelAActions">
           <div class="view-toggle">
@@ -3830,7 +3914,7 @@
         </div>
         <div class="expense-list" id="accountsList"></div>
         <div class="received-total" style="border-top-color:rgba(59,130,246,0.25);">
-          <span class="received-total-label">Total Across Accounts</span>
+          <span class="received-total-label">Total Across Accounts<span class="help-dot" onclick="showHelpKey(event,'m_accounts')">?</span></span>
           <span class="received-total-val" id="accountsTotalVal" style="color:#3b82f6;">—</span>
         </div>
       </div>
@@ -3850,7 +3934,7 @@
         <span class="drag-handle" title="Drag to move">⠿</span>
         <div class="panel-label">
           <div class="panel-badge"><i class="ph-fill ph-crosshair"></i></div>
-          <span class="panel-name">Savings Goals</span>
+          <span class="panel-name">Savings Goals</span><span class="help-dot" onclick="showHelpKey(event,'m_goals')">?</span>
         </div>
         <div class="panel-actions">
           <button class="icon-btn red" onclick="openAddGoal()" title="Add goal">+</button>
@@ -3877,7 +3961,7 @@
         <span class="drag-handle" title="Drag to move">⠿</span>
         <div class="panel-label">
           <div class="panel-badge"><i class="ph-fill ph-timer"></i></div>
-          <span class="panel-name">OT Estimator</span>
+          <span class="panel-name">OT Estimator</span><span class="help-dot" onclick="showHelpKey(event,'m_ot')">?</span>
         </div>
         <div class="panel-actions">
           <button class="icon-btn" id="otRecoBulb" onclick="toggleOtReco()" title="OT Recommendation">💡</button>
@@ -3902,7 +3986,7 @@
         <span class="drag-handle" title="Drag to move">⠿</span>
         <div class="panel-label">
           <div class="panel-badge"><i class="ph-fill ph-arrow-down-left"></i></div>
-          <span class="panel-name">Debt Tracker</span>
+          <span class="panel-name">Debt Tracker</span><span class="help-dot" onclick="showHelpKey(event,'m_debt')">?</span>
         </div>
         <div class="panel-actions">
           <button class="icon-btn red" onclick="openAddDebt()" title="Add debt">+</button>
@@ -3924,7 +4008,7 @@
         <span class="drag-handle" title="Drag to move">⠿</span>
         <div class="panel-label">
           <div class="panel-badge"><i class="ph-fill ph-heart"></i></div>
-          <span class="panel-name">Wedding Planner</span>
+          <span class="panel-name">Wedding Planner</span><span class="help-dot" onclick="showHelpKey(event,'m_wedding')">?</span>
         </div>
         <div class="panel-actions">
           <button class="icon-btn red" onclick="onWpPlusBtn()" title="Add">+</button>
@@ -4006,7 +4090,7 @@
         <span class="drag-handle" title="Drag to move">⠿</span>
         <div class="panel-label">
           <div class="panel-badge"><i class="ph-fill ph-book-open-text"></i></div>
-          <span class="panel-name">Study Planner</span>
+          <span class="panel-name">Study Planner</span><span class="help-dot" onclick="showHelpKey(event,'m_study')">?</span>
         </div>
         <div class="panel-actions">
           <button class="icon-btn red" onclick="onSpPlusBtn()" title="Add">+</button>
@@ -5630,6 +5714,50 @@ function showToast(msg, ms) {
   t.classList.add('show');
   setTimeout(function() { t.classList.remove('show'); }, ms || 2500);
 }
+
+// Tap-friendly help tooltip: tapping a "?" dot shows a small bubble near it.
+function showHelp(ev, text) {
+  if (ev) { ev.stopPropagation(); if (ev.preventDefault) ev.preventDefault(); }
+  var pop = document.getElementById('helpPop');
+  if (!pop) { pop = document.createElement('div'); pop.id = 'helpPop'; pop.className = 'help-pop'; document.body.appendChild(pop); }
+  pop.textContent = text;
+  pop.style.display = 'block';
+  var r = (ev && ev.currentTarget) ? ev.currentTarget.getBoundingClientRect() : { left: 20, right: 40, top: 60, bottom: 76, width: 20 };
+  var pw = pop.offsetWidth, ph = pop.offsetHeight;
+  var left = r.left + r.width / 2 - pw / 2;
+  left = Math.max(10, Math.min(left, window.innerWidth - pw - 10));
+  var top = r.bottom + 8;
+  if (top + ph > window.innerHeight - 10) top = r.top - ph - 8; // flip above if no room
+  pop.style.left = left + 'px';
+  pop.style.top = Math.max(10, top) + 'px';
+}
+document.addEventListener('click', function (e) {
+  var pop = document.getElementById('helpPop');
+  if (pop && pop.style.display === 'block' && !(e.target.classList && e.target.classList.contains('help-dot'))) {
+    pop.style.display = 'none';
+  }
+});
+// Plain-language explanations, referenced by short key so they work in both
+// static HTML and dynamically-built labels without quote-escaping trouble.
+var HELP_TIPS = {
+  nett:   'Your take-home pay — salary after EPF, SOCSO and deductions, plus allowances.',
+  spent:  'Money you have actually spent: logged expenses plus any bills you marked paid this cycle. Upcoming unpaid bills are not counted yet.',
+  est:    'A projection of your next payday take-home — your basic nett pay plus your estimated OT. Tap the card to set it up.',
+  banks:  'Total money across all your banks right now. Tap the card to see the breakdown.',
+  remain: 'What is left of this cycle income after your spending and commitments.',
+  cni:    'Commitment Health — how much of your income goes to fixed commitments. Lower is healthier.',
+  m_budget:   'Set a monthly spending limit for each category and see how much you have left.',
+  m_commit:   'Your fixed monthly payments (rent, subscriptions, loans). Tap the ✓ once you have paid each one.',
+  m_expenses: 'Log your daily spending here. Tag each expense to a category — and, if you like, the bank you paid from.',
+  m_goals:    'Set savings targets (or open-ended ones like ASNB) and track your progress towards them.',
+  m_ot:       'Log your overtime hours to estimate how much extra OT pay you will earn this month.',
+  m_debt:     'Track loans, credit cards and BNPL — see your remaining balance and payoff progress.',
+  m_wedding:  'Plan and track every wedding expense, payment and deadline in one place.',
+  m_study:    'Track assignments, exams and subject progress, with deadline reminders.',
+  m_accounts: 'Your banks & e-wallets. Each card shows how much money is left in it. Tag expenses/bills to a bank, and use ⇄ Transfer to move money between them.'
+};
+function showHelpKey(ev, key) { showHelp(ev, HELP_TIPS[key] || ''); }
+function _helpDot(key) { return '<span class="help-dot" onclick="showHelpKey(event,\'' + key + '\')">?</span>'; }
 function autoAdvanceDate(el, nextId, maxLen) {
   if (el.value.length >= maxLen) {
     const next = document.getElementById(nextId);
@@ -7147,7 +7275,7 @@ function renderDashboard() {
   var _banksTotal = _allBanksTotal();
   if (_banksTotal !== null) {
     // Green card = total money across ALL banks right now.
-    if (remLabel) remLabel.innerHTML = '💰 Total Across Banks';
+    if (remLabel) remLabel.innerHTML = '💰 Total Across Banks' + _helpDot('banks');
     document.getElementById('dashRemain').textContent = fmt(_banksTotal);
     // Description = what's left once every remaining bill is paid.
     document.getElementById('dashRemainSub').textContent = _expUnpaidAmt > 0
@@ -7155,7 +7283,7 @@ function renderDashboard() {
       : 'all bills paid ✓';
   } else {
     // No bank accounts yet — fall back to the salary-based income remaining.
-    if (remLabel) remLabel.innerHTML = '<span id="dashRemainMonth" class="dash-month-hl">' + periodMonthName + '</span>\'s Income Remaining';
+    if (remLabel) remLabel.innerHTML = '<span id="dashRemainMonth" class="dash-month-hl">' + periodMonthName + '</span>\'s Income Remaining' + _helpDot('remain');
     document.getElementById('dashRemain').textContent = salary > 0 ? fmt(remain) : fmtCurDash();
     document.getElementById('dashRemainSub').textContent =
       salary > 0
@@ -7197,7 +7325,7 @@ function renderDashboard() {
     var projected = nettBase + otPay;
 
     var labelEl = document.getElementById('dashProjectedLabel');
-    if (labelEl) labelEl.innerHTML = 'Est. <span style="color:#eab308;font-weight:700;">' + tgtName + '</span> Income';
+    if (labelEl) labelEl.innerHTML = 'Est. <span style="color:#eab308;font-weight:700;">' + tgtName + '</span> Income' + _helpDot('est');
     var valEl = document.getElementById('dashProjected');
     if (valEl) valEl.textContent = gross2 > 0 ? fmt(projected) : '—';
     var subEl = document.getElementById('dashProjectedSub');
@@ -7216,6 +7344,22 @@ function renderDashboard() {
   try { renderMomentum();      } catch (e) {}
   try { _renderSampleBanner(); } catch (e) {}
   if (_panelATab === 'accounts') { try { renderAccountsList(); } catch (e) {} }
+  try { _applyDashDetails(); } catch (e) {}
+}
+
+// Hero card: show/hide the detail cards (income, est, spent). State is remembered
+// per-device so it doesn't reset on every render/reload.
+function _applyDashDetails() {
+  var show = localStorage.getItem('opmus_dash_expanded') === '1';
+  var d = document.getElementById('dashDetailCards');
+  if (d) d.style.display = show ? 'flex' : 'none';
+  var caret = document.getElementById('dashHeroCaret');
+  if (caret) caret.textContent = show ? 'Hide details ⌃' : 'Tap for details ⌄';
+}
+function toggleDashDetails() {
+  var show = localStorage.getItem('opmus_dash_expanded') !== '1';
+  try { _lsSet('opmus_dash_expanded', show ? '1' : '0'); } catch (e) {}
+  _applyDashDetails();
 }
 
 // ── Momentum / wins strip — motivating "you're making progress" chips ──
@@ -8584,7 +8728,17 @@ var UPCOMING_MODULES = [
   { id:'ramadan',    name:'Ramadan Planner',    icon:'ph-moon-stars',      desc:'Ibadah tracker, sahur/iftar times & Ramadan goals',   color:'#10b981' }
 ];
 var ACTIVE_MODULES_KEY = (activeProfileId ? activeProfileId + '__' : '') + 'mft_active_modules';
-var DEFAULT_MODULES = ['budget','commit','expenses','goals','debt','ot'];
+// Lean first-run set — new buyers start with just the essentials ON; everything
+// else waits in the App Library, ready to switch on. (Existing users keep their
+// saved setup — this default only applies when nothing is saved yet.)
+var DEFAULT_MODULES = ['expenses','budget','commit'];
+// App Library grouping — tidy shelves instead of one long flat list.
+var MODULE_CATEGORIES = [
+  { title: '💵 Daily Money',   ids: ['expenses','budget'] },
+  { title: '📅 Planning',      ids: ['commit','debt','goals'] },
+  { title: '💼 Work & Income', ids: ['ot'] },
+  { title: '🎉 Life Events',   ids: ['wedding','study'] }
+];
 var _activeModules  = DEFAULT_MODULES.slice();
 
 // ── Premium module entitlement (gift-code redemption) ─────
@@ -8798,17 +8952,21 @@ function renderAppLibrary() {
   + '<input type="text" id="redeemCodeInput" class="form-input" placeholder="Have a gift code? Enter it here" onkeydown="if(event.key===\'Enter\')redeemGiftCode()" />'
   + '<button class="modal-btn primary" onclick="redeemGiftCode()">Redeem</button>'
   + '</div><div id="redeemCodeMsg" class="redeem-msg"></div>';
-  html += '<div class="module-section-title">Base App</div><div class="module-grid">';
-  Object.values(MODULES).forEach(function(m) {
-    if (PREMIUM_MODULES.indexOf(m.id) >= 0) return;
-    html += _renderModuleCard(m);
+  var _catShown = {};
+  MODULE_CATEGORIES.forEach(function(cat, i) {
+    var cards = '';
+    cat.ids.forEach(function(id) {
+      var m = MODULES[id];
+      if (m) { cards += _renderModuleCard(m); _catShown[id] = true; }
+    });
+    if (!cards) return; // skip empty sections
+    html += '<div class="module-section-title"' + (i > 0 ? ' style="margin-top:1.1rem;"' : '') + '>' + cat.title + '</div><div class="module-grid">' + cards + '</div>';
   });
-  html += '</div><div class="module-section-title" style="margin-top:1.1rem;">Add-on Modules</div><div class="module-grid">';
-  Object.values(MODULES).forEach(function(m) {
-    if (PREMIUM_MODULES.indexOf(m.id) === -1) return;
-    html += _renderModuleCard(m);
-  });
-  html += '</div><div class="module-section-title" style="margin-top:1.1rem;">Coming Soon</div><div class="module-grid">';
+  // Safety net: any module not placed in a category above still appears here.
+  var _leftover = '';
+  Object.values(MODULES).forEach(function(m) { if (!_catShown[m.id]) _leftover += _renderModuleCard(m); });
+  if (_leftover) html += '<div class="module-section-title" style="margin-top:1.1rem;">More</div><div class="module-grid">' + _leftover + '</div>';
+  html += '<div class="module-section-title" style="margin-top:1.1rem;">Coming Soon</div><div class="module-grid">';
   UPCOMING_MODULES.forEach(function(m) {
     html += '<div class="module-card coming-soon">';
     html += '<div class="module-card-icon" style="background:linear-gradient(135deg,' + m.color + '33,' + m.color + '18);"><i class="ph-fill ' + m.icon + '" style="color:' + m.color + ';font-size:1.15rem;"></i></div>';
@@ -8865,6 +9023,8 @@ function buildGuideSidebar() {
       var clone = titleEl.cloneNode(true);
       var subEl = clone.querySelector('.guide-acc-sub');
       if (subEl) { sub = subEl.textContent.trim(); subEl.remove(); }
+      var newEl = clone.querySelector('.guide-acc-new');
+      if (newEl) newEl.remove();
       name = clone.textContent.trim();
     }
     var icon = iconEl ? iconEl.textContent.trim() : '';
@@ -8910,6 +9070,21 @@ function showGuideSection(id) {
   if (content) content.scrollTop = 0;
   var sa = document.querySelector('.guide-side-item.active');
   if (sa && sa.scrollIntoView) sa.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+
+  // Opening a section with a "NEW" badge marks it seen (device-local) and hides
+  // the badge from then on.
+  var activeItem = document.querySelector('.guide-acc-item[data-guide-id="' + id + '"]');
+  var newBadge = activeItem ? activeItem.querySelector('.guide-acc-new') : null;
+  if (newBadge) { _lsSet('opmus_guide_seen_' + id, '1'); newBadge.style.display = 'none'; }
+}
+
+// Hide "NEW" badges for guide sections already opened on this device.
+function _applyGuideSeenBadges() {
+  document.querySelectorAll('.guide-acc-new').forEach(function (b) {
+    var item = b.closest('.guide-acc-item');
+    var gid = item ? item.getAttribute('data-guide-id') : '';
+    if (gid && localStorage.getItem('opmus_guide_seen_' + gid) === '1') b.style.display = 'none';
+  });
 }
 
 // The section header titles call this — just route to showGuideSection.
@@ -8920,6 +9095,7 @@ function openUserGuide() {
   if (dd) dd.classList.remove('open');
   document.getElementById('userGuideModal').classList.add('open');
   if (!_guideSideBuilt) buildGuideSidebar();
+  try { _applyGuideSeenBadges(); } catch (e) {}
   var search = document.getElementById('guideSearchInput');
   if (search) search.value = '';
   document.querySelectorAll('.guide-acc-item, .guide-side-item').forEach(function(el) { el.classList.remove('guide-hidden'); });
@@ -10087,6 +10263,30 @@ var _CNI_TARGETS = [
 ];
 
 // Plan popup: income needed to reach each target band (or commitment to cut).
+// Per-commitment breakdown for the viewed month — mirrors the exact total logic
+// (current cycle counts every commitment incl. debt-linked; other months count
+// non-debt commitments + debts via their per-month bill schedule).
+function _commitBreakdown(vd) {
+  var rows = [];
+  if (vd.isNow) {
+    loadCommitments().forEach(function(c) {
+      var amt = _commitAmountForMonth(c, vd.y, vd.mi);
+      if (amt > 0) rows.push({ name: c.name, amount: amt, color: c.debtColor || (c.debtId ? '#f472b6' : '#f87171'), isDebt: !!c.debtId });
+    });
+  } else {
+    loadCommitments().forEach(function(c) {
+      if (c.debtId) return;
+      var amt = _commitAmountForMonth(c, vd.y, vd.mi);
+      if (amt > 0) rows.push({ name: c.name, amount: amt, color: '#f87171' });
+    });
+    loadDebts().forEach(function(d) {
+      var amt = _debtAmountForMonth(d, vd.y, vd.mi);
+      if (amt > 0) rows.push({ name: d.name, amount: amt, color: d.color || '#f472b6', isDebt: true });
+    });
+  }
+  return rows;
+}
+
 function openCniPlan() {
   var vd = _cniViewData();
   if (vd.income <= 0) { showToast('Set your salary first to plan.'); return; }
@@ -10098,6 +10298,26 @@ function openCniPlan() {
   html += '<div style="font-size:0.8rem;font-weight:700;color:' + vd.band.color + ';">' + vd.band.label + '</div>';
   html += '<div style="font-size:0.72rem;color:#94a3b8;margin-top:0.3rem;">' + fmt(vd.commit) + ' commitments &middot; ' + fmt(vd.income) + ' income</div>';
   html += '</div>';
+
+  // Per-commitment breakdown for the viewed month.
+  var _brk = _commitBreakdown(vd);
+  if (_brk.length) {
+    html += '<div style="font-size:0.6rem;text-transform:uppercase;letter-spacing:0.06em;color:#475569;font-weight:700;margin-bottom:0.4rem;">Commitments in ' + ALL_MONTHS[vd.mi] + (vd.isNow ? '' : ' <span style="color:#eab308;">(estimated)</span>') + '</div>';
+    html += '<div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:0.2rem 0.1rem;margin-bottom:0.85rem;">';
+    _brk.forEach(function(r) {
+      html += '<div style="display:flex;align-items:center;gap:0.5rem;padding:0.4rem 0.65rem;">'
+        + '<div style="width:8px;height:8px;border-radius:50%;background:' + r.color + ';flex-shrink:0;"></div>'
+        + '<div style="flex:1;min-width:0;font-size:0.75rem;color:#e2e8f0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + escHtml(r.name) + (r.isDebt ? ' <span style="font-size:0.6rem;">💳</span>' : '') + '</div>'
+        + '<div style="font-size:0.75rem;font-weight:700;color:#f87171;flex-shrink:0;">' + fmt(r.amount) + '</div>'
+        + '</div>';
+    });
+    html += '<div style="display:flex;justify-content:space-between;padding:0.4rem 0.65rem;border-top:1px solid rgba(255,255,255,0.07);margin-top:0.1rem;">'
+      + '<span style="font-size:0.68rem;font-weight:700;color:#94a3b8;">Total</span>'
+      + '<span style="font-size:0.78rem;font-weight:800;color:#f1f5f9;">' + fmt(vd.commit) + '</span>'
+      + '</div>';
+    html += '</div>';
+  }
+
   html += '<div style="font-size:0.6rem;text-transform:uppercase;letter-spacing:0.06em;color:#475569;font-weight:700;margin-bottom:0.45rem;">Income needed to reach…</div>';
   _CNI_TARGETS.forEach(function(t) {
     var needIncome = vd.commit / (t.pct / 100);
@@ -10162,7 +10382,7 @@ function _cniIndicatorHtml() {
   var h = '<div style="' + wrap + '" title="' + tip + '">';
   h += nav;
   h += '<div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:0.32rem;">';
-  h += '<span style="font-size:0.63rem;font-weight:600;color:#94a3b8;letter-spacing:0.01em;">Commitment Health</span>';
+  h += '<span style="font-size:0.63rem;font-weight:600;color:#94a3b8;letter-spacing:0.01em;">Commitment Health' + _helpDot('cni') + '</span>';
   h += '<span style="font-size:0.67rem;font-weight:700;color:' + band.color + ';">' + pct.toFixed(1) + '% &middot; ' + band.label + '</span>';
   h += '</div>';
   h += '<div style="position:relative;height:6px;border-radius:4px;background:linear-gradient(90deg,#16a34a 0%,#84cc16 21%,#eab308 43%,#f97316 64%,#ef4444 79%);">';
@@ -10171,7 +10391,7 @@ function _cniIndicatorHtml() {
   h += '<div style="display:flex;justify-content:flex-end;margin-top:0.3rem;"><span style="font-size:0.58rem;color:#64748b;">' + fmt(commit) + ' of ' + fmt(income) + ((!isNow && _monthHasEstimate(y, mi)) ? ' &middot; est.' : '') + '</span></div>';
 
   // Tap to open the planning popup (income needed to reach each target).
-  h += '<div onclick="openCniPlan()" style="margin-top:0.4rem;padding-top:0.35rem;border-top:1px dashed rgba(255,255,255,0.08);cursor:pointer;text-align:center;font-size:0.6rem;font-weight:700;color:#38bdf8;">&#128202; How to reach a target &rsaquo;</div>';
+  h += '<div onclick="openCniPlan()" style="margin-top:0.4rem;padding-top:0.35rem;border-top:1px dashed rgba(255,255,255,0.08);cursor:pointer;text-align:center;font-size:0.6rem;font-weight:700;color:#38bdf8;">&#128202; See this month\'s commitments &amp; targets &rsaquo;</div>';
 
   h += '</div>';
   return h;
@@ -14313,6 +14533,19 @@ function submitEditName(profileId) {
 // the popup once when the newest date differs from what they last saw. The
 // "seen" flag is per-device (not synced). Each item: { icon, color, title, desc }.
 var CHANGELOG = [
+  {
+    date: "1 July 2026",
+    items: [
+      { icon: "🏦", color: "#3b82f6", title: "Bank Accounts",       desc: "New! In the Expense Tracker, add your banks & e-wallets (CIMB, GXBank, Maybank…) and see how much money is in each one. Tag expenses and bills to a bank to keep it accurate." },
+      { icon: "⇄", color: "#94a3b8", title: "Transfer between banks", desc: "Moved money from one bank to another? Use ⇄ Transfer — it updates your balances without affecting your spending." },
+      { icon: "💰", color: "#22c55e", title: "Salary into a bank",   desc: "Choose which bank your salary lands in, so that account's balance stays correct." },
+      { icon: "🟢", color: "#22c55e", title: "Total Across Banks",   desc: "The green dashboard card now shows your real money across all banks — and it carries over to the next month automatically." },
+      { icon: "🎯", color: "#38bdf8", title: "Cleaner dashboard",    desc: "One big number up top — tap it to reveal the rest (income, spending, estimate)." },
+      { icon: "🌱", color: "#84cc16", title: "Simpler start",        desc: "New setups begin with just the essentials. Turn on more modules anytime from the Apps library." },
+      { icon: "❓", color: "#fbbf24", title: "Help bubbles",         desc: "Tap the small ? next to any term for a quick, plain-language explanation." },
+      { icon: "🗂️", color: "#a78bfa", title: "Tidier Apps library",  desc: "Modules are now grouped into Daily Money, Planning, Work & Income and Life Events." }
+    ]
+  },
   {
     date: "26 June 2026",
     items: [
