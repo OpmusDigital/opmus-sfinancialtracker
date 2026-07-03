@@ -1655,6 +1655,30 @@
     }
     body.tabmode .ov-shortcuts .ovs-ico { font-size: 1.15rem; }
 
+    /* ── Overview home content (Tab mode) ── */
+    #overviewExtra { display: none; }
+    body.tabmode #overviewExtra { display: block; padding: 0 1rem 0.4rem; }
+    .ov-sec-title { font-size: 0.62rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.07em; color: #64748b; margin: 0.9rem 0.15rem 0.5rem; }
+    .ov-payday { display: flex; align-items: center; gap: 0.55rem; padding: 0.7rem 0.9rem; border-radius: 13px; background: linear-gradient(135deg, rgba(34,197,94,0.13), rgba(34,197,94,0.04)); border: 1px solid rgba(34,197,94,0.22); font-size: 0.82rem; color: #e2e8f0; }
+    .ov-payday-ico { font-size: 1.1rem; }
+    .ov-payday b { color: #4ade80; }
+    .ov-payday-cycle { margin-left: auto; font-size: 0.66rem; color: #64748b; font-weight: 600; white-space: nowrap; }
+    .ov-hl-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 0.6rem; }
+    .ov-hl { text-align: left; background: linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02)); border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 0.8rem 0.85rem; cursor: pointer; font-family: inherit; transition: border-color 0.15s, transform 0.12s; }
+    .ov-hl:hover { border-color: rgba(56,189,248,0.4); transform: translateY(-1px); }
+    .ov-hl-top { display: flex; align-items: center; gap: 0.5rem; }
+    .ov-hl-ico { width: 30px; height: 30px; border-radius: 9px; display: flex; align-items: center; justify-content: center; font-size: 1rem; flex-shrink: 0; }
+    .ov-hl-name { font-size: 0.75rem; font-weight: 700; color: #cbd5e1; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .ov-hl-arrow { color: #475569; font-size: 1rem; font-weight: 700; flex-shrink: 0; }
+    .ov-hl-stat { font-size: 0.9rem; font-weight: 800; color: #f1f5f9; margin-top: 0.5rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .ov-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.07); border-radius: 14px; padding: 0.2rem 0.1rem; }
+    .ov-row { display: flex; align-items: center; gap: 0.55rem; padding: 0.5rem 0.75rem; }
+    .ov-row + .ov-row { border-top: 1px solid rgba(255,255,255,0.045); }
+    .ov-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+    .ov-row-name { flex: 1; min-width: 0; font-size: 0.78rem; color: #e2e8f0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .ov-row-when { font-size: 0.68rem; color: #94a3b8; flex-shrink: 0; }
+    .ov-row-amt { font-size: 0.8rem; font-weight: 700; color: #cbd5e1; flex-shrink: 0; min-width: 54px; text-align: right; }
+
     /* ══════════════════════════════════════════════════
        RESPONSIVE — Mobile (≤ 768px)
     ══════════════════════════════════════════════════ */
@@ -3862,6 +3886,8 @@
   </style>
   <div class="sample-banner" id="sampleBanner"><span>🎈 You're exploring with <b>sample data</b></span><button onclick="clearSampleData()">Clear &amp; start fresh</button></div>
   <div class="momentum-strip" id="momentumStrip"></div>
+  <!-- Overview home content (Tab-mode Overview only) -->
+  <div id="overviewExtra"></div>
   <!-- Quick shortcuts (Tab-mode Overview only) -->
   <div class="ov-shortcuts" id="ovShortcuts">
     <button onclick="openAddExpense()"><span class="ovs-ico">💸</span>Add Expense</button>
@@ -7495,6 +7521,7 @@ function renderDashboard() {
   // (renderCommitments never calls renderDashboard, so this can't recurse.)
   try { renderCommitments();   } catch (e) {}
   try { renderMomentum();      } catch (e) {}
+  try { renderOverview();      } catch (e) {}
   try { _renderSampleBanner(); } catch (e) {}
   if (_panelATab === 'accounts') { try { renderAccountsList(); } catch (e) {} }
   try { _applyDashDetails(); } catch (e) {}
@@ -7595,6 +7622,90 @@ function renderMomentum() {
   }
 
   el.innerHTML = chips;
+}
+
+// ── Overview home content (Tab-mode Overview tab) ──
+function renderOverview() {
+  var el = document.getElementById('overviewExtra');
+  if (!el) return;
+  el.innerHTML = _ovPaydayHtml() + _ovHighlightsHtml() + _ovUpcomingHtml() + _ovRecentHtml();
+}
+
+function _ovPaydayHtml() {
+  try {
+    var now = new Date(), yr = now.getFullYear(), mo = now.getMonth(), d = now.getDate();
+    var salDay = getSalaryDate(yr, mo), daysLeft;
+    if (d <= salDay) { daysLeft = salDay - d; }
+    else { var nMo = mo + 1, nYr = yr; if (nMo > 11) { nMo = 0; nYr++; } var nextSal = new Date(nYr, nMo, getSalaryDate(nYr, nMo)); daysLeft = Math.round((nextSal - new Date(yr, mo, d)) / 86400000); }
+    var txt = daysLeft === 0 ? 'Payday is today! 🎉' : daysLeft + ' day' + (daysLeft === 1 ? '' : 's') + ' to payday';
+    return '<div class="ov-payday"><span class="ov-payday-ico">💰</span><b>' + txt + '</b><span class="ov-payday-cycle">' + escHtml(periodLabel) + ' cycle</span></div>';
+  } catch (e) { return ''; }
+}
+
+function _ovHighlightsHtml() {
+  var cards = [];
+  function card(id, icon, color, name, stat) {
+    return '<button class="ov-hl" onclick="switchMPanel(\'' + id + '\')">'
+      + '<div class="ov-hl-top"><span class="ov-hl-ico" style="color:' + color + ';background:' + color + '1f;">' + icon + '</span>'
+      + '<span class="ov-hl-name">' + name + '</span><span class="ov-hl-arrow">›</span></div>'
+      + '<div class="ov-hl-stat">' + stat + '</div></button>';
+  }
+  var spent = loadExpenses().reduce(function(s, e) { return s + (parseFloat(e.amount) || 0); }, 0);
+  if (_activeModules.indexOf('expenses') >= 0) cards.push(card('expenses', '💸', '#fb923c', 'Expenses', fmt(spent) + ' spent'));
+  if (_activeModules.indexOf('budget') >= 0) {
+    var budget = {}; try { budget = JSON.parse(localStorage.getItem(BUDGET_KEY)) || {}; } catch (e) {}
+    var totB = Object.keys(budget).reduce(function(s, k) { return s + (parseFloat(budget[k]) || 0); }, 0);
+    cards.push(card('budget', '📊', '#ef4444', 'Budget', totB > 0 ? fmt(Math.max(0, totB - spent)) + ' left' : 'Set limits'));
+  }
+  if (_activeModules.indexOf('commit') >= 0) {
+    var cleared = _getDueCleared();
+    var unpaid = loadCommitments().filter(function(c) { return cleared.indexOf(c.id) === -1; });
+    var dueAmt = unpaid.reduce(function(s, c) { return s + _commitAmountForMonth(c, periodYear, periodMonthIdx); }, 0);
+    cards.push(card('commit', '📅', '#f87171', 'Commitments', unpaid.length ? unpaid.length + ' unpaid · ' + fmt(dueAmt) : 'All paid ✓'));
+  }
+  if (_activeModules.indexOf('debt') >= 0) {
+    var rem = loadDebts().reduce(function(s, dd) { return s + (parseFloat(dd.remaining) || 0); }, 0);
+    cards.push(card('debt', '💳', '#f472b6', 'Debt', rem > 0 ? fmt(rem) + ' left' : 'Debt-free! 🎉'));
+  }
+  if (_activeModules.indexOf('goals') >= 0) {
+    var goals = loadGoals();
+    var saved = goals.reduce(function(s, g) { return s + goalSaved(g); }, 0);
+    var tgt = goals.reduce(function(s, g) { return s + (parseFloat(g.target) || 0); }, 0);
+    cards.push(card('goals', '🎯', '#22c55e', 'Goals', goals.length ? (tgt > 0 ? Math.round(saved / tgt * 100) + '% saved' : fmt(saved) + ' saved') : 'Set a goal'));
+  }
+  if (!cards.length) return '';
+  return '<div class="ov-sec-title">Your apps</div><div class="ov-hl-grid">' + cards.join('') + '</div>';
+}
+
+function _ovUpcomingHtml() {
+  var all = [];
+  try { all = _allDueItems() || []; } catch (e) { return ''; }
+  var soon = all.filter(function(x) { return x.daysLeft <= 14; }).slice(0, 4);
+  if (!soon.length) return '';
+  var rows = soon.map(function(it) {
+    var when = it.daysLeft === 0 ? 'Today' : it.daysLeft === 1 ? 'Tomorrow' : 'in ' + it.daysLeft + 'd';
+    var col = it.daysLeft <= 1 ? '#f87171' : it.daysLeft <= 3 ? '#fb923c' : '#94a3b8';
+    return '<div class="ov-row"><span class="ov-dot" style="background:' + (it.color || '#f87171') + '"></span>'
+      + '<span class="ov-row-name">' + escHtml(it.name) + '</span>'
+      + '<span class="ov-row-when" style="color:' + col + '">' + when + '</span>'
+      + '<span class="ov-row-amt">' + fmt(it.amount) + '</span></div>';
+  }).join('');
+  return '<div class="ov-sec-title">Upcoming payments</div><div class="ov-card">' + rows + '</div>';
+}
+
+function _ovRecentHtml() {
+  var list = loadExpenses().slice();
+  if (!list.length) return '';
+  function sk(d) { var p = (d || '').split('/'); return p.length === 3 ? p[2] + p[1] + p[0] : ''; }
+  list.sort(function(a, b) { return sk(b.date).localeCompare(sk(a.date)); });
+  var rows = list.slice(0, 4).map(function(e) {
+    var cat = CATEGORIES[e.category] || CATEGORIES.others;
+    return '<div class="ov-row"><span class="ov-dot" style="background:' + cat.color + '"></span>'
+      + '<span class="ov-row-name">' + escHtml(e.description || '—') + '</span>'
+      + '<span class="ov-row-when">' + escHtml(e.date || '') + '</span>'
+      + '<span class="ov-row-amt">−' + fmt(e.amount) + '</span></div>';
+  }).join('');
+  return '<div class="ov-sec-title">Recent activity</div><div class="ov-card">' + rows + '</div>';
 }
 
 // ═══════════════════════════════════════════════════
@@ -12328,7 +12439,8 @@ function deleteSpSubject(groupId) {
 
 // ── Mobile panel switching ──
 var _MOBILE_PANELS = ["expenses", "goals", "commit", "ot", "debt", "budget", "wedding", "study"];
-var _activeMPanel  = "expenses";
+// In Tab mode the app opens on the Overview; in Canvas mode it starts on Expenses.
+var _activeMPanel  = (getLayoutMode() === 'tabs') ? 'overview' : 'expenses';
 
 function switchMPanel(name) {
   _activeMPanel = name;
@@ -12343,7 +12455,7 @@ function switchMPanel(name) {
 
 // The Overview cluster = greeting + dashboard + momentum + shortcuts.
 function _overviewEls() {
-  var els = ['mobileGreeting', 'momentumStrip', 'ovShortcuts'].map(function(id) { return document.getElementById(id); });
+  var els = ['mobileGreeting', 'momentumStrip', 'overviewExtra', 'ovShortcuts'].map(function(id) { return document.getElementById(id); });
   els.push(document.querySelector('.dashboard'));
   return els;
 }
@@ -12357,6 +12469,7 @@ function _initMobilePanels() {
     // One screen at a time: Overview, or a single module panel.
     if (_activeMPanel !== 'overview' && _activeModules.indexOf(_activeMPanel) < 0) _activeMPanel = 'overview';
     var showOverview = (_activeMPanel === 'overview');
+    if (showOverview) { try { renderOverview(); } catch (e) {} }
     cluster.forEach(function(el) { if (el) el.style.display = showOverview ? '' : 'none'; });
     document.querySelectorAll('[data-panel]').forEach(function(el) {
       var p = el.dataset.panel;
