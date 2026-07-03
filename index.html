@@ -1654,6 +1654,13 @@
       font-size: 0.82rem; font-weight: 700; cursor: pointer; font-family: inherit;
     }
     body.tabmode .ov-shortcuts .ovs-ico { font-size: 1.15rem; }
+    body.tabmode .ov-shortcuts .ovs-edit { background: rgba(255,255,255,0.02); border-style: dashed; color: #94a3b8; }
+    /* Shortcut editor list */
+    .sc-opt { display: flex; align-items: center; gap: 0.7rem; padding: 0.6rem 0.7rem; border-radius: 11px; cursor: pointer; transition: background 0.15s; }
+    .sc-opt:hover { background: rgba(255,255,255,0.04); }
+    .sc-opt input { width: 17px; height: 17px; accent-color: #38bdf8; cursor: pointer; flex-shrink: 0; }
+    .sc-opt-ico { font-size: 1.1rem; width: 24px; text-align: center; flex-shrink: 0; }
+    .sc-opt span:last-child { font-size: 0.85rem; color: #e2e8f0; font-weight: 600; }
 
     /* ── Overview home content (Tab mode) ── */
     #overviewExtra { display: none; }
@@ -3887,13 +3894,8 @@
   <div class="momentum-strip" id="momentumStrip"></div>
   <!-- Overview home content (Tab-mode Overview only) -->
   <div id="overviewExtra"></div>
-  <!-- Quick shortcuts (Tab-mode Overview only) -->
-  <div class="ov-shortcuts" id="ovShortcuts">
-    <button onclick="openAddExpense()"><span class="ovs-ico">💸</span>Add Expense</button>
-    <button onclick="openAddReceived()"><span class="ovs-ico">💚</span>Add Income</button>
-    <button onclick="openAddCommitment()"><span class="ovs-ico">📅</span>Add Bill</button>
-    <button onclick="openAddGoal()"><span class="ovs-ico">🎯</span>Add Goal</button>
-  </div>
+  <!-- Quick shortcuts (Tab-mode Overview only) — customizable per buyer -->
+  <div class="ov-shortcuts" id="ovShortcuts"></div>
 
   <!-- Mobile panel tabs (inside app-body so they're visible over the fixed overlay) -->
   <div class="mpanel-tabs" id="mpanelTabs">
@@ -5210,6 +5212,18 @@
         <div class="lp-desc">See everything at once and drag/resize panels however you like.</div>
       </button>
     </div>
+  </div>
+</div>
+
+<!-- Customize quick shortcuts -->
+<div class="modal-overlay" id="shortcutEditorModal">
+  <div class="modal" style="max-width:380px;">
+    <button class="modal-close" onclick="closeShortcutEditor()">✕</button>
+    <div class="modal-icon">⚡</div>
+    <div class="modal-title">Your quick shortcuts</div>
+    <div class="modal-sub">Tick the quick-add buttons you want on your Overview.</div>
+    <div id="shortcutEditorBody" style="margin:0.9rem 0 0.3rem;max-height:340px;overflow-y:auto;"></div>
+    <button class="modal-btn primary" onclick="closeShortcutEditor()" style="margin-top:0.6rem;">Done</button>
   </div>
 </div>
 
@@ -7625,10 +7639,58 @@ function renderMomentum() {
 
 // ── Overview home content (Tab-mode Overview tab) ──
 function renderOverview() {
+  try { renderShortcuts(); } catch (e) {}
   var el = document.getElementById('overviewExtra');
   if (!el) return;
   el.innerHTML = _ovPaydayHtml() + _ovHighlightsHtml() + _ovUpcomingHtml() + _ovRecentHtml();
 }
+
+// ── Customizable quick-add shortcuts ──
+var SHORTCUT_CATALOG = [
+  { id: 'expense',  icon: '💸', label: 'Add Expense',  fn: 'openAddExpense' },
+  { id: 'income',   icon: '💚', label: 'Add Income',   fn: 'openAddReceived' },
+  { id: 'bill',     icon: '📅', label: 'Add Bill',     fn: 'openAddCommitment' },
+  { id: 'goal',     icon: '🎯', label: 'Add Goal',     fn: 'openAddGoal' },
+  { id: 'debt',     icon: '💳', label: 'Add Debt',     fn: 'openAddDebt' },
+  { id: 'ot',       icon: '⏱',  label: 'Add OT',       fn: 'openAddOT' },
+  { id: 'account',  icon: '🏦', label: 'Add Account',  fn: 'openAddAccount' },
+  { id: 'transfer', icon: '⇄',  label: 'Transfer',     fn: 'openTransferModal' },
+  { id: 'history',  icon: '📊', label: 'View History', fn: 'openHistory' }
+];
+var SHORTCUTS_KEY = profilePrefix + 'mft_shortcuts';
+function loadShortcuts() {
+  try { var s = JSON.parse(localStorage.getItem(SHORTCUTS_KEY)); if (Array.isArray(s)) return s; } catch (e) {}
+  return ['expense', 'income', 'bill', 'goal'];
+}
+function saveShortcuts(arr) { localStorage.setItem(SHORTCUTS_KEY, JSON.stringify(arr)); }
+function renderShortcuts() {
+  var el = document.getElementById('ovShortcuts');
+  if (!el) return;
+  var byId = {}; SHORTCUT_CATALOG.forEach(function(s) { byId[s.id] = s; });
+  var html = loadShortcuts().map(function(id) {
+    var s = byId[id]; if (!s) return '';
+    return '<button onclick="' + s.fn + '()"><span class="ovs-ico">' + s.icon + '</span>' + s.label + '</button>';
+  }).join('');
+  html += '<button class="ovs-edit" onclick="openShortcutEditor()"><span class="ovs-ico">✏️</span>Edit</button>';
+  el.innerHTML = html;
+}
+function openShortcutEditor() {
+  var sel = loadShortcuts();
+  document.getElementById('shortcutEditorBody').innerHTML = SHORTCUT_CATALOG.map(function(s) {
+    var on = sel.indexOf(s.id) >= 0;
+    return '<label class="sc-opt"><input type="checkbox" ' + (on ? 'checked' : '') + ' onchange="_toggleShortcut(\'' + s.id + '\',this.checked)"><span class="sc-opt-ico">' + s.icon + '</span><span>' + s.label + '</span></label>';
+  }).join('');
+  document.getElementById('shortcutEditorModal').classList.add('open');
+}
+function _toggleShortcut(id, on) {
+  var sel = loadShortcuts();
+  var i = sel.indexOf(id);
+  if (on && i < 0) sel.push(id);
+  else if (!on && i >= 0) sel.splice(i, 1);
+  saveShortcuts(sel);
+  renderShortcuts();
+}
+function closeShortcutEditor() { document.getElementById('shortcutEditorModal').classList.remove('open'); }
 
 function _ovPaydayHtml() {
   try {
