@@ -1693,10 +1693,6 @@
       .dash-label { font-size: 0.65rem; }
       .dash-hero { min-width: 100%; }
       .dash-hero .dash-val { font-size: 2rem; }
-      /* Give the performance chips room to breathe (was cramped between the
-         dashboard and the mobile tab bar) */
-      .momentum-strip { padding: 0.55rem 1rem 0.8rem; margin: 0.1rem 0 0.2rem; gap: 0.55rem; }
-      .mo-chip { padding: 0.6rem 0.9rem; }
 
       /* ─ Mobile panel tabs visible ─ */
       .mpanel-tabs { display: flex; }
@@ -3855,13 +3851,12 @@
 
   <!-- Momentum / wins strip -->
   <style>
-  .momentum-strip { display: flex; gap: 0.5rem; overflow-x: auto; -webkit-overflow-scrolling: touch; padding: 0 1rem 0.65rem; }
+  .momentum-strip { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 0.6rem; padding: 0.7rem 1rem 0.9rem; }
   .momentum-strip:empty { display: none; }
-  .momentum-strip::-webkit-scrollbar { height: 0; }
-  .mo-chip { flex: 0 0 auto; display: flex; align-items: center; gap: 0.55rem; padding: 0.5rem 0.8rem; border-radius: 13px; background: rgba(255,255,255,0.035); border: 1px solid rgba(255,255,255,0.07); }
-  .mo-chip-ico { font-size: 1.15rem; line-height: 1; flex-shrink: 0; }
-  .mo-chip-label { font-size: 0.55rem; text-transform: uppercase; letter-spacing: 0.05em; color: #64748b; font-weight: 700; }
-  .mo-chip-val { font-size: 0.85rem; font-weight: 800; line-height: 1.15; margin-top: 1px; }
+  .mo-chip { display: flex; align-items: center; gap: 0.7rem; padding: 0.8rem 0.9rem; border-radius: 15px; background: linear-gradient(180deg, rgba(255,255,255,0.055), rgba(255,255,255,0.02)); border: 1px solid rgba(255,255,255,0.08); }
+  .mo-chip-ico { font-size: 1.2rem; line-height: 1; flex-shrink: 0; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border-radius: 12px; }
+  .mo-chip-label { font-size: 0.56rem; text-transform: uppercase; letter-spacing: 0.05em; color: #64748b; font-weight: 700; }
+  .mo-chip-val { font-size: 0.98rem; font-weight: 800; line-height: 1.15; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .sample-banner { display: none; align-items: center; justify-content: space-between; gap: 0.5rem; margin: 0.4rem 1rem 0; padding: 0.5rem 0.8rem; border-radius: 11px; background: rgba(56,189,248,0.1); border: 1px solid rgba(56,189,248,0.3); font-size: 0.74rem; color: #bae6fd; }
   .sample-banner button { background: rgba(56,189,248,0.2); border: 1px solid rgba(56,189,248,0.4); color: #e0f2fe; border-radius: 8px; padding: 0.32rem 0.62rem; font-size: 0.7rem; font-weight: 700; cursor: pointer; font-family: inherit; flex-shrink: 0; }
   </style>
@@ -7547,8 +7542,8 @@ function _debtPayoffOffset(d) {
 }
 
 function _moChip(icon, color, label, value) {
-  return '<div class="mo-chip"><div class="mo-chip-ico" style="color:' + color + ';">' + icon + '</div>'
-    + '<div><div class="mo-chip-label">' + label + '</div>'
+  return '<div class="mo-chip"><div class="mo-chip-ico" style="color:' + color + ';background:' + color + '1f;box-shadow:inset 0 0 0 1px ' + color + '38;">' + icon + '</div>'
+    + '<div style="min-width:0;"><div class="mo-chip-label">' + label + '</div>'
     + '<div class="mo-chip-val" style="color:' + color + ';">' + value + '</div></div></div>';
 }
 
