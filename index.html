@@ -1188,7 +1188,7 @@
     .sk-newbtn { background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12); color:#cbd5e1; border-radius:9px; padding:5px 13px; font-size:0.72rem; font-weight:700; cursor:pointer; font-family:inherit; transition:background 0.15s; }
     .sk-newbtn:hover { background:rgba(255,255,255,0.1); }
     .sk-grid { display:grid; grid-template-columns:repeat(9,1fr); aspect-ratio:1/1; max-width:340px; margin:0 auto; background:#0b1120; border:2.5px solid rgba(var(--sk-rgb),0.45); border-radius:12px; overflow:hidden; box-shadow:0 10px 34px rgba(0,0,0,0.45); }
-    .sk-cell { display:flex; align-items:center; justify-content:center; background:transparent; color:#7dd3fc; font-size:1.05rem; font-weight:700; cursor:pointer; user-select:none; aspect-ratio:1/1; border-right:1px solid rgba(255,255,255,0.055); border-bottom:1px solid rgba(255,255,255,0.055); transition:background 0.1s; font-variant-numeric:tabular-nums; }
+    .sk-cell { position:relative; overflow:hidden; display:flex; align-items:center; justify-content:center; background:transparent; color:#7dd3fc; font-size:1.05rem; font-weight:700; cursor:pointer; user-select:none; aspect-ratio:1/1; border-right:1px solid rgba(255,255,255,0.055); border-bottom:1px solid rgba(255,255,255,0.055); transition:background 0.1s; font-variant-numeric:tabular-nums; }
     .sk-cell.sk-given { color:#f8fafc; }
     .sk-cell.sk-hint { color:#fbbf24; }
     .sk-cell.sk-rel { background:rgba(var(--sk-rgb),0.1); }
@@ -1198,7 +1198,7 @@
     .sk-cell.sk-bl { border-left:2.5px solid rgba(var(--sk-rgb),0.45); }
     .sk-cell.sk-bt { border-top:2.5px solid rgba(var(--sk-rgb),0.45); }
     /* Pencil notes */
-    .sk-notes { display:grid; grid-template-columns:repeat(3,1fr); grid-template-rows:repeat(3,1fr); width:100%; height:100%; padding:1px; }
+    .sk-notes { position:absolute; inset:0; display:grid; grid-template-columns:repeat(3,1fr); grid-template-rows:repeat(3,1fr); padding:1px; }
     .sk-note { display:flex; align-items:center; justify-content:center; font-size:0.46rem; line-height:1; font-weight:600; color:#7d8ba3; }
     @keyframes skPop { 0%{transform:scale(1);} 35%{transform:scale(1.22); background:rgba(34,197,94,0.65); color:#fff;} 100%{transform:scale(1);} }
     .sk-cell.sk-pop { animation:skPop 0.5s ease; z-index:2; }
@@ -1269,7 +1269,7 @@
        board scales to fit both width and height. */
     @media (max-width: 860px) {
       .sudoku-wrap.sk-full { position:fixed; inset:0; z-index:3000; margin:0; border:none; border-radius:0;
-        padding:calc(12px + env(safe-area-inset-top)) 10px calc(14px + env(safe-area-inset-bottom));
+        padding:max(20px, calc(env(safe-area-inset-top) + 8px)) 10px calc(16px + env(safe-area-inset-bottom));
         overflow-y:auto; display:flex; flex-direction:column; align-items:center; justify-content:safe center; gap:0.15rem;
         background:linear-gradient(180deg,#0b1120,#0f172a); }
       .sudoku-wrap.sk-full > * { width:100%; max-width:min(93vw, 52vh); margin-left:auto; margin-right:auto; }
@@ -8345,7 +8345,7 @@ function _skSetZoomLock(on) {
     if (window.innerWidth > 860) return; // full-screen (and this lock) only apply on phones
     if (vp && _skViewportSaved === null) {
       _skViewportSaved = vp.getAttribute('content');
-      vp.setAttribute('content', 'width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no');
+      vp.setAttribute('content', 'width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover');
     }
     if (!_skGestureBlock) {
       _skGestureBlock = {
@@ -8397,7 +8397,12 @@ function sudokuInput(n) {
     renderSudoku();
     _skWriteCell(r, c, placed ? n : 0);
     if (placed && n === s.solution[r][c]) _sudokuAnimateUnits(r, c);
-    else if (placed) _sudokuAnimateWrong(r, c);
+    else if (placed) {
+      _sudokuAnimateWrong(r, c);
+      // Wrong move costs the team a shared life (atomic increment so simultaneous
+      // mistakes from different players all count).
+      if (s.room) { try { s.room.ref.child('mistakes').transaction(function (m) { return (m || 0) + 1; }); } catch (e) {} }
+    }
     _sudokuCheckWin();
     return;
   }
@@ -8523,7 +8528,7 @@ function renderSudoku() {
   var topbar =
       '<div class="sk-topbar">'
     +   '<div class="sk-pill" style="color:' + dc + ';border-color:' + dc + '55;background:' + dc + '1a;">' + s.diff + '</div>'
-    +   (s.coop ? '' : '<div class="sk-mist' + mistWarn + '">❤️ ' + (SK_MAX_MISTAKES - s.mistakes) + '/' + SK_MAX_MISTAKES + '</div>')
+    +   '<div class="sk-mist' + mistWarn + '">❤️ ' + (SK_MAX_MISTAKES - s.mistakes) + '/' + SK_MAX_MISTAKES + '</div>'
     +   '<div class="sk-timer">⏱ <b id="skTime">' + timeStr + '</b></div>'
     +   (s.coop ? '' : '<button class="sk-newbtn" onclick="newSudoku()">↻ New</button>')
     + '</div>';
@@ -8614,7 +8619,7 @@ function skCreateRoom() {
     var clues = diff === 'easy' ? 42 : diff === 'medium' ? 33 : diff === 'hard' ? 27 : 24;
     var g = _genSudoku(clues);
     var code = _skGenCode(), pid = _skGenCode() + _skGenCode(), color = _skColor(pid);
-    var room = { host: pid, diff: diff, status: 'lobby', createdAt: Date.now(), given: _gridToStr(g.puzzle), solution: _gridToStr(g.solution), members: {} };
+    var room = { host: pid, diff: diff, status: 'lobby', mistakes: 0, createdAt: Date.now(), given: _gridToStr(g.puzzle), solution: _gridToStr(g.solution), members: {} };
     room.members[pid] = { name: name, color: color, joinedAt: Date.now(), host: true };
     db.ref('sudokuGames/' + code).set(room).then(function () {
       _skEnterRoom(code, pid, name);
@@ -8675,18 +8680,45 @@ function _skOnRoomData(data) {
   }
   s.room.members = data.members || {};
   s.room.status = data.status || 'lobby';
+  s.mistakes = data.mistakes || 0; // shared team lives
   if (s.solved || s.over) return; // keep the celebration on screen
   // Still waiting in the lobby.
   if (s.room.status !== 'playing') { s.phase = 'lobby'; _skRenderLobby(); return; }
   // Game is live — start the shared timer once, then render the board.
+  var firstPlay = false;
   if (s.phase !== 'playing') {
     s.phase = 'playing';
     s.start = data.startedAt || Date.now();
     _skStartTimer();
+    firstPlay = true;
   }
+  // Snapshot the board so we can detect which cells others just filled correctly,
+  // and play the completion animation for everyone (not only the person who typed it).
+  var prev = s.cur.map(function (row) { return row.slice(); });
   _skApplyCells(data.cells);
   renderSudoku();
+  if (!firstPlay) {
+    for (var r = 0; r < 9; r++) for (var c = 0; c < 9; c++) {
+      if (prev[r][c] !== s.cur[r][c] && s.cur[r][c] && s.cur[r][c] === s.solution[r][c]) _sudokuAnimateUnits(r, c);
+    }
+  }
+  // Shared lives exhausted — everyone in the room sees game over.
+  if (s.mistakes >= SK_MAX_MISTAKES) { setTimeout(_skCoopGameOver, firstPlay ? 0 : 480); return; }
   _sudokuCheckWin();
+}
+function _skCoopGameOver() {
+  var s = _sudoku; if (!s || s.over || s.solved) return;
+  s.over = true;
+  if (s.timer) clearInterval(s.timer);
+  if (s.room) { try { s.room.ref.off('value', s.room.listener); } catch (e) {} try { s.room.ref.child('members/' + s.room.pid).remove(); } catch (e) {} }
+  var area = document.getElementById('sudokuArea');
+  if (area) {
+    area.innerHTML = '<div class="sk-win over"><div class="sk-win-emoji">💔</div><div class="sk-win-title">Out of lives</div>'
+      + '<div class="sk-win-sub">Your team used all ' + SK_MAX_MISTAKES + ' lives. Start a new game to try again!</div>'
+      + '<button class="game-btn" onclick="newSudoku()" style="margin-top:0.9rem;">Back to menu</button></div>';
+    _applySkThemeVar();
+  }
+  _sudoku = null;
 }
 function skStartGame() {
   var s = _sudoku; if (!s || !s.coop || !s.room) return;
