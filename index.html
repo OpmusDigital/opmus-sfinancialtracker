@@ -1264,19 +1264,119 @@
     @keyframes skShake { 0%,100%{transform:translateX(0);} 18%{transform:translateX(-3px);} 38%{transform:translateX(3px);} 58%{transform:translateX(-2px);} 78%{transform:translateX(2px);} }
     .sk-cell.sk-wrong { animation:skShake 0.42s ease; }
     /* Disable double-tap-to-zoom while playing (keeps intentional pinch for accessibility) */
-    .sudoku-wrap { touch-action:manipulation; }
+    .sudoku-wrap, .m3-wrap { touch-action:manipulation; }
     /* Full-screen play on phones/small tablets: nothing can crop the grid, and the
        board scales to fit both width and height. */
     @media (max-width: 860px) {
-      .sudoku-wrap.sk-full { position:fixed; inset:0; z-index:3000; margin:0; border:none; border-radius:0;
+      .sudoku-wrap.sk-full, .m3-wrap.m3-full, .bs-wrap.bs-full { position:fixed; inset:0; z-index:3000; margin:0; border:none; border-radius:0;
         padding:max(20px, calc(env(safe-area-inset-top) + 8px)) 10px calc(16px + env(safe-area-inset-bottom));
         overflow-y:auto; display:flex; flex-direction:column; align-items:center; justify-content:safe center; gap:0.15rem;
         background:linear-gradient(180deg,#0b1120,#0f172a); }
       .sudoku-wrap.sk-full > * { width:100%; max-width:min(93vw, 52vh); margin-left:auto; margin-right:auto; }
       .sudoku-wrap.sk-full .sk-grid { max-width:min(93vw, 52vh); }
       .sudoku-wrap.sk-full .sk-pad, .sudoku-wrap.sk-full .sk-actions { margin-top:0.7rem; }
+      .m3-wrap.m3-full .m3-hud, .m3-wrap.m3-full .m3-board { width:100%; max-width:min(93vw, 60vh); margin-left:auto; margin-right:auto; }
       body.sk-fs-lock { overflow:hidden; }
     }
+    /* ── Fruit Match (match-3) ── */
+    .m3-wrap { border-radius:18px; border:1px solid rgba(236,72,153,0.2); background:linear-gradient(180deg, rgba(236,72,153,0.06), rgba(15,23,42,0.15)); padding:0.9rem; }
+    .m3-intro { text-align:center; padding:0.9rem 0.5rem; }
+    .m3-intro-ico { font-size:2.6rem; line-height:1; }
+    .m3-intro-title { font-size:1.2rem; font-weight:800; color:#f1f5f9; margin-top:0.25rem; }
+    .m3-intro-desc { font-size:0.76rem; color:#94a3b8; margin:0.45rem auto 1rem; max-width:280px; line-height:1.55; }
+    .m3-intro-best { font-size:0.82rem; font-weight:800; color:#fbbf24; margin-bottom:1rem; }
+    .m3-play { padding:0.8rem 2rem; border-radius:13px; border:none; background:linear-gradient(180deg,#ec4899,#db2777); color:#fff; font-size:1rem; font-weight:800; cursor:pointer; font-family:inherit; box-shadow:0 8px 22px rgba(236,72,153,0.35); transition:transform 0.1s; }
+    .m3-play:active { transform:scale(0.96); }
+    .m3-hud { display:flex; align-items:center; gap:0.55rem; max-width:min(93vw,60vh); margin:0 auto 0.7rem; }
+    .m3-stat { background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.08); border-radius:11px; padding:0.4rem 0.75rem; text-align:center; line-height:1.15; }
+    .m3-stat-lbl { display:block; font-size:0.58rem; text-transform:uppercase; letter-spacing:0.05em; color:#64748b; font-weight:700; }
+    .m3-stat b { font-size:1rem; color:#f1f5f9; font-variant-numeric:tabular-nums; }
+    .m3-hud .sk-newbtn { margin-left:auto; }
+    .m3-board { position:relative; width:100%; max-width:min(93vw,60vh); aspect-ratio:1/1; margin:0 auto; background:#0b1120; border:2.5px solid rgba(236,72,153,0.4); border-radius:14px; box-shadow:0 10px 34px rgba(0,0,0,0.45); overflow:hidden; }
+    .m3-tile { position:absolute; top:0; left:0; width:12.5%; height:12.5%; transition:transform 0.26s cubic-bezier(0.34,1.2,0.64,1); will-change:transform; cursor:pointer; }
+    .m3-face { display:flex; align-items:center; justify-content:center; width:100%; height:100%; font-size:clamp(1.05rem, 7vmin, 2.1rem); user-select:none; transition:transform 0.12s ease; }
+    .m3-tile.sel .m3-face { transform:scale(1.22); filter:drop-shadow(0 0 6px rgba(236,72,153,0.9)); }
+    .m3-tile.clearing { pointer-events:none; }
+    .m3-tile.clearing .m3-face { animation:m3pop 0.24s ease forwards; }
+    @keyframes m3pop { 40%{ transform:scale(1.28); } 100%{ transform:scale(0); opacity:0; } }
+    /* Game picker in the Games sub-tab */
+    .fun-game-pick { display:flex; gap:0.5rem; margin-bottom:0.75rem; }
+    .fun-gp { flex:1; padding:0.6rem 0.5rem; border-radius:12px; border:1px solid rgba(255,255,255,0.1); background:rgba(255,255,255,0.04); color:#cbd5e1; font-size:0.82rem; font-weight:700; cursor:pointer; font-family:inherit; transition:background 0.14s, border-color 0.14s; }
+    .fun-gp.on { background:rgba(236,72,153,0.16); border-color:rgba(236,72,153,0.5); color:#fff; }
+    /* Game hub (choose a game) */
+    .fun-hub-title { font-size:0.95rem; font-weight:800; color:#f1f5f9; margin:0.2rem 0 0.75rem; }
+    .fun-hub-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(148px,1fr)); gap:0.7rem; }
+    .fun-game-card { display:flex; flex-direction:column; align-items:flex-start; text-align:left; padding:1rem; border-radius:16px; cursor:pointer; font-family:inherit; border:1px solid rgba(var(--gc),0.3); background:linear-gradient(180deg, rgba(var(--gc),0.13), rgba(var(--gc),0.03)); transition:transform 0.12s, border-color 0.15s, box-shadow 0.15s; }
+    .fun-game-card:hover { transform:translateY(-2px); border-color:rgba(var(--gc),0.6); box-shadow:0 10px 26px rgba(var(--gc),0.18); }
+    .fun-game-card:active { transform:scale(0.98); }
+    .fun-gc-ico { font-size:2rem; line-height:1; }
+    .fun-gc-name { font-size:0.98rem; font-weight:800; color:#f8fafc; margin-top:0.4rem; }
+    .fun-gc-tag { font-size:0.7rem; color:#94a3b8; line-height:1.4; margin-top:0.1rem; }
+    .fun-gc-sub { font-size:0.68rem; font-weight:700; color:#fbbf24; margin-top:0.35rem; }
+    .fun-gc-play { margin-top:0.7rem; font-size:0.72rem; font-weight:800; color:rgb(var(--gc)); background:rgba(var(--gc),0.16); padding:4px 13px; border-radius:99px; }
+    .fun-back { background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12); color:#cbd5e1; border-radius:9px; padding:6px 14px; font-size:0.76rem; font-weight:700; cursor:pointer; font-family:inherit; margin-bottom:0.75rem; transition:background 0.14s; }
+    .fun-back:hover { background:rgba(255,255,255,0.1); }
+    /* ── Ball Sort puzzle (premium) ── */
+    .bs-wrap { border-radius:18px; border:1px solid rgba(6,182,212,0.22); background:radial-gradient(130% 90% at 50% 0%, rgba(6,182,212,0.12), rgba(15,23,42,0.22) 60%); padding:0.9rem; touch-action:manipulation; }
+    .bs-intro { text-align:center; padding:0.6rem 0.4rem; }
+    .bs-intro-ico { font-size:2.7rem; line-height:1; filter:drop-shadow(0 4px 12px rgba(6,182,212,0.45)); }
+    .bs-intro-title { font-size:1.45rem; font-weight:900; margin-top:0.2rem; letter-spacing:-0.01em; background:linear-gradient(90deg,#22d3ee,#818cf8); -webkit-background-clip:text; background-clip:text; color:transparent; }
+    .bs-intro-desc { font-size:0.75rem; color:#94a3b8; margin:0.5rem auto 1.15rem; max-width:290px; line-height:1.55; }
+    .bs-lvl-card { max-width:300px; margin:0 auto; background:linear-gradient(180deg, rgba(255,255,255,0.07), rgba(255,255,255,0.02)); border:1px solid rgba(255,255,255,0.1); border-radius:18px; padding:1.2rem 1rem; box-shadow:0 12px 30px rgba(0,0,0,0.3); }
+    .bs-lvl-nav { display:flex; align-items:center; justify-content:center; gap:1.1rem; }
+    .bs-lvl-arrow { width:40px; height:40px; border-radius:50%; border:1px solid rgba(255,255,255,0.14); background:rgba(255,255,255,0.05); color:#e2e8f0; font-size:1rem; cursor:pointer; font-family:inherit; transition:background 0.14s, transform 0.1s; }
+    .bs-lvl-arrow:hover:not(:disabled) { background:rgba(6,182,212,0.18); }
+    .bs-lvl-arrow:active:not(:disabled) { transform:scale(0.92); }
+    .bs-lvl-arrow:disabled { opacity:0.28; cursor:not-allowed; }
+    .bs-lvl-num { line-height:1; }
+    .bs-lvl-num small { display:block; font-size:0.6rem; text-transform:uppercase; letter-spacing:0.11em; color:#64748b; font-weight:800; margin-bottom:0.25rem; }
+    .bs-lvl-num b { font-size:2.4rem; font-weight:900; color:#f8fafc; font-variant-numeric:tabular-nums; }
+    .bs-lvl-num span { font-size:0.8rem; color:#475569; font-weight:700; }
+    .bs-lvl-meta { font-size:0.7rem; margin-top:0.6rem; min-height:1.1em; }
+    .bs-lvl-best { color:#fbbf24; font-weight:800; }
+    .bs-lvl-todo { color:#94a3b8; font-weight:600; }
+    .bs-lvl-locked { color:#64748b; font-weight:700; }
+    .bs-play { margin-top:1.1rem; width:100%; max-width:300px; padding:0.9rem; border-radius:14px; border:none; background:linear-gradient(180deg,#22d3ee,#0891b2); color:#04252b; font-size:1rem; font-weight:900; cursor:pointer; font-family:inherit; box-shadow:0 10px 24px rgba(6,182,212,0.35); transition:transform 0.1s; }
+    .bs-play:active:not(:disabled) { transform:scale(0.97); }
+    .bs-play:disabled { opacity:0.4; cursor:not-allowed; }
+    .bs-hud { display:flex; align-items:center; gap:0.5rem; margin:0 auto 0.4rem; flex-wrap:wrap; justify-content:center; }
+    .bs-pill { font-size:0.7rem; font-weight:800; padding:4px 13px; border-radius:99px; border:1px solid rgba(6,182,212,0.45); background:rgba(6,182,212,0.14); color:#67e8f9; }
+    .bs-stat { background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.08); border-radius:11px; padding:0.35rem 0.7rem; text-align:center; line-height:1.1; }
+    .bs-stat-lbl { display:block; font-size:0.55rem; text-transform:uppercase; letter-spacing:0.05em; color:#64748b; font-weight:800; }
+    .bs-stat b { font-size:0.95rem; color:#f1f5f9; font-variant-numeric:tabular-nums; }
+    .bs-hud .sk-newbtn { margin-left:auto; }
+    .bs-tubes { display:flex; flex-wrap:wrap; justify-content:center; align-items:flex-end; gap:0.5rem 0.75rem; padding:0.9rem 0 0.3rem; }
+    .bs-tube { position:relative; display:flex; flex-direction:column; justify-content:flex-end; gap:3px; padding:5px; border:2.5px solid rgba(255,255,255,0.16); border-top:none; border-radius:6px 6px 20px 20px; background:linear-gradient(90deg, rgba(255,255,255,0.02), rgba(255,255,255,0.1) 45%, rgba(255,255,255,0.02)); cursor:pointer; transition:border-color 0.15s, box-shadow 0.15s, transform 0.12s; }
+    .bs-tube::before { content:''; position:absolute; top:7px; left:20%; width:13%; height:82%; border-radius:99px; background:linear-gradient(180deg, rgba(255,255,255,0.4), rgba(255,255,255,0)); pointer-events:none; }
+    .bs-tube.sel { border-color:#22d3ee; box-shadow:0 0 16px rgba(34,211,238,0.45); transform:translateY(-3px); }
+    .bs-tube.done { border-color:rgba(34,197,94,0.6); box-shadow:0 0 15px rgba(34,197,94,0.38); }
+    .bs-cell { width:30px; height:30px; border-radius:50%; }
+    .bs-ball { position:relative; background:radial-gradient(circle at 32% 27%, rgba(255,255,255,0.9), rgba(255,255,255,0) 42%), var(--bc); box-shadow:inset -3px -4px 7px rgba(0,0,0,0.38); transition:transform 0.16s cubic-bezier(0.34,1.45,0.6,1); }
+    .bs-ball.lift { transform:translateY(-11px) scale(1.05); }
+    .bs-fly { position:fixed; border-radius:50%; z-index:4000; pointer-events:none; box-shadow:inset -3px -4px 7px rgba(0,0,0,0.38); background:radial-gradient(circle at 32% 27%, rgba(255,255,255,0.9), rgba(255,255,255,0) 42%), var(--bc); transition:transform 0.24s cubic-bezier(0.5,0,0.5,1); }
+    .bs-actions { display:flex; gap:0.5rem; justify-content:center; margin-top:0.6rem; }
+    .bs-act { display:flex; align-items:center; gap:0.35rem; padding:0.55rem 1.1rem; border-radius:11px; border:1px solid rgba(255,255,255,0.1); background:rgba(255,255,255,0.04); color:#cbd5e1; font-size:0.8rem; font-weight:700; cursor:pointer; font-family:inherit; transition:background 0.14s; }
+    .bs-act:hover { background:rgba(255,255,255,0.08); }
+    .bs-act:active { transform:scale(0.95); }
+    .bs-act[disabled] { opacity:0.35; cursor:not-allowed; }
+    .bs-loading { text-align:center; padding:2.6rem 1rem; }
+    .bs-load-ring { width:44px; height:44px; margin:0 auto 1rem; border-radius:50%; border:4px solid rgba(6,182,212,0.2); border-top-color:#22d3ee; animation:bsSpin 0.8s linear infinite; }
+    @keyframes bsSpin { to { transform:rotate(360deg); } }
+    .bs-load-txt { font-size:0.82rem; color:#94a3b8; font-weight:600; }
+    /* Game achievement toast + flex + hub shortcut */
+    .ach-toast { position:fixed; top:calc(env(safe-area-inset-top) + 12px); left:50%; transform:translate(-50%,-160%); z-index:5000; display:flex; align-items:center; gap:0.75rem; background:linear-gradient(180deg,#1e293b,#0f172a); border:1px solid rgba(251,191,36,0.45); border-radius:14px; padding:0.7rem 1.15rem 0.7rem 0.9rem; box-shadow:0 14px 34px rgba(0,0,0,0.55); transition:transform 0.42s cubic-bezier(0.2,1.3,0.5,1); max-width:92vw; }
+    .ach-toast.show { transform:translate(-50%,0); }
+    .ach-toast-ico { font-size:1.9rem; line-height:1; }
+    .ach-toast-t { font-size:0.6rem; text-transform:uppercase; letter-spacing:0.06em; color:#fbbf24; font-weight:800; }
+    .ach-toast-n { font-size:0.9rem; font-weight:800; color:#f8fafc; }
+    .ach-flex { display:inline-flex; align-items:center; gap:0.25rem; margin-left:0.6rem; padding:3px 12px; border-radius:99px; border:1px solid rgba(56,189,248,0.4); background:rgba(56,189,248,0.14); color:#7dd3fc; font-size:0.68rem; font-weight:800; cursor:pointer; font-family:inherit; }
+    .ach-flex:hover { background:rgba(56,189,248,0.22); }
+    .fun-hub-ach { display:flex; align-items:center; gap:0.7rem; margin-bottom:0.85rem; padding:0.7rem 0.9rem; border-radius:14px; border:1px solid rgba(251,191,36,0.28); background:linear-gradient(90deg, rgba(251,191,36,0.13), rgba(251,191,36,0.02)); cursor:pointer; transition:border-color 0.15s; }
+    .fun-hub-ach:hover { border-color:rgba(251,191,36,0.5); }
+    .fun-hub-ach-ico { font-size:1.5rem; }
+    .fun-hub-ach-txt b { display:block; font-size:0.82rem; color:#f1f5f9; font-weight:800; }
+    .fun-hub-ach-txt span { font-size:0.68rem; color:#94a3b8; }
+    .fun-hub-ach-go { margin-left:auto; color:#fbbf24; font-size:0.72rem; font-weight:800; }
     .sp-scroll::-webkit-scrollbar { width:8px; }
     .sp-scroll::-webkit-scrollbar-thumb { background:linear-gradient(180deg, rgba(255,255,255,0.28), rgba(255,255,255,0.12)); border-radius:10px; }
     .sp-summary-bar { padding:0.75rem 1rem; border-top:1px solid rgba(255,255,255,0.06); flex-shrink:0; }
@@ -7957,20 +8057,138 @@ var FUN_BADGES = [
   { id: 'gamer',       icon: '🕹️', name: 'High Scorer',    check: function () { return (parseInt(localStorage.getItem(GAME_HI_KEY)) || 0) >= 20; } }
 ];
 
+// ── Game achievements (earned by playing the games; saved + synced) ──
+var GAME_STATS_KEY = profilePrefix + 'mft_game_stats';   // counters the games bump
+var GAME_ACH_KEY   = profilePrefix + 'mft_game_ach';     // {achId: earnedTimestamp}
+function loadGameStats() { try { return JSON.parse(localStorage.getItem(GAME_STATS_KEY)) || {}; } catch (e) { return {}; } }
+function saveGameStats(s) { try { localStorage.setItem(GAME_STATS_KEY, JSON.stringify(s)); } catch (e) {} }
+function gsInc(k, by) { var s = loadGameStats(); s[k] = (s[k] || 0) + (by || 1); saveGameStats(s); }
+function gsMax(k, v) { var s = loadGameStats(); if (v > (s[k] || 0)) { s[k] = v; saveGameStats(s); } }
+function gsFlag(k) { var s = loadGameStats(); if (!s[k]) { s[k] = 1; saveGameStats(s); } }
+function _gsSudBest() { try { var b = JSON.parse(localStorage.getItem(SUDOKU_BEST_KEY)) || {}; var v = Object.keys(b).map(function (k) { return b[k]; }); return v.length ? Math.min.apply(null, v) : 0; } catch (e) { return 0; } }
+function _gsSudHas(d) { try { return !!(JSON.parse(localStorage.getItem(SUDOKU_BEST_KEY)) || {})[d]; } catch (e) { return false; } }
+var GAME_ACHIEVEMENTS = [
+  { id: 'sud_first',    icon: '🧩', name: 'Sudoku Solver',  desc: 'Win your first Sudoku',            check: function () { return (loadGameStats().sudokuWins || 0) >= 1; } },
+  { id: 'sud_speed',    icon: '⚡', name: 'Speed Demon',     desc: 'Solve a Sudoku under 3 minutes',   check: function () { var t = _gsSudBest(); return t > 0 && t <= 180; } },
+  { id: 'sud_extreme',  icon: '🔥', name: 'Sudoku Master',   desc: 'Solve an Extreme Sudoku',          check: function () { return _gsSudHas('extreme'); } },
+  { id: 'sud_flawless', icon: '💯', name: 'Flawless',        desc: 'Win with no mistakes & no hints',  check: function () { return (loadGameStats().sudokuFlawless || 0) >= 1; } },
+  { id: 'sud_addict',   icon: '🧠', name: 'Number Addict',   desc: 'Win 25 Sudoku games',              check: function () { return (loadGameStats().sudokuWins || 0) >= 25; } },
+  { id: 'm3_first',     icon: '🍬', name: 'Sweet Start',     desc: 'Play Fruit Match',                 check: function () { return (loadGameStats().m3Games || 0) >= 1; } },
+  { id: 'm3_combo',     icon: '💥', name: 'Combo King',      desc: 'Chain a 5+ combo',                 check: function () { return (loadGameStats().m3Combo || 0) >= 5; } },
+  { id: 'm3_1500',      icon: '🍭', name: 'Sugar Rush',      desc: 'Score 1,500+ in Fruit Match',      check: function () { return _m3Best() >= 1500; } },
+  { id: 'm3_3000',      icon: '🏆', name: 'Match Master',    desc: 'Score 3,000+ in Fruit Match',      check: function () { return _m3Best() >= 3000; } },
+  { id: 'bs_first',     icon: '🧪', name: 'First Sort',      desc: 'Solve Ball Sort level 1',          check: function () { return _bsUnlocked() >= 2; } },
+  { id: 'bs_25',        icon: '🎯', name: 'Getting Sorted',  desc: 'Reach Ball Sort level 25',         check: function () { return _bsUnlocked() >= 25; } },
+  { id: 'bs_100',       icon: '🚀', name: 'Sort Genius',     desc: 'Reach Ball Sort level 100',        check: function () { return _bsUnlocked() >= 100; } },
+  { id: 'bs_500',       icon: '👑', name: 'Sort Royalty',    desc: 'Reach Ball Sort level 500',        check: function () { return _bsUnlocked() >= 500; } },
+  { id: 'bs_1000',      icon: '🌈', name: 'Sort Legend',     desc: 'Conquer level 1000',               check: function () { return _bsUnlocked() >= 1000; } },
+  { id: 'bs_noundo',    icon: '✨', name: 'No Takebacks',    desc: 'Solve a level without undo',       check: function () { return (loadGameStats().bsNoUndo || 0) >= 1; } },
+  { id: 'coop_win',     icon: '🤝', name: 'Team Player',     desc: 'Win a co-op Sudoku',               check: function () { return (loadGameStats().coopWins || 0) >= 1; } },
+  { id: 'explorer',     icon: '🎮', name: 'Game Explorer',   desc: 'Try all 3 games',                  check: function () { var s = loadGameStats(); return !!(s.pSud && s.pM3 && s.pBs); } }
+];
+function loadGameAch() { try { return JSON.parse(localStorage.getItem(GAME_ACH_KEY)) || {}; } catch (e) { return {}; } }
+function saveGameAch(o) { try { localStorage.setItem(GAME_ACH_KEY, JSON.stringify(o)); } catch (e) {} }
+function _achEarned(a, earned) { if (earned[a.id]) return true; try { return a.check(); } catch (e) { return false; } }
+function _gameAchCount() { var earned = loadGameAch(), n = 0; GAME_ACHIEVEMENTS.forEach(function (a) { if (_achEarned(a, earned)) n++; }); return n; }
+// Record any newly-satisfied achievements and toast them.
+function awardGameAchievements(silent) {
+  var earned = loadGameAch(), changed = false, newly = [];
+  GAME_ACHIEVEMENTS.forEach(function (a) {
+    if (!earned[a.id]) { var ok = false; try { ok = a.check(); } catch (e) {} if (ok) { earned[a.id] = Date.now(); changed = true; newly.push(a); } }
+  });
+  if (changed) saveGameAch(earned);
+  if (!silent) newly.forEach(function (a, i) { setTimeout(function () { _achToast(a); }, i * 700); });
+  return newly;
+}
+function _achToast(a) {
+  var el = document.createElement('div');
+  el.className = 'ach-toast';
+  el.innerHTML = '<div class="ach-toast-ico">' + a.icon + '</div><div><div class="ach-toast-t">🏆 Achievement unlocked</div><div class="ach-toast-n">' + a.name + '</div></div>';
+  document.body.appendChild(el);
+  requestAnimationFrame(function () { el.classList.add('show'); });
+  setTimeout(function () { el.classList.remove('show'); setTimeout(function () { if (el.parentNode) el.parentNode.removeChild(el); }, 420); }, 3200);
+}
+function _achToastMsg(msg) {
+  var el = document.createElement('div');
+  el.className = 'ach-toast';
+  el.innerHTML = '<div class="ach-toast-ico">📤</div><div><div class="ach-toast-n">' + msg + '</div></div>';
+  document.body.appendChild(el);
+  requestAnimationFrame(function () { el.classList.add('show'); });
+  setTimeout(function () { el.classList.remove('show'); setTimeout(function () { if (el.parentNode) el.parentNode.removeChild(el); }, 420); }, 2600);
+}
+function flexAchievements() {
+  var earned = loadGameAch();
+  var got = GAME_ACHIEVEMENTS.filter(function (a) { return _achEarned(a, earned); });
+  var lines = ['🎮 My Game Achievements — ' + got.length + '/' + GAME_ACHIEVEMENTS.length + ' unlocked'];
+  var sb = _gsSudBest(); if (sb) lines.push('🧩 Sudoku best ' + Math.floor(sb / 60) + ':' + String(sb % 60).padStart(2, '0'));
+  if (_m3Best()) lines.push('🍬 Fruit Match best ' + _m3Best());
+  lines.push('🧪 Ball Sort — Level ' + _bsUnlocked() + '/' + BS_MAX_LEVEL);
+  if (got.length) lines.push('🏆 ' + got.slice(-3).map(function (a) { return a.icon + ' ' + a.name; }).join('  '));
+  lines.push('Can you beat me? 😎');
+  var text = lines.join('\n');
+  if (navigator.share) { navigator.share({ title: 'My Game Achievements', text: text }).catch(function () {}); }
+  else { try { navigator.clipboard.writeText(text); } catch (e) {} _achToastMsg('Copied! Paste it to your friends 🎉'); }
+}
+
 var _funTab  = 'rewards';   // 'rewards' | 'games'
-var _funGame = 'sudoku';    // 'catcher' | 'coin3d' | 'sudoku'
+var _funGame = null;        // null = game hub; else a FUN_GAMES id
+// Registry of playable games. Add a new game = add one entry here (id, meta,
+// container HTML, and an optional best-score subtitle).
+var FUN_GAMES = [
+  {
+    id: 'sudoku', name: 'Sudoku', icon: '🔢', color: '168,85,247',
+    tag: 'Classic number logic. Play solo or with friends.',
+    container: function () { return '<div class="sudoku-wrap" id="sudokuArea">' + _sudokuIntroHtml() + '</div>'; },
+    sub: function () {
+      var b = {}; try { b = JSON.parse(localStorage.getItem(SUDOKU_BEST_KEY)) || {}; } catch (e) {}
+      var vals = Object.keys(b).map(function (k) { return b[k]; });
+      if (!vals.length) return '';
+      var m = Math.min.apply(null, vals);
+      return '🏆 ' + Math.floor(m / 60) + ':' + String(m % 60).padStart(2, '0');
+    }
+  },
+  {
+    id: 'match', name: 'Fruit Match', icon: '🍬', color: '236,72,153',
+    tag: 'Swap fruits, match 3+, chain big combos.',
+    container: function () { return '<div class="m3-wrap" id="m3Area">' + _m3IntroHtml() + '</div>'; },
+    sub: function () { var b = _m3Best(); return b ? '🏆 Best ' + b : ''; }
+  },
+  {
+    id: 'ballsort', name: 'Ball Sort', icon: '🧪', color: '6,182,212',
+    tag: 'Pour the balls until each tube is one colour. 1000 levels!',
+    container: function () { return '<div class="bs-wrap" id="bsArea">' + _bsIntroHtml() + '</div>'; },
+    sub: function () { return '🎯 Level ' + _bsUnlocked() + ' / ' + BS_MAX_LEVEL; }
+  }
+];
+function _funGameById(id) { for (var i = 0; i < FUN_GAMES.length; i++) if (FUN_GAMES[i].id === id) return FUN_GAMES[i]; return null; }
+function _funGameCardHtml(g) {
+  var sub = ''; try { sub = g.sub ? g.sub() : ''; } catch (e) {}
+  return '<button class="fun-game-card" style="--gc:' + g.color + '" onclick="openFunGame(\'' + g.id + '\')">'
+    + '<div class="fun-gc-ico">' + g.icon + '</div>'
+    + '<div class="fun-gc-name">' + g.name + '</div>'
+    + '<div class="fun-gc-tag">' + g.tag + '</div>'
+    + (sub ? '<div class="fun-gc-sub">' + sub + '</div>' : '')
+    + '<div class="fun-gc-play">Play ▶</div>'
+    + '</button>';
+}
+function openFunGame(id) { _stopFunGames(); _funGame = id; renderFunPanel(); }
+function backToGameHub() { _stopFunGames(); _funGame = null; renderFunPanel(); }
 function _stopFunGames() {
   try { if (_g3 && _g3.active) _end3DGame(true); } catch (e) {}
   try { if (_game) { clearInterval(_game.timer); clearInterval(_game.spawner); _game = null; } } catch (e) {}
   try { if (_sudoku) { if (_sudoku.timer) clearInterval(_sudoku.timer); if (_sudoku.room) { try { _sudoku.room.ref.off('value', _sudoku.room.listener); } catch (e2) {} try { _sudoku.room.ref.child('members/' + _sudoku.room.pid).remove(); } catch (e3) {} } _sudoku = null; } } catch (e) {}
+  try { if (_m3) _m3 = null; } catch (e) {}
+  try { if (_bs) _bs = null; } catch (e) {}
+  try { var m3a = document.getElementById('m3Area'); if (m3a) m3a.classList.remove('m3-full'); } catch (e) {}
+  try { var bsa = document.getElementById('bsArea'); if (bsa) bsa.classList.remove('bs-full'); } catch (e) {}
   try { _skSetFullscreen(false); } catch (e) {}
 }
-function switchFunTab(tab)  { _stopFunGames(); _funTab = tab;  renderFunPanel(); }
+function switchFunTab(tab)  { _stopFunGames(); _funTab = tab; if (tab === 'games') _funGame = null; renderFunPanel(); }
 function switchFunGame(g)   { _stopFunGames(); _funGame = g;   renderFunPanel(); }
 
 function renderFunPanel() {
   var el = document.getElementById('funBody');
-  if (!el || _game || (_g3 && _g3.active) || (_sudoku && _sudoku.active)) return; // don't wipe an in-progress game
+  if (!el || _game || (_g3 && _g3.active) || (_sudoku && _sudoku.active) || (_m3 && _m3.active) || (_bs && _bs.active)) return; // don't wipe an in-progress game
 
   var html = '<div class="panel-subtabs" style="margin-bottom:0.7rem;">'
     + '<button class="subtab' + (_funTab === 'rewards' ? ' active' : '') + '" onclick="switchFunTab(\'rewards\')">🏆 Rewards</button>'
@@ -7989,12 +8207,34 @@ function renderFunPanel() {
     html += '<div class="fun-sec-title">Achievements</div>';
     html += '<div class="ach-progress"><div class="ach-progress-bar"><div class="ach-progress-fill" style="width:' + pct + '%"></div></div><span class="ach-progress-txt">' + unlocked + '/' + FUN_BADGES.length + '</span></div>';
     html += '<div class="badge-grid">' + badges + '</div>';
+    // Game achievements (record retroactive unlocks silently, then show the wall).
+    awardGameAchievements(true);
+    var gEarned = loadGameAch(), gUn = 0;
+    var gBadges = GAME_ACHIEVEMENTS.map(function (a) {
+      var on = _achEarned(a, gEarned); if (on) gUn++;
+      return '<div class="badge' + (on ? ' unlocked' : '') + '" title="' + a.desc + '"><div class="badge-ico">' + a.icon + '</div><div class="badge-name">' + a.name + '</div>' + (on ? '' : '<div class="badge-lock">🔒</div>') + '</div>';
+    }).join('');
+    var gPct = Math.round(gUn / GAME_ACHIEVEMENTS.length * 100);
+    html += '<div class="fun-sec-title" style="margin-top:1.1rem;">🎮 Game Achievements</div>';
+    html += '<div class="ach-progress"><div class="ach-progress-bar"><div class="ach-progress-fill" style="width:' + gPct + '%"></div></div><span class="ach-progress-txt">' + gUn + '/' + GAME_ACHIEVEMENTS.length + '</span><button class="ach-flex" onclick="flexAchievements()">📤 Flex</button></div>';
+    html += '<div class="badge-grid">' + gBadges + '</div>';
+  } else if (!_funGame) {
+    // Game hub — pick a game.
+    html += '<div class="fun-hub-ach" onclick="switchFunTab(\'rewards\')">'
+      + '<span class="fun-hub-ach-ico">🏆</span>'
+      + '<span class="fun-hub-ach-txt"><b>Achievements</b><span>' + _gameAchCount() + ' / ' + GAME_ACHIEVEMENTS.length + ' unlocked</span></span>'
+      + '<span class="fun-hub-ach-go">View →</span></div>';
+    html += '<div class="fun-hub-title">🎮 Choose a game</div>';
+    html += '<div class="fun-hub-grid">' + FUN_GAMES.map(_funGameCardHtml).join('') + '</div>';
   } else {
-    html += '<div class="sudoku-wrap" id="sudokuArea">' + _sudokuIntroHtml() + '</div>';
+    // A game is open — show it with a back button to the hub.
+    var g = _funGameById(_funGame);
+    html += '<button class="fun-back" onclick="backToGameHub()">← All games</button>';
+    html += g ? g.container() : '';
   }
 
   el.innerHTML = html;
-  if (_funTab === 'games') try { _applySkThemeVar(); } catch (e) {}
+  if (_funTab === 'games' && _funGame === 'sudoku') try { _applySkThemeVar(); } catch (e) {}
 }
 
 // ── Coin Catcher mini-game ──
@@ -8315,6 +8555,7 @@ function _genSudoku(clues) {
   return { solution: sol, puzzle: puz };
 }
 function startSudoku(diff) {
+  try { gsFlag('pSud'); } catch (e) {}
   var clues = diff === 'easy' ? 42 : diff === 'medium' ? 33 : diff === 'hard' ? 27 : 24;
   var g = _genSudoku(clues);
   var given = g.puzzle.map(function (r) { return r.map(function (v) { return v !== 0; }); });
@@ -8435,9 +8676,10 @@ function sudokuHint() {
   if (s.sel && !_skLocked(s, s.sel.r, s.sel.c) && s.cur[s.sel.r][s.sel.c] !== s.solution[s.sel.r][s.sel.c]) { tr = s.sel.r; tc = s.sel.c; }
   if (tr < 0) { for (var r = 0; r < 9 && tr < 0; r++) for (var c = 0; c < 9; c++) { if (!s.given[r][c] && s.cur[r][c] !== s.solution[r][c]) { tr = r; tc = c; break; } } }
   if (tr < 0) return;
-  s.hints++;
+  // Co-op: hints are a shared team pool (atomic increment), same as lives.
+  if (s.coop) { if (s.room) { try { s.room.ref.child('hints').transaction(function (h) { return (h || 0) + 1; }); } catch (e) {} } }
+  else { s.hints++; s.hint[tr * 9 + tc] = true; }
   s.cur[tr][tc] = s.solution[tr][tc];
-  if (!s.coop) s.hint[tr * 9 + tc] = true;
   delete s.notes[tr * 9 + tc];
   s.sel = { r: tr, c: tc };
   renderSudoku();
@@ -8572,6 +8814,12 @@ function _sudokuCheckWin() {
     isBest = !best[s.diff] || secs < best[s.diff];
     if (isBest) { best[s.diff] = secs; localStorage.setItem(SUDOKU_BEST_KEY, JSON.stringify(best)); }
   }
+  // Game stats + achievements
+  try {
+    if (coop) gsInc('coopWins');
+    else { gsInc('sudokuWins'); if (!s.mistakes && !s.hints) gsInc('sudokuFlawless'); }
+    awardGameAchievements();
+  } catch (e) {}
   // Sweep-flash the whole grid, then show the win screen.
   var grid = document.querySelector('#sudokuArea .sk-grid');
   if (grid) {
@@ -8619,7 +8867,7 @@ function skCreateRoom() {
     var clues = diff === 'easy' ? 42 : diff === 'medium' ? 33 : diff === 'hard' ? 27 : 24;
     var g = _genSudoku(clues);
     var code = _skGenCode(), pid = _skGenCode() + _skGenCode(), color = _skColor(pid);
-    var room = { host: pid, diff: diff, status: 'lobby', mistakes: 0, createdAt: Date.now(), given: _gridToStr(g.puzzle), solution: _gridToStr(g.solution), members: {} };
+    var room = { host: pid, diff: diff, status: 'lobby', mistakes: 0, hints: 0, createdAt: Date.now(), given: _gridToStr(g.puzzle), solution: _gridToStr(g.solution), members: {} };
     room.members[pid] = { name: name, color: color, joinedAt: Date.now(), host: true };
     db.ref('sudokuGames/' + code).set(room).then(function () {
       _skEnterRoom(code, pid, name);
@@ -8681,6 +8929,7 @@ function _skOnRoomData(data) {
   s.room.members = data.members || {};
   s.room.status = data.status || 'lobby';
   s.mistakes = data.mistakes || 0; // shared team lives
+  s.hints = data.hints || 0;       // shared team hints
   if (s.solved || s.over) return; // keep the celebration on screen
   // Still waiting in the lobby.
   if (s.room.status !== 'playing') { s.phase = 'lobby'; _skRenderLobby(); return; }
@@ -8806,6 +9055,450 @@ function _skRoomBarHtml() {
     + '<button class="sk-room-copy" id="skCopyBtn" onclick="skCopyCode()">📋 Copy</button>'
     + '<button class="sk-room-leave" onclick="skLeaveRoom()">Leave</button>'
     + '</div><div class="sk-roster">' + chips + '</div></div>';
+}
+
+// ── Fruit Match (original match-3 game) ──
+var _m3 = null;
+var M3_TYPES = ['🍓', '🍇', '🍊', '🍋', '🍏', '🫐'];
+var M3_SIZE = 8;
+var M3_START_MOVES = 25;
+var M3_BEST_KEY = profilePrefix + 'mft_m3_best';
+function _m3Best() { try { return parseInt(localStorage.getItem(M3_BEST_KEY), 10) || 0; } catch (e) { return 0; } }
+function _m3SaveBest(v) { try { localStorage.setItem(M3_BEST_KEY, String(v)); } catch (e) {} }
+function _m3RandType() { return Math.floor(Math.random() * M3_TYPES.length); }
+function _m3TypeAt(r, c) { var id = _m3.grid[r] && _m3.grid[r][c]; return id ? _m3.tiles[id].type : -1; }
+function _m3IntroHtml() {
+  var best = _m3Best();
+  return '<div class="m3-intro">'
+    + '<div class="m3-intro-ico">🍬</div>'
+    + '<div class="m3-intro-title">Fruit Match</div>'
+    + '<div class="m3-intro-desc">Swap two fruits to line up 3 or more of a kind. They pop, and more fall in — chain combos for big points! You get ' + M3_START_MOVES + ' moves.</div>'
+    + (best ? '<div class="m3-intro-best">🏆 Best: ' + best + '</div>' : '')
+    + '<button class="m3-play" onclick="startMatch3()">▶  Play</button>'
+    + '</div>';
+}
+function _m3Transform(r, c) { return 'translate(' + (c * 100) + '%,' + (r * 100) + '%)'; }
+function startMatch3() {
+  try { gsFlag('pM3'); } catch (e) {}
+  _m3 = { grid: [], tiles: {}, nextId: 1, sel: null, score: 0, moves: M3_START_MOVES, busy: false, active: true, over: false, best: _m3Best(), startBest: _m3Best() };
+  for (var r = 0; r < M3_SIZE; r++) {
+    _m3.grid[r] = [];
+    for (var c = 0; c < M3_SIZE; c++) {
+      var t, guard = 0;
+      do { t = _m3RandType(); guard++; }
+      while (guard < 60 && ((c >= 2 && _m3TypeAt(r, c - 1) === t && _m3TypeAt(r, c - 2) === t) || (r >= 2 && _m3TypeAt(r - 1, c) === t && _m3TypeAt(r - 2, c) === t)));
+      var tile = { id: _m3.nextId++, type: t, r: r, c: c, el: null };
+      _m3.tiles[tile.id] = tile; _m3.grid[r][c] = tile.id;
+    }
+  }
+  renderMatch3();
+  _m3SetFullscreen(true);
+}
+function newMatch3() {
+  _m3 = null; _m3SetFullscreen(false);
+  var area = document.getElementById('m3Area');
+  if (area) area.innerHTML = _m3IntroHtml();
+}
+function _m3SetFullscreen(on) {
+  var area = document.getElementById('m3Area');
+  if (area) area.classList.toggle('m3-full', !!on);
+  try { document.body.classList.toggle('sk-fs-lock', !!on); } catch (e) {}
+  try { _skSetZoomLock(!!on); } catch (e) {}
+}
+function renderMatch3() {
+  var area = document.getElementById('m3Area'); if (!area) return;
+  var m = _m3;
+  area.innerHTML =
+      '<div class="m3-hud">'
+    +   '<div class="m3-stat"><span class="m3-stat-lbl">Score</span><b id="m3Score">' + m.score + '</b></div>'
+    +   '<div class="m3-stat"><span class="m3-stat-lbl">Moves</span><b id="m3Moves">' + m.moves + '</b></div>'
+    +   '<div class="m3-stat"><span class="m3-stat-lbl">Best</span><b id="m3Bestv">' + m.best + '</b></div>'
+    +   '<button class="sk-newbtn" onclick="newMatch3()">↻ New</button>'
+    + '</div>'
+    + '<div class="m3-board" id="m3Board"></div>';
+  var board = document.getElementById('m3Board');
+  for (var r = 0; r < M3_SIZE; r++) for (var c = 0; c < M3_SIZE; c++) { var id = m.grid[r][c]; if (id) _m3CreateEl(m.tiles[id], board); }
+}
+function _m3CreateEl(tile, board) {
+  var el = document.createElement('div');
+  el.className = 'm3-tile';
+  el.innerHTML = '<div class="m3-face">' + M3_TYPES[tile.type] + '</div>';
+  el.style.transform = _m3Transform(tile.r, tile.c);
+  el.addEventListener('click', function () { m3Tap(tile.id); });
+  board.appendChild(el);
+  tile.el = el;
+}
+function _m3Place(tile) { if (tile.el) tile.el.style.transform = _m3Transform(tile.r, tile.c); }
+function _m3Highlight() { var m = _m3; for (var id in m.tiles) { var t = m.tiles[id]; if (t.el) t.el.classList.toggle('sel', m.sel === t.id); } }
+function _m3Adjacent(a, b) { return (a.r === b.r && Math.abs(a.c - b.c) === 1) || (a.c === b.c && Math.abs(a.r - b.r) === 1); }
+function m3Tap(id) {
+  var m = _m3; if (!m || m.busy || m.over) return;
+  var t = m.tiles[id]; if (!t) return;
+  if (!m.sel) { m.sel = id; _m3Highlight(); return; }
+  if (m.sel === id) { m.sel = null; _m3Highlight(); return; }
+  var a = m.tiles[m.sel];
+  if (_m3Adjacent(a, t)) { m.sel = null; _m3Highlight(); _m3TrySwap(a, t); }
+  else { m.sel = id; _m3Highlight(); }
+}
+function _m3SwapCells(a, b) {
+  var m = _m3;
+  m.grid[a.r][a.c] = b.id; m.grid[b.r][b.c] = a.id;
+  var ar = a.r, ac = a.c; a.r = b.r; a.c = b.c; b.r = ar; b.c = ac;
+}
+function _m3TrySwap(a, b) {
+  var m = _m3; m.busy = true;
+  _m3SwapCells(a, b); _m3Place(a); _m3Place(b);
+  setTimeout(function () {
+    var matches = _m3FindMatches();
+    if (!matches.length) { _m3SwapCells(a, b); _m3Place(a); _m3Place(b); setTimeout(function () { if (_m3) _m3.busy = false; }, 270); }
+    else { m.moves--; _m3UpdateHud(); _m3Resolve(matches, 1); }
+  }, 280);
+}
+function _m3FindMatches() {
+  var m = _m3, mark = {};
+  function ty(r, c) { var id = m.grid[r][c]; return id ? m.tiles[id].type : -2; }
+  for (var r = 0; r < M3_SIZE; r++) { var run = 1; for (var c = 1; c <= M3_SIZE; c++) {
+    if (c < M3_SIZE && ty(r, c) === ty(r, c - 1) && ty(r, c) >= 0) run++;
+    else { if (run >= 3) for (var k = 1; k <= run; k++) mark[r + '_' + (c - k)] = 1; run = 1; }
+  } }
+  for (var c2 = 0; c2 < M3_SIZE; c2++) { var run2 = 1; for (var r2 = 1; r2 <= M3_SIZE; r2++) {
+    if (r2 < M3_SIZE && ty(r2, c2) === ty(r2 - 1, c2) && ty(r2, c2) >= 0) run2++;
+    else { if (run2 >= 3) for (var k2 = 1; k2 <= run2; k2++) mark[(r2 - k2) + '_' + c2] = 1; run2 = 1; }
+  } }
+  return Object.keys(mark).map(function (key) { var p = key.split('_'); return { r: +p[0], c: +p[1] }; });
+}
+function _m3Resolve(cells, cascade) {
+  var m = _m3; if (!m) return;
+  cells.forEach(function (p) { var id = m.grid[p.r][p.c]; if (id && m.tiles[id] && m.tiles[id].el) m.tiles[id].el.classList.add('clearing'); });
+  m.score += cells.length * 10 * cascade;
+  try { gsMax('m3Combo', cascade); } catch (e) {}
+  _m3UpdateHud();
+  setTimeout(function () {
+    if (!_m3) return;
+    cells.forEach(function (p) {
+      var id = m.grid[p.r][p.c];
+      if (id) { var el = m.tiles[id].el; if (el && el.parentNode) el.parentNode.removeChild(el); delete m.tiles[id]; m.grid[p.r][p.c] = null; }
+    });
+    _m3Gravity();
+    setTimeout(function () {
+      if (!_m3) return;
+      var next = _m3FindMatches();
+      if (next.length) _m3Resolve(next, cascade + 1);
+      else _m3AfterResolve();
+    }, 300);
+  }, 240);
+}
+function _m3Gravity() {
+  var m = _m3, board = document.getElementById('m3Board'); if (!board) return;
+  for (var c = 0; c < M3_SIZE; c++) {
+    var writeRow = M3_SIZE - 1;
+    for (var r = M3_SIZE - 1; r >= 0; r--) {
+      var id = m.grid[r][c];
+      if (id) { if (writeRow !== r) { m.grid[writeRow][c] = id; m.grid[r][c] = null; m.tiles[id].r = writeRow; _m3Place(m.tiles[id]); } writeRow--; }
+    }
+    var spawnCount = writeRow + 1;
+    for (var r2 = writeRow; r2 >= 0; r2--) {
+      var tile = { id: m.nextId++, type: _m3RandType(), r: r2, c: c, el: null };
+      m.tiles[tile.id] = tile; m.grid[r2][c] = tile.id;
+      _m3CreateEl(tile, board);
+      // start above the visible board, then let CSS transition drop it in
+      tile.el.style.transition = 'none';
+      tile.el.style.transform = _m3Transform(r2 - spawnCount, c);
+      void tile.el.offsetWidth;
+      tile.el.style.transition = '';
+      tile.el.style.transform = _m3Transform(r2, c);
+    }
+  }
+}
+function _m3AfterResolve() {
+  var m = _m3; if (!m) return;
+  m.busy = false; m.sel = null;
+  if (m.score > m.best) { m.best = m.score; _m3SaveBest(m.best); _m3UpdateHud(); }
+  if (m.moves <= 0) _m3GameOver();
+}
+function _m3UpdateHud() {
+  var s = document.getElementById('m3Score'); if (s) s.textContent = _m3.score;
+  var mv = document.getElementById('m3Moves'); if (mv) mv.textContent = _m3.moves;
+  var b = document.getElementById('m3Bestv'); if (b) b.textContent = _m3.best;
+}
+function _m3GameOver() {
+  var m = _m3; if (!m) return;
+  var score = m.score, beat = score > m.startBest;
+  m.over = true;
+  try { gsInc('m3Games'); awardGameAchievements(); } catch (e) {}
+  var area = document.getElementById('m3Area');
+  if (area) {
+    area.innerHTML = '<div class="sk-win"><div class="sk-win-emoji">🍬</div><div class="sk-win-title">Out of moves!</div>'
+      + '<div class="sk-win-sub">Score: ' + score + (beat ? ' · 🏆 New best!' : ' · Best: ' + m.best) + '</div>'
+      + '<div style="display:flex; gap:0.5rem; justify-content:center; margin-top:0.9rem;">'
+      + '<button class="game-btn" onclick="startMatch3()">Play again</button>'
+      + '<button class="sk-newbtn" onclick="newMatch3()">Menu</button></div></div>';
+  }
+  _m3 = null;
+}
+
+// ── Ball Sort puzzle — 1000 levels, animated pours, every level verified solvable ──
+var _bs = null;
+var BS_COLORS = ['#ef4444', '#3b82f6', '#22c55e', '#eab308', '#a855f7', '#f97316', '#06b6d4', '#ec4899', '#84cc16', '#14b8a6', '#f43f5e', '#6366f1'];
+var BS_BEST_KEY = profilePrefix + 'mft_bs_best';
+var BS_LEVEL_KEY = profilePrefix + 'mft_bs_level';
+var BS_MAX_LEVEL = 1000;
+var _bsSelLevel = 0; // level highlighted on the menu
+function _bsBest() { try { return JSON.parse(localStorage.getItem(BS_BEST_KEY)) || {}; } catch (e) { return {}; } }
+function _bsSaveBest(o) { try { localStorage.setItem(BS_BEST_KEY, JSON.stringify(o)); } catch (e) {} }
+function _bsUnlocked() { try { return Math.min(BS_MAX_LEVEL, Math.max(1, parseInt(localStorage.getItem(BS_LEVEL_KEY), 10) || 1)); } catch (e) { return 1; } }
+function _bsSetUnlocked(n) { try { localStorage.setItem(BS_LEVEL_KEY, String(Math.min(BS_MAX_LEVEL, n))); } catch (e) {} }
+// Difficulty ramps with level: more colours, then taller tubes. Always 2 spare tubes
+// so the solver-verified generator stays instant.
+function _bsLevelConfig(level) {
+  var cap = level <= 200 ? 4 : level <= 500 ? 5 : 6;
+  var colors = Math.min(12, 3 + Math.floor((level - 1) / 22));
+  return { cap: cap, colors: colors, empties: 2 };
+}
+// Seeded RNG (mulberry32) so each level is the same puzzle for everyone, every time.
+function _bsRng(seed) { return function () { seed = (seed + 0x6D2B79F5) | 0; var t = Math.imul(seed ^ (seed >>> 15), 1 | seed); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
+function _bsWon(tubes, cap) {
+  for (var i = 0; i < tubes.length; i++) {
+    var t = tubes[i]; if (!t.length) continue;
+    if (t.length !== cap) return false;
+    for (var k = 1; k < t.length; k++) if (t[k] !== t[0]) return false;
+  }
+  return true;
+}
+function _bsCanPour(tubes, from, to, cap) {
+  if (from === to) return false;
+  var s = tubes[from], d = tubes[to];
+  if (!s.length || d.length >= cap) return false;
+  return !d.length || d[d.length - 1] === s[s.length - 1];
+}
+function _bsPour(tubes, from, to, cap) {
+  var s = tubes[from], d = tubes[to], x = s[s.length - 1], n = 0;
+  while (s.length && s[s.length - 1] === x && d.length < cap) { d.push(s.pop()); n++; }
+  return n;
+}
+function _bsKey(tubes) { return tubes.map(function (t) { return t.join(','); }).sort().join('|'); }
+function _bsSolvable(start, cap) {
+  var visited = {}, stack = [start.map(function (t) { return t.slice(); })], nodes = 0, CAP = 400000;
+  while (stack.length) {
+    if (++nodes > CAP) return false; // give up -> regenerate a different board
+    var tubes = stack.pop();
+    if (_bsWon(tubes, cap)) return true;
+    var key = _bsKey(tubes);
+    if (visited[key]) continue; visited[key] = 1;
+    var n = tubes.length;
+    for (var i = 0; i < n; i++) {
+      if (!tubes[i].length) continue;
+      // skip moving a tube that is already a complete single color
+      var uniform = tubes[i].length === cap; for (var q = 1; uniform && q < tubes[i].length; q++) if (tubes[i][q] !== tubes[i][0]) uniform = false;
+      if (uniform) continue;
+      for (var j = 0; j < n; j++) {
+        if (_bsCanPour(tubes, i, j, cap)) {
+          var nt = tubes.map(function (t) { return t.slice(); });
+          if (_bsPour(nt, i, j, cap) > 0 && !visited[_bsKey(nt)]) stack.push(nt);
+        }
+      }
+    }
+  }
+  return false;
+}
+function _bsShuffleBoard(cfg, rng) {
+  var balls = []; for (var c = 0; c < cfg.colors; c++) for (var k = 0; k < cfg.cap; k++) balls.push(c);
+  for (var i = balls.length - 1; i > 0; i--) { var j = Math.floor(rng() * (i + 1)); var t = balls[i]; balls[i] = balls[j]; balls[j] = t; }
+  var tubes = [], idx = 0;
+  for (var c2 = 0; c2 < cfg.colors; c2++) { var tt = []; for (var k2 = 0; k2 < cfg.cap; k2++) tt.push(balls[idx++]); tubes.push(tt); }
+  for (var e = 0; e < cfg.empties; e++) tubes.push([]);
+  return tubes;
+}
+function _bsGenerateLevel(level) {
+  var cfg = _bsLevelConfig(level);
+  var base = (Math.imul(level, 2654435761) >>> 0);
+  for (var a = 0; a < 300; a++) {
+    var tubes = _bsShuffleBoard(cfg, _bsRng((base + a * 40503) >>> 0));
+    if (!_bsWon(tubes, cfg.cap) && _bsSolvable(tubes, cfg.cap)) return { tubes: tubes, cap: cfg.cap };
+  }
+  return { tubes: _bsShuffleBoard(cfg, _bsRng(base)), cap: cfg.cap }; // deterministic fallback (never hit in practice)
+}
+function _bsIntroHtml() {
+  var unlocked = _bsUnlocked();
+  if (!_bsSelLevel) _bsSelLevel = unlocked;
+  _bsSelLevel = Math.min(_bsSelLevel, unlocked); if (_bsSelLevel < 1) _bsSelLevel = 1;
+  var lv = _bsSelLevel, best = _bsBest()[lv];
+  var meta = best ? '<span class="bs-lvl-best">🏆 Best ' + best + ' moves</span>' : '<span class="bs-lvl-todo">Not solved yet</span>';
+  return '<div class="bs-intro">'
+    + '<div class="bs-intro-ico">🧪</div>'
+    + '<div class="bs-intro-title">Ball Sort</div>'
+    + '<div class="bs-intro-desc">Pour the balls until every tube is a single colour. 1,000 levels — each one tougher than the last!</div>'
+    + '<div class="bs-lvl-card">'
+    +   '<div class="bs-lvl-nav">'
+    +     '<button class="bs-lvl-arrow" onclick="bsLevelStep(-1)"' + (lv <= 1 ? ' disabled' : '') + '>◀</button>'
+    +     '<div class="bs-lvl-num"><small>Level</small><b>' + lv + '</b> <span>/ ' + BS_MAX_LEVEL + '</span></div>'
+    +     '<button class="bs-lvl-arrow" onclick="bsLevelStep(1)"' + (lv >= unlocked ? ' disabled' : '') + '>▶</button>'
+    +   '</div>'
+    +   '<div class="bs-lvl-meta">' + meta + '</div>'
+    +   '<button class="bs-play" onclick="startBallSort(' + lv + ')">▶  Play</button>'
+    + '</div></div>';
+}
+function bsLevelStep(d) {
+  var u = _bsUnlocked();
+  _bsSelLevel = Math.min(u, Math.max(1, (_bsSelLevel || u) + d));
+  var a = document.getElementById('bsArea'); if (a) a.innerHTML = _bsIntroHtml();
+}
+function startBallSort(level) {
+  try { gsFlag('pBs'); } catch (e) {}
+  level = Math.min(BS_MAX_LEVEL, Math.max(1, level));
+  // Placeholder keeps the panel from being wiped and lets us abort if the user leaves.
+  _bs = { generating: true, active: true };
+  var area = document.getElementById('bsArea');
+  if (area) area.innerHTML = '<div class="bs-loading"><div class="bs-load-ring"></div><div class="bs-load-txt">Generating level ' + level + '…</div></div>';
+  _bsSetFullscreen(true);
+  // Defer generation one tick so the spinner paints first (hard levels can take ~1s).
+  setTimeout(function () {
+    if (!_bs || !_bs.generating) return; // user navigated away
+    var g = _bsGenerateLevel(level);
+    if (!_bs || !_bs.generating) return;
+    _bs = { level: level, cap: g.cap, tubes: g.tubes, initial: g.tubes.map(function (t) { return t.slice(); }), sel: null, moves: 0, history: [], solved: false, busy: false, active: true, usedUndo: false };
+    renderBallSort();
+  }, 30);
+}
+function newBallSort() {
+  _bs = null; _bsSetFullscreen(false); _bsSelLevel = _bsUnlocked();
+  var area = document.getElementById('bsArea');
+  if (area) area.innerHTML = _bsIntroHtml();
+}
+function _bsSetFullscreen(on) {
+  var area = document.getElementById('bsArea');
+  if (area) area.classList.toggle('bs-full', !!on);
+  try { document.body.classList.toggle('sk-fs-lock', !!on); } catch (e) {}
+  try { _skSetZoomLock(!!on); } catch (e) {}
+}
+function _bsTubeDone(t, cap) { if (t.length !== cap) return false; for (var k = 1; k < t.length; k++) if (t[k] !== t[0]) return false; return true; }
+function renderBallSort() {
+  var area = document.getElementById('bsArea'); if (!area) return;
+  var b = _bs;
+  var tubesHtml = '';
+  for (var i = 0; i < b.tubes.length; i++) {
+    var t = b.tubes[i], cls = 'bs-tube';
+    if (b.sel === i) cls += ' sel';
+    if (_bsTubeDone(t, b.cap)) cls += ' done';
+    var cells = '';
+    for (var k = b.cap - 1; k >= 0; k--) {
+      if (k < t.length) {
+        var lift = (b.sel === i && k === t.length - 1) ? ' lift' : '';
+        cells += '<div class="bs-cell bs-ball' + lift + '" style="--bc:' + BS_COLORS[t[k]] + ';"></div>';
+      } else cells += '<div class="bs-cell"></div>';
+    }
+    tubesHtml += '<div class="' + cls + '" onclick="bsTapTube(' + i + ')">' + cells + '</div>';
+  }
+  area.innerHTML =
+      '<div class="bs-hud">'
+    +   '<div class="bs-pill">Level ' + b.level + '</div>'
+    +   '<div class="bs-stat"><span class="bs-stat-lbl">Moves</span><b>' + b.moves + '</b></div>'
+    +   '<button class="sk-newbtn" onclick="newBallSort()">↻ Menu</button>'
+    + '</div>'
+    + '<div class="bs-tubes">' + tubesHtml + '</div>'
+    + '<div class="bs-actions">'
+    +   '<button class="bs-act" onclick="bsUndo()"' + (b.history.length ? '' : ' disabled') + '>↩ Undo</button>'
+    +   '<button class="bs-act" onclick="bsReset()">🔄 Reset</button>'
+    + '</div>';
+}
+// How many balls a pour would move (top run of matching colour that fits).
+function _bsPourCount(tubes, from, to, cap) {
+  var s = tubes[from], d = tubes[to]; if (!s.length) return 0;
+  var x = s[s.length - 1], n = 0, dl = d.length, si = s.length - 1;
+  while (si >= 0 && s[si] === x && dl < cap) { n++; si--; dl++; }
+  return n;
+}
+// Fly the poured balls out the top of the source tube, across, and down into the
+// destination — lift → travel → drop, one after another.
+function _bsAnimatePour(from, to, count, done) {
+  var area = document.getElementById('bsArea');
+  var tubeEls = area ? area.querySelectorAll('.bs-tube') : null;
+  if (!tubeEls || !tubeEls[from] || !tubeEls[to] || !count) { done(); return; }
+  var srcBalls = tubeEls[from].querySelectorAll('.bs-ball');   // DOM order: top → bottom
+  var dstCells = tubeEls[to].querySelectorAll('.bs-cell');
+  var srcRect = tubeEls[from].getBoundingClientRect(), dstRect = tubeEls[to].getBoundingClientRect();
+  var b = _bs, cap = b.cap, dl0 = b.tubes[to].length, pending = 0;
+  // Travel height: above whichever tube is taller, so balls clear the rims.
+  var topY = Math.min(srcRect.top, dstRect.top) - 34;
+  for (var n = 0; n < count; n++) {
+    var srcBall = srcBalls[n]; if (!srcBall) continue;
+    var sr = srcBall.getBoundingClientRect();
+    var landRow = dl0 + n;                          // top source ball lands lowest
+    var destCell = dstCells[cap - 1 - landRow];
+    var dr = destCell ? destCell.getBoundingClientRect() : sr;
+    var color = srcBall.style.getPropertyValue('--bc');
+    srcBall.style.visibility = 'hidden';
+    var fly = document.createElement('div');
+    fly.className = 'bs-fly';
+    fly.style.setProperty('--bc', color);
+    fly.style.left = sr.left + 'px'; fly.style.top = sr.top + 'px';
+    fly.style.width = sr.width + 'px'; fly.style.height = sr.height + 'px';
+    fly.style.transform = 'translate(0px,0px)';
+    document.body.appendChild(fly);
+    pending++;
+    (function (fly, sr, dr, delay) {
+      var dxEnd = dr.left - sr.left, dyEnd = dr.top - sr.top, dyUp = topY - sr.top;
+      var ended = false;
+      function cleanup() { if (ended) return; ended = true; if (fly.parentNode) fly.parentNode.removeChild(fly); if (--pending <= 0) done(); }
+      setTimeout(function () {
+        fly.style.transition = 'transform 0.15s ease-in';
+        fly.style.transform = 'translate(0px,' + dyUp + 'px)';            // 1) lift straight up
+        setTimeout(function () {
+          fly.style.transition = 'transform 0.19s linear';
+          fly.style.transform = 'translate(' + dxEnd + 'px,' + dyUp + 'px)'; // 2) travel across the top
+          setTimeout(function () {
+            fly.style.transition = 'transform 0.17s ease-in';
+            fly.style.transform = 'translate(' + dxEnd + 'px,' + dyEnd + 'px)'; // 3) drop into place
+            setTimeout(cleanup, 200);
+          }, 195);
+        }, 155);
+      }, 20 + delay);
+    })(fly, sr, dr, n * 75);
+  }
+  if (pending === 0) done();
+}
+function bsTapTube(i) {
+  var b = _bs; if (!b || b.solved || b.busy) return;
+  if (b.sel === null) { if (b.tubes[i].length) { b.sel = i; renderBallSort(); } return; }
+  if (b.sel === i) { b.sel = null; renderBallSort(); return; }
+  if (_bsCanPour(b.tubes, b.sel, i, b.cap)) {
+    var from = b.sel, to = i, count = _bsPourCount(b.tubes, from, to, b.cap);
+    b.busy = true; b.sel = null;
+    _bsAnimatePour(from, to, count, function () {
+      if (!_bs) return;
+      b.history.push(b.tubes.map(function (t) { return t.slice(); }));
+      _bsPour(b.tubes, from, to, b.cap);
+      b.moves++; b.busy = false;
+      renderBallSort();
+      _bsCheckWin();
+    });
+  } else { b.sel = b.tubes[i].length ? i : null; renderBallSort(); }
+}
+function bsUndo() {
+  var b = _bs; if (!b || b.solved || !b.history.length) return;
+  b.usedUndo = true;
+  b.tubes = b.history.pop(); b.moves = Math.max(0, b.moves - 1); b.sel = null; renderBallSort();
+}
+function bsReset() {
+  var b = _bs; if (!b) return;
+  b.tubes = b.initial.map(function (t) { return t.slice(); }); b.moves = 0; b.history = []; b.sel = null; b.solved = false; renderBallSort();
+}
+function _bsCheckWin() {
+  var b = _bs; if (!b || !_bsWon(b.tubes, b.cap)) return;
+  b.solved = true;
+  var best = _bsBest(), prev = best[b.level], beat = !prev || b.moves < prev;
+  if (beat) { best[b.level] = b.moves; _bsSaveBest(best); }
+  var unlocked = _bsUnlocked(), justUnlocked = false, next = b.level + 1, hasNext = next <= BS_MAX_LEVEL;
+  if (b.level >= unlocked && hasNext) { _bsSetUnlocked(next); justUnlocked = true; }
+  try { gsInc('bsWins'); if (!b.usedUndo) gsInc('bsNoUndo'); awardGameAchievements(); } catch (e) {}
+  var area = document.getElementById('bsArea');
+  if (area) {
+    area.innerHTML = '<div class="sk-win"><div class="sk-win-emoji">🎉</div><div class="sk-win-title">Level ' + b.level + ' solved!</div>'
+      + '<div class="sk-win-sub">' + b.moves + ' moves' + (beat ? ' · 🏆 New best!' : '') + (justUnlocked ? ' · 🔓 Level ' + next + ' unlocked!' : '') + '</div>'
+      + '<div style="display:flex; gap:0.5rem; justify-content:center; margin-top:0.9rem;">'
+      + (hasNext ? '<button class="game-btn" onclick="startBallSort(' + next + ')">Next level</button>' : '<button class="game-btn" onclick="newBallSort()">🏆 All done!</button>')
+      + '<button class="sk-newbtn" onclick="newBallSort()">Menu</button></div></div>';
+  }
 }
 
 function _ovPaydayHtml() {
