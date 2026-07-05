@@ -915,6 +915,7 @@
     .subtab.active { color: #f1f5f9; border-bottom-color: #ef4444; }
     .subtab.green.active { color: #22c55e; border-bottom-color: #22c55e; }
     .subtab.blue.active { color: #3b82f6; border-bottom-color: #3b82f6; }
+    .subtab.amber.active { color: #eab308; border-bottom-color: #eab308; }
     /* Bank accounts */
     .acct-card {
       display: flex; align-items: center; gap: 0.7rem;
@@ -971,6 +972,9 @@
     .received-total { padding: 0.6rem 1rem; border-top: 1px solid rgba(255,255,255,0.06); display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; }
     .received-total-label { font-size: 0.75rem; color: #64748b; }
     .received-total-val { font-size: 1rem; font-weight: 700; color: #22c55e; }
+    /* Extra Income — same layout as Money Received, amber accent to tell them apart */
+    .rec-icon.extra { background: rgba(234,179,8,0.15); }
+    .rec-amt.extra { color: #eab308; }
     .chart-wrap { flex: 1; display: flex; flex-direction: row; align-items: center; justify-content: center; padding: 0.75rem 1.25rem; overflow: hidden; gap: 1.5rem; }
     .chart-canvas-wrap { flex-shrink: 0; width: 170px; height: 170px; position: relative; }
     .chart-legend { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 0.15rem; overflow-y: auto; max-height: 100%; }
@@ -1904,15 +1908,15 @@
     .mobile-greeting {
       display: none; flex-direction: column;
       margin: 0.75rem 1rem 0;
-      background: linear-gradient(135deg, rgba(239,68,68,0.11) 0%, rgba(8,8,8,0) 65%);
-      border: 1px solid rgba(239,68,68,0.18);
+      background: linear-gradient(135deg, rgba(var(--th-rgb, 239,68,68),0.11) 0%, rgba(8,8,8,0) 65%);
+      border: 1px solid rgba(var(--th-rgb, 239,68,68),0.18);
       border-radius: 18px; padding: 1.1rem 1.25rem 1rem;
       position: relative; overflow: hidden; flex-shrink: 0;
     }
     .mg-glow {
       position: absolute; top: -40px; right: -40px;
       width: 140px; height: 140px;
-      background: radial-gradient(circle, rgba(239,68,68,0.18), transparent 70%);
+      background: radial-gradient(circle, rgba(var(--th-rgb, 239,68,68),0.18), transparent 70%);
       pointer-events: none;
     }
     .mg-top-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem; }
@@ -1922,7 +1926,11 @@
       background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08);
       border-radius: 99px; padding: 2px 9px; flex-shrink: 0;
     }
-    .mg-name { font-size: 1.65rem; font-weight: 800; color: #fff; letter-spacing: -0.045em; line-height: 1; margin-bottom: 0.8rem; }
+    .mg-name {
+      font-size: 1.65rem; font-weight: 800; letter-spacing: -0.045em; line-height: 1; margin-bottom: 0.8rem;
+      background: linear-gradient(120deg, #ffffff 30%, var(--th-light, #fca5a5) 70%, var(--th-accent, #ef4444) 100%);
+      -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; color: transparent;
+    }
     .mg-bottom-row {
       display: flex; justify-content: space-between; align-items: center;
       padding-top: 0.65rem; border-top: 1px solid rgba(255,255,255,0.07);
@@ -3494,7 +3502,14 @@
           <div class="guide-item-icon">💚</div>
           <div class="guide-item-body">
             <div class="guide-item-title">Money Received</div>
-            <div class="guide-item-desc">Switch to this tab to log cash you receive that isn't your salary — side income, money owed back to you, ang pow, etc. Tap <b>+ Add</b>, fill in the date/description/amount, and it appears as a positive (+) entry. "Total Received This Month" adds these up for the current calendar month and is shown alongside your salary on the Dashboard.</div>
+            <div class="guide-item-desc">Switch to this tab to log ad-hoc cash you receive — side income, money owed back to you, ang pow, etc. Tap <b>+ Add</b>, fill in the date/description/amount, and it appears as a positive (+) entry. It adds to your Dashboard total and bank balance, but does <b>not</b> count towards Commitment Health (CNI) — see Extra Income below for that.</div>
+          </div>
+        </div>
+        <div class="guide-item">
+          <div class="guide-item-icon">💵</div>
+          <div class="guide-item-body">
+            <div class="guide-item-title">Extra Income</div>
+            <div class="guide-item-desc">A separate tab for <b>recurring</b> income that's genuinely part of your overall income — e.g. a regular allowance from family. This <b>does</b> count towards Commitment Health (CNI), so your CNI% reflects nett salary + Extra Income, while one-off Money Received doesn't skew it.</div>
           </div>
         </div>
 
@@ -3534,7 +3549,7 @@
           <div class="guide-item-icon">🏷️</div>
           <div class="guide-item-body">
             <div class="guide-item-title">"Paid from" / "Into account"</div>
-            <div class="guide-item-desc">When adding an <b>expense</b>, a <b>commitment/bill</b>, or a <b>debt</b>, pick the bank it's paid from — that amount is deducted from that bank. When adding <b>Money Received</b>, pick the bank it went into. These tags are optional and never change your dashboard numbers.</div>
+            <div class="guide-item-desc">When adding an <b>expense</b>, a <b>commitment/bill</b>, or a <b>debt</b>, pick the bank it's paid from — that amount is deducted from that bank. When adding <b>Money Received</b> or <b>Extra Income</b>, pick the bank it went into. These tags are optional and never change your dashboard numbers.</div>
           </div>
         </div>
         <div class="guide-item">
@@ -3688,7 +3703,14 @@
           <div class="guide-item-icon">➕</div>
           <div class="guide-item-body">
             <div class="guide-item-title">+ Add Contribution</div>
-            <div class="guide-item-desc">Every time you put money aside for this goal, tap the + button on the goal card and log the amount, date, and an optional note (e.g. "Bonus from work"). Tap <b>Show contributions</b> to see or delete past entries.</div>
+            <div class="guide-item-desc">Every time you put money aside for this goal, tap the + button on the goal card and log the amount, date, an optional note (e.g. "Bonus from work"), and — if you like — <b>which bank</b> the money came from. Tap <b>Show contributions</b> to see or delete past entries.</div>
+          </div>
+        </div>
+        <div class="guide-item">
+          <div class="guide-item-icon">🏦</div>
+          <div class="guide-item-body">
+            <div class="guide-item-title">From which bank?</div>
+            <div class="guide-item-desc">When adding a contribution you can tag the bank it came from. That amount is then moved <b>out</b> of that bank's balance in the 🏦 Accounts tab — so your accounts show what's left after setting the savings aside. Leave it blank if you'd rather not track it per bank.</div>
           </div>
         </div>
         <div class="guide-item">
@@ -3706,7 +3728,7 @@
           </div>
         </div>
 
-        <div class="guide-tip">💡 <b>Tip:</b> The "Total Saved" bar at the bottom of the panel adds up contributions across <b>all</b> your goals. Contributions are manual — saving money in a goal doesn't remove it from your expense totals.</div>
+        <div class="guide-tip">💡 <b>Tip:</b> The "Total Saved" bar at the bottom of the panel adds up contributions across <b>all</b> your goals. Contributions don't count as expenses — but if you tag a bank, the amount does leave that bank's balance (like moving money into savings).</div>
           </div>
         </div>
       </div>
@@ -4396,6 +4418,7 @@
       <div class="panel-subtabs">
         <button class="subtab active" id="subtabExp" onclick="switchPanelATab('expenses')">💸 Expenses</button>
         <button class="subtab green" id="subtabRec" onclick="switchPanelATab('received')">💚 Money Received</button>
+        <button class="subtab amber" id="subtabExtra" onclick="switchPanelATab('extra')">💵 Extra Income</button>
         <button class="subtab blue" id="subtabAcc" onclick="switchPanelATab('accounts')">🏦 Accounts</button>
       </div>
       <!-- Expenses content -->
@@ -4415,6 +4438,15 @@
         <div class="received-total">
           <span class="received-total-label">Total Received This Month</span>
           <span class="received-total-val" id="receivedTotalVal">—</span>
+        </div>
+      </div>
+      <!-- Extra Income content (recurring income, e.g. family support — counts towards Commitment Health) -->
+      <div id="extraIncomeTabContent" style="display:none;flex-direction:column;flex:1;overflow:hidden;">
+        <div style="font-size:0.68rem;color:#64748b;padding:0.5rem 0.85rem 0;line-height:1.5;">Regular extra income (e.g. family support). This counts towards your <b>Commitment Health (CNI)</b> — unlike Money Received, which is ad-hoc.</div>
+        <div class="expense-list" id="extraIncomeList"></div>
+        <div class="received-total" style="border-top-color:rgba(234,179,8,0.25);">
+          <span class="received-total-label">Total Extra Income This Month</span>
+          <span class="received-total-val" id="extraIncomeTotalVal" style="color:#eab308;">—</span>
         </div>
       </div>
       <!-- Accounts content -->
@@ -4949,6 +4981,10 @@
       <div class="date-sep">/</div>
       <input type="number" id="contribYear" inputmode="numeric" placeholder="YYYY" min="2020" max="2099" style="width:80px;" />
     </div>
+
+    <div class="field-label">From which bank? <span style="color:#475569;font-weight:400;">(optional)</span></div>
+    <select id="contribBank" class="prem-select"></select>
+    <div style="font-size:0.68rem;color:#64748b;line-height:1.5;margin:0.3rem 0 0.2rem;">Picking a bank moves this amount out of that bank's balance — so your Accounts show what's left after saving.</div>
 
     <div class="field-label">Note <span style="color:#475569;font-weight:400;">(optional)</span></div>
     <input type="text" id="contribNote" placeholder="e.g. From bonus, monthly transfer…" maxlength="60" />
@@ -5556,6 +5592,41 @@
       Add Entry
     </button>
     <button class="modal-btn secondary" onclick="closeAddReceived()">Cancel</button>
+  </div>
+</div>
+
+<!-- Add / Edit Extra Income Modal -->
+<div class="modal-overlay" id="addExtraIncomeModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeAddExtraIncome()">✕</button>
+    <div class="modal-icon">💵</div>
+    <div class="modal-title" id="exiModalTitle">Extra Income</div>
+    <div class="modal-sub"><span id="exiModalMonth" style="color:#eab308;font-weight:600;"></span></div>
+    <div style="font-size:0.72rem;color:#94a3b8;line-height:1.5;margin:-0.4rem 0 0.9rem;">Recurring income that's part of your overall income (e.g. family support). This counts towards Commitment Health (CNI).</div>
+
+    <div class="field-label">Date (DD / MM / YYYY)</div>
+    <div class="date-row">
+      <input type="number" id="exiDay" inputmode="numeric" placeholder="DD" min="1" max="31" style="width:60px;" oninput="autoAdvanceDate(this,'exiMonth',2)" />
+      <div class="date-sep">/</div>
+      <input type="number" id="exiMonth" inputmode="numeric" placeholder="MM" min="1" max="12" style="width:60px;" oninput="autoAdvanceDate(this,'exiYear',2)" />
+      <div class="date-sep">/</div>
+      <input type="number" id="exiYear" inputmode="numeric" placeholder="YYYY" min="2020" max="2099" style="width:80px;" />
+    </div>
+
+    <div class="field-label">From / Description</div>
+    <input type="text" id="exiDesc" placeholder="e.g. Support from dad..." />
+
+    <div class="field-label">Amount (RM)</div>
+    <input type="number" id="exiAmt" inputmode="decimal" placeholder="0.00" step="0.01" min="0" />
+
+    <div class="field-label">Into account <span style="color:#475569;font-weight:400;">(optional)</span></div>
+    <select id="exiBank" class="prem-select"></select>
+
+    <button class="modal-btn" id="exiSaveBtn" onclick="saveExtraIncome()"
+      style="background:linear-gradient(135deg,#eab308,#a16207);color:#fff;width:100%;padding:12px;border:none;border-radius:12px;font-size:0.9rem;font-weight:600;cursor:pointer;">
+      Add Entry
+    </button>
+    <button class="modal-btn secondary" onclick="closeAddExtraIncome()">Cancel</button>
   </div>
 </div>
 
@@ -6212,6 +6283,7 @@ const DEDUCTIONS_KEY       = profilePrefix + 'mft_deductions';
 const EST_GROSS_KEY        = profilePrefix + 'mft_est_gross';
 const EST_DEDUCT_KEY       = profilePrefix + 'mft_est_deduct';
 const RECEIVED_KEY         = profilePrefix + 'mft_received_' + periodMonthLower + '_' + periodYear;
+const EXTRA_INCOME_KEY     = profilePrefix + 'mft_extra_income_' + periodMonthLower + '_' + periodYear; // recurring extra income (e.g. family support) — counts towards CNI, unlike Money Received
 const TEMPLATES_KEY        = profilePrefix + 'mft_templates';
 const GOALS_KEY            = profilePrefix + 'mft_goals';
 const WEDDING_KEY          = profilePrefix + 'mft_wedding';
@@ -6408,6 +6480,22 @@ function setSalaryBank(id) {
   renderAccountsList();
 }
 
+// True when a DD/MM/YYYY date falls inside the current salary cycle
+// (period start day → day before next period start). Used to scope entries
+// that are stored globally (e.g. savings-goal contributions) to this cycle so
+// they only affect bank balances once, matching the per-cycle expense/received flows.
+function _dateInCurrentCycle(dateStr) {
+  if (!dateStr) return false;
+  var p = String(dateStr).split('/');
+  if (p.length !== 3) return false;
+  var d = new Date(parseInt(p[2], 10), parseInt(p[1], 10) - 1, parseInt(p[0], 10));
+  if (isNaN(d.getTime())) return false;
+  var start = new Date(periodYear, periodMonthIdx, _cfgDay);
+  var end   = new Date(_pEndYear, _pEndMonthIdx, _pEndDay); // day 0 safely rolls to last day of prior month
+  d.setHours(0, 0, 0, 0); start.setHours(0, 0, 0, 0); end.setHours(23, 59, 59, 999);
+  return d >= start && d <= end;
+}
+
 // Build this cycle's per-account money in/out → { accId: { in: x, out: y } }
 // Scope is the CURRENT salary cycle, to match the rest of the app (dashboard,
 // expenses, commitments are all per-cycle). The account's "Starting balance"
@@ -6427,9 +6515,12 @@ function _computeAccountFlows() {
     if (_nett) bump(salaryBank, 'in', _nett);
   }
 
-  // Expenses out / money-received in, this cycle.
+  // Expenses out / money-received in, this cycle. Extra Income is real money too,
+  // so it credits the tagged bank just like Money Received — it's only excluded
+  // from the CNI calculation, not from your actual bank balance.
   loadExpenses().forEach(function (e) { if (e && e.bank) bump(e.bank, 'out', e.amount); });
   loadReceived().forEach(function (e) { if (e && e.bank) bump(e.bank, 'in',  e.amount); });
+  loadExtraIncome().forEach(function (e) { if (e && e.bank) bump(e.bank, 'in', e.amount); });
 
   // Bank-to-bank transfers: money leaves "from" and lands in "to" (net zero
   // overall, so this never touches the dashboard — only the bank balances).
@@ -6453,6 +6544,16 @@ function _computeAccountFlows() {
       ? (parseFloat(actuals[c.id]) || 0)
       : _commitAmountForMonth(c, periodYear, periodMonthIdx);
     if (amt > 0) bump(bank, 'out', amt);
+  });
+
+  // Savings-goal contributions tagged to a bank leave that bank this cycle —
+  // money set aside into savings reduces the bank's spendable balance. Only
+  // this cycle's contributions count (older ones are already baked into the
+  // rolled-forward opening balance, so they're never double-counted).
+  loadGoals().forEach(function (g) {
+    (g.contributions || []).forEach(function (c) {
+      if (c && c.bank && _dateInCurrentCycle(c.date)) bump(c.bank, 'out', c.amount);
+    });
   });
 
   return flows;
@@ -7828,7 +7929,12 @@ function renderDashboard() {
   const expenses = loadExpenses();
 
   const totalExp      = expenses.reduce(function(s, e) { return s + (parseFloat(e.amount) || 0); }, 0);
-  const totalReceived = loadReceived().reduce(function(s, e) { return s + (parseFloat(e.amount) || 0); }, 0);
+  const totalReceived   = loadReceived().reduce(function(s, e) { return s + (parseFloat(e.amount) || 0); }, 0);
+  const totalExtraIncome = loadExtraIncome().reduce(function(s, e) { return s + (parseFloat(e.amount) || 0); }, 0);
+  // Cash-flow total (dashboard headline + "money left" calc): every real inflow,
+  // whether it's regular Extra Income or ad-hoc Money Received. CNI is narrower
+  // (nett + Extra Income only) — see _cniViewData().
+  const totalCashIn = totalReceived + totalExtraIncome;
 
   document.getElementById('headerMonth').innerHTML = '<span class="month-pill-icon"><i class="ph-fill ph-calendar-blank" style="color:#fca5a5;font-size:1rem;"></i></span><span class="month-pill-text"><span class="month-pill-label">' + ALL_MONTHS[currentMonthIdx] + ' ' + currentYear + '</span><span class="month-pill-hint">' + periodRange + '</span></span><span class="month-pill-caret">▾</span>';
   document.getElementById('expModalMonth').textContent  = periodLabel + '  ·  ' + periodRange;
@@ -7848,10 +7954,10 @@ function renderDashboard() {
   }
   var _extraEl = document.getElementById("dashIncomeExtra");
   if (_extraEl) {
-    if (totalReceived > 0) {
+    if (totalCashIn > 0) {
       _extraEl.style.display = "";
-      var _incTotal = salary + totalReceived;
-      _extraEl.textContent = "+ " + fmt(totalReceived) + " extra  =  " + fmt(_incTotal) + " total";
+      var _incTotal = salary + totalCashIn;
+      _extraEl.textContent = "+ " + fmt(totalCashIn) + " extra  =  " + fmt(_incTotal) + " total";
     } else {
       _extraEl.style.display = "none";
     }
@@ -7873,7 +7979,7 @@ function renderDashboard() {
   var _expSub = fmt(totalExp) + ' expenses + ' + fmt(_expPaidAmt) + ' bills paid'
     + (_expUnpaidAmt > 0 ? ' · ' + fmt(_expUnpaidAmt) + ' bills due' : '');
   document.getElementById("dashExpensesSub").textContent = _expSub;
-  const remain = salary + totalReceived - totalExp - totalCommit;
+  const remain = salary + totalCashIn - totalExp - totalCommit;
   var incLabel = document.getElementById('dashIncomeLabel');
   if (incLabel && incLabel.firstChild) incLabel.firstChild.textContent = periodMonthName;
   var remLabel = document.getElementById('dashRemainLabel');
@@ -8008,7 +8114,7 @@ function renderMomentum() {
   // 1) Commitment health (current cycle)
   var curNett = parseFloat(localStorage.getItem(salaryKey)) || 0;
   if (!(curNett > 0)) curNett = _calcNett(loadSalaryConfig());
-  var curIncome = curNett + loadReceived().reduce(function(s, e) { return s + (parseFloat(e.amount) || 0); }, 0);
+  var curIncome = curNett + loadExtraIncome().reduce(function(s, e) { return s + (parseFloat(e.amount) || 0); }, 0);
   var curCommit = commitTotal();
   if (curIncome > 0 && curCommit > 0) {
     var cni = curCommit / curIncome * 100;
@@ -10708,10 +10814,14 @@ function switchPanelATab(tab) {
   _panelATab = tab;
   document.getElementById('subtabExp').classList.toggle('active', tab === 'expenses');
   document.getElementById('subtabRec').classList.toggle('active', tab === 'received');
+  var subtabExtra = document.getElementById('subtabExtra');
+  if (subtabExtra) subtabExtra.classList.toggle('active', tab === 'extra');
   var subtabAcc = document.getElementById('subtabAcc');
   if (subtabAcc) subtabAcc.classList.toggle('active', tab === 'accounts');
   document.getElementById('expensesTabContent').style.display = tab === 'expenses' ? 'flex' : 'none';
   document.getElementById('receivedTabContent').style.display = tab === 'received' ? 'flex' : 'none';
+  var extraContent = document.getElementById('extraIncomeTabContent');
+  if (extraContent) extraContent.style.display = tab === 'extra' ? 'flex' : 'none';
   var accContent = document.getElementById('accountsTabContent');
   if (accContent) accContent.style.display = tab === 'accounts' ? 'flex' : 'none';
 
@@ -10729,6 +10839,10 @@ function switchPanelATab(tab) {
     actions.innerHTML =
       '<button class="icon-btn" onclick="openAddReceived()" title="Add received money" ' +
       'style="background:rgba(34,197,94,0.15);border-color:rgba(34,197,94,0.3);color:#22c55e;width:auto;padding:0 10px;font-size:0.75rem;font-weight:600;">+ Add</button>';
+  } else if (tab === 'extra') {
+    actions.innerHTML =
+      '<button class="icon-btn" onclick="openAddExtraIncome()" title="Add extra income" ' +
+      'style="background:rgba(234,179,8,0.15);border-color:rgba(234,179,8,0.3);color:#eab308;width:auto;padding:0 10px;font-size:0.75rem;font-weight:600;">+ Add</button>';
   } else {
     actions.innerHTML =
       '<button class="icon-btn" onclick="openTransferModal()" title="Transfer between banks" ' +
@@ -10737,6 +10851,7 @@ function switchPanelATab(tab) {
       'style="background:rgba(59,130,246,0.15);border-color:rgba(59,130,246,0.3);color:#3b82f6;width:auto;padding:0 10px;font-size:0.75rem;font-weight:600;">+ Add</button>';
   }
   if (tab === 'received') renderReceivedList();
+  if (tab === 'extra') renderExtraIncomeList();
   if (tab === 'accounts') renderAccountsList();
 }
 
@@ -10885,6 +11000,159 @@ function saveReceived() {
     saveReceivedList(list);
     closeAddReceived();
     renderReceivedList();
+    renderDashboard();
+    showToast('Added: ' + fmt(amt));
+  }
+}
+
+// ═══════════════════════════════════════════════════
+// EXTRA INCOME  (e.g. family support — recurring money that IS part of your
+// overall income, unlike ad-hoc Money Received). This counts towards CNI /
+// Commitment Health, and — like Money Received — also adds to bank balances.
+// ═══════════════════════════════════════════════════
+function loadExtraIncome() {
+  try {
+    const list = JSON.parse(localStorage.getItem(EXTRA_INCOME_KEY)) || [];
+    let repaired = false;
+    list.forEach(function(e) { if (!e.id) { e.id = uid(); repaired = true; } });
+    if (repaired) localStorage.setItem(EXTRA_INCOME_KEY, JSON.stringify(list));
+    return list;
+  } catch(e) { return []; }
+}
+function saveExtraIncomeList(arr) { localStorage.setItem(EXTRA_INCOME_KEY, JSON.stringify(arr)); }
+
+var _lastExtraIncomeList = [];
+var _editExtraIncomeTarget = null;
+
+function renderExtraIncomeList() {
+  const list = loadExtraIncome();
+  const el = document.getElementById('extraIncomeList');
+  const totalEl = document.getElementById('extraIncomeTotalVal');
+  const total = list.reduce(function(s, e) { return s + (parseFloat(e.amount) || 0); }, 0);
+  if (totalEl) totalEl.textContent = fmt(total);
+  if (!el) return;
+
+  if (list.length === 0) {
+    _lastExtraIncomeList = [];
+    el.innerHTML = '<div class="empty-state"><div class="big">💵</div><div class="msg">No extra income logged yet.<br>e.g. family support, a regular side allowance...<br>Tap + Add to record one.</div></div>';
+    return;
+  }
+
+  const sorted = list.slice().sort(function(a, b) {
+    function toS(d) { if (!d) return ''; var p = d.split('/'); return p.length===3 ? p[2]+'/'+p[1]+'/'+p[0] : d; }
+    return toS(b.date).localeCompare(toS(a.date));
+  });
+  _lastExtraIncomeList = sorted;
+
+  el.innerHTML = sorted.map(function(e, i) {
+    return '<div class="received-row">' +
+      '<div class="rec-icon extra">💵</div>' +
+      '<div class="rec-info">' +
+        '<div class="rec-desc" title="' + escHtml(e.description) + '">' + escHtml(e.description) + _bankChip(e.bank) + '</div>' +
+        '<div class="rec-date">' + escHtml(e.date || '') + '</div>' +
+      '</div>' +
+      '<div class="rec-amt extra">+' + fmt(e.amount) + '</div>' +
+      '<button class="rec-edit" onclick="openEditExtraIncome(' + i + ')" title="Edit">✏</button>' +
+      '<button class="rec-del" onclick="deleteExtraIncome(' + i + ')">✕</button>' +
+      '</div>';
+  }).join('');
+}
+
+function deleteExtraIncome(idx) {
+  const target = _lastExtraIncomeList[idx];
+  if (!target) return;
+  deleteWithUndo({
+    confirm: 'Delete this entry?',
+    label: 'Entry deleted',
+    remove: function() {
+      var list = loadExtraIncome().filter(function(e) {
+        if (e === target) return false;
+        if (e.date === target.date && e.description === target.description && String(e.amount) === String(target.amount)) return false;
+        return true;
+      });
+      saveExtraIncomeList(list);
+      renderExtraIncomeList();
+      renderDashboard();
+    },
+    restore: function() {
+      var list = loadExtraIncome(); list.push(target); saveExtraIncomeList(list);
+      renderExtraIncomeList(); renderDashboard();
+      showToast('Entry restored');
+    }
+  });
+}
+
+function openAddExtraIncome() {
+  _editExtraIncomeTarget = null;
+  const d = new Date();
+  document.getElementById('exiDay').value   = d.getDate();
+  document.getElementById('exiMonth').value = d.getMonth() + 1;
+  document.getElementById('exiYear').value  = d.getFullYear();
+  document.getElementById('exiDesc').value  = '';
+  document.getElementById('exiAmt').value   = '';
+  _populateBankSelect('exiBank', '');
+  document.getElementById('exiModalTitle').textContent = 'Extra Income';
+  document.getElementById('exiSaveBtn').textContent    = 'Add Entry';
+  document.getElementById('exiModalMonth').textContent = periodLabel + '  ·  ' + periodRange;
+  document.getElementById('addExtraIncomeModal').classList.add('open');
+  setTimeout(function() { document.getElementById('exiDesc').focus(); }, 100);
+}
+
+function openEditExtraIncome(idx) {
+  const e = _lastExtraIncomeList[idx];
+  if (!e) return;
+  _editExtraIncomeTarget = e;
+  const parts = (e.date || '').split('/');
+  document.getElementById('exiDay').value   = parts[0] ? parseInt(parts[0], 10) : '';
+  document.getElementById('exiMonth').value = parts[1] ? parseInt(parts[1], 10) : '';
+  document.getElementById('exiYear').value  = parts[2] || '';
+  document.getElementById('exiDesc').value  = e.description || '';
+  document.getElementById('exiAmt').value   = e.amount || '';
+  _populateBankSelect('exiBank', e.bank || '');
+  document.getElementById('exiModalTitle').textContent = 'Edit Entry';
+  document.getElementById('exiSaveBtn').textContent    = 'Save Changes';
+  document.getElementById('exiModalMonth').textContent = periodLabel + '  ·  ' + periodRange;
+  document.getElementById('addExtraIncomeModal').classList.add('open');
+  setTimeout(function() { document.getElementById('exiDesc').focus(); }, 100);
+}
+
+function closeAddExtraIncome() {
+  _editExtraIncomeTarget = null;
+  document.getElementById('addExtraIncomeModal').classList.remove('open');
+}
+
+function saveExtraIncome() {
+  const day  = parseInt(document.getElementById('exiDay').value, 10);
+  const mon  = parseInt(document.getElementById('exiMonth').value, 10);
+  const yr   = parseInt(document.getElementById('exiYear').value, 10);
+  const desc = document.getElementById('exiDesc').value.trim();
+  const amt  = parseFloat(document.getElementById('exiAmt').value);
+
+  if (!desc) { showToast('Please enter a description'); return; }
+  if (!amt || amt <= 0) { showToast('Please enter a valid amount'); return; }
+  if (!day || !mon || !yr) { showToast('Please enter a valid date'); return; }
+
+  const dateStr = String(day).padStart(2,'0') + '/' + String(mon).padStart(2,'0') + '/' + yr;
+  const exiBankEl = document.getElementById('exiBank');
+  const exiBank   = exiBankEl ? exiBankEl.value : '';
+  const list = loadExtraIncome();
+
+  if (_editExtraIncomeTarget) {
+    const idx = list.findIndex(function(e) {
+      return e === _editExtraIncomeTarget ||
+        (e.date === _editExtraIncomeTarget.date && e.description === _editExtraIncomeTarget.description && String(e.amount) === String(_editExtraIncomeTarget.amount));
+    });
+    if (idx !== -1) list[idx] = { id: list[idx].id || uid(), date: dateStr, description: desc, amount: amt, bank: exiBank };
+    saveExtraIncomeList(list);
+    closeAddExtraIncome();
+    renderExtraIncomeList();
+    renderDashboard();
+    showToast('Entry updated');
+  } else {
+    list.push({ id: uid(), date: dateStr, description: desc, amount: amt, bank: exiBank });
+    saveExtraIncomeList(list);
+    closeAddExtraIncome();
+    renderExtraIncomeList();
     renderDashboard();
     showToast('Added: ' + fmt(amt));
   }
@@ -12990,7 +13258,10 @@ function _monthHasEstimate(year, monthIdx) {
 }
 
 // ── CNI: Commitment-to-Nett-Income health indicator ───────
-// CNI = Commitments ÷ (Nett income + Money received that month) × 100
+// CNI = Commitments ÷ (Nett income + Extra Income that month) × 100
+// Extra Income = recurring supplemental income (e.g. family support) that's
+// genuinely part of your overall income. Ad-hoc Money Received (e.g. business
+// income) is deliberately excluded — it affects your bank balance, not CNI.
 // Lower is healthier (less of your income is locked into fixed commitments).
 function _cniBand(pct) {
   if (pct > 55) return { label: "Dangerous", color: "#ef4444", bg: "rgba(239,68,68,0.10)",  border: "rgba(239,68,68,0.35)" };  // >55
@@ -13040,10 +13311,11 @@ function _commitTotalForMonth(year, monthIdx) {
   return total;
 }
 
-// Money received logged for a specific month (0 for future months / none logged).
-function _receivedForMonth(year, monthIdx) {
+// Extra income logged for a specific month — recurring supplemental income
+// (e.g. family support) that IS part of your overall income for CNI purposes.
+function _extraIncomeForMonth(year, monthIdx) {
   try {
-    var key = profilePrefix + 'mft_received_' + ALL_MONTHS[monthIdx].toLowerCase() + '_' + year;
+    var key = profilePrefix + 'mft_extra_income_' + ALL_MONTHS[monthIdx].toLowerCase() + '_' + year;
     var list = JSON.parse(localStorage.getItem(key)) || [];
     return list.reduce(function(s, e) { return s + (parseFloat(e.amount) || 0); }, 0);
   } catch (e) { return 0; }
@@ -13072,11 +13344,13 @@ function _cniViewData() {
   if (isNow) {
     var curNett = parseFloat(localStorage.getItem(salaryKey)) || 0;
     if (!(curNett > 0)) curNett = _calcNett(loadSalaryConfig());
-    income = curNett + _receivedForMonth(y, mi);
+    income = curNett + _extraIncomeForMonth(y, mi);
   } else {
-    // Basic nett income for the month, plus any money received logged that month
+    // Basic nett income for the month, plus any extra income logged that month
     // (0 for future months) — keeps each month's CNI stable and consistent.
-    income = _basicNettIncome() + _receivedForMonth(y, mi);
+    // Ad-hoc Money Received is deliberately excluded — CNI reflects your regular
+    // overall income, not one-off cash that just passes through your bank.
+    income = _basicNettIncome() + _extraIncomeForMonth(y, mi);
   }
   var pct = income > 0 ? (commit / income) * 100 : 0;
   return { y: y, mi: mi, isNow: isNow, commit: commit, income: income, pct: pct, band: _cniBand(pct), label: ALL_MONTHS[mi] + ' ' + y };
@@ -13124,9 +13398,9 @@ function openCniPlan() {
   html += '<div style="font-size:2.2rem;font-weight:800;line-height:1.1;color:' + vd.band.color + ';margin-top:0.2rem;">' + vd.pct.toFixed(1) + '%</div>';
   html += '<div style="font-size:0.8rem;font-weight:700;color:' + vd.band.color + ';">' + vd.band.label + '</div>';
   html += '<div style="font-size:0.72rem;color:#94a3b8;margin-top:0.3rem;">' + fmt(vd.commit) + ' commitments &middot; ' + fmt(vd.income) + ' income</div>';
-  var _cniRcv = _receivedForMonth(vd.y, vd.mi);
+  var _cniRcv = _extraIncomeForMonth(vd.y, vd.mi);
   if (_cniRcv > 0) {
-    html += '<div style="font-size:0.63rem;color:#22c55e;margin-top:2px;">includes + ' + fmt(_cniRcv) + ' money received &middot; ' + fmt(vd.income - _cniRcv) + ' pay</div>';
+    html += '<div style="font-size:0.63rem;color:#22c55e;margin-top:2px;">includes + ' + fmt(_cniRcv) + ' extra income &middot; ' + fmt(vd.income - _cniRcv) + ' pay</div>';
   }
   html += '</div>';
 
@@ -13804,7 +14078,7 @@ function renderPanelB() {
       sorted.forEach(function(c) {
         html += '<div class="goal-contrib-row">';
         html += '<span class="goal-contrib-date">' + escHtml(c.date || '') + '</span>';
-        html += '<span class="goal-contrib-note">' + escHtml(c.note || '—') + '</span>';
+        html += '<span class="goal-contrib-note">' + escHtml(c.note || '—') + (c.bank ? _bankChip(c.bank) : '') + '</span>';
         html += '<span class="goal-contrib-amt">+' + fmt(parseFloat(c.amount)) + '</span>';
         html += '<button class="goal-contrib-del" onclick="deleteContrib(\'' + g.id + '\',\'' + c.id + '\')" title="Remove">✕</button>';
         html += '</div>';
@@ -13934,6 +14208,7 @@ function openAddContrib(goalId) {
   document.getElementById('contribMonth').value = d.getMonth() + 1;
   document.getElementById('contribYear').value  = d.getFullYear();
   document.getElementById('contribNote').value  = '';
+  _populateBankSelect('contribBank', '');
   document.getElementById('addContribModal').classList.add('open');
   setTimeout(function() { document.getElementById('contribAmt').focus(); }, 100);
 }
@@ -13948,6 +14223,8 @@ function saveContrib() {
   var month = parseInt(document.getElementById('contribMonth').value, 10);
   var year  = parseInt(document.getElementById('contribYear').value, 10);
   var note  = (document.getElementById('contribNote').value || '').trim();
+  var bankEl = document.getElementById('contribBank');
+  var bank   = bankEl ? bankEl.value : '';
   if (!amt || amt <= 0)  { showToast('Enter a valid amount'); return; }
   if (!day || !month || !year) { showToast('Enter a valid date'); return; }
   var dateStr = String(day).padStart(2,'0') + '/' + String(month).padStart(2,'0') + '/' + year;
@@ -13955,11 +14232,12 @@ function saveContrib() {
   var g = goals.find(function(x) { return x.id === _contribGoalId; });
   if (!g) return;
   if (!g.contributions) g.contributions = [];
-  g.contributions.push({ id: uid(), date: dateStr, amount: amt, note: note });
+  g.contributions.push({ id: uid(), date: dateStr, amount: amt, note: note, bank: bank });
   _expandedGoals[_contribGoalId] = true;
   saveGoals(goals);
   closeAddContrib();
   renderPanelB();
+  if (typeof renderDashboard === 'function') { try { renderDashboard(); } catch (e) {} } // refresh bank balances
   showToast('Added ' + fmt(amt) + ' to ' + g.name);
 }
 
@@ -13970,6 +14248,7 @@ function deleteContrib(goalId, contribId) {
   g.contributions = g.contributions.filter(function(c) { return c.id !== contribId; });
   saveGoals(goals);
   renderPanelB();
+  if (typeof renderDashboard === 'function') { try { renderDashboard(); } catch (e) {} } // refresh bank balances
 }
 
 // ══ Wedding Planner ══════════════════════════════════════
@@ -16206,9 +16485,11 @@ function openMonthlyReport() {
   // Gather this month's figures
   var nett     = parseFloat(localStorage.getItem(salaryKey)) || 0;
   var received = loadReceived().reduce(function(s, e) { return s + (parseFloat(e.amount) || 0); }, 0);
+  var extraInc = loadExtraIncome().reduce(function(s, e) { return s + (parseFloat(e.amount) || 0); }, 0);
   var otList   = []; try { otList = JSON.parse(localStorage.getItem(OT_KEY)) || []; } catch(e) {}
   var otPay    = otList.reduce(function(s, e) { return s + (parseFloat(e.pay) || 0); }, 0);
-  var income   = nett + received;
+  var income   = nett + received + extraInc;      // cash-flow total (everything that came in)
+  var cniIncome = nett + extraInc;                // CNI uses nett + Extra Income only — not ad-hoc Money Received
   var expenses = loadExpenses();
   var expTotal = expenses.reduce(function(s, e) { return s + (parseFloat(e.amount) || 0); }, 0);
   var commits  = loadCommitments();
@@ -16225,7 +16506,7 @@ function openMonthlyReport() {
   var debtRem  = debts.reduce(function(s, d) { return s + (parseFloat(d.remaining) || 0); }, 0);
   var goals    = loadGoals();
   var goalTotal= goals.reduce(function(s, g) { return s + goalSaved(g); }, 0);
-  var cni      = income > 0 ? (commitT / income) * 100 : 0;
+  var cni      = cniIncome > 0 ? (commitT / cniIncome) * 100 : 0;
   var cb       = _cniBand(cni);
 
   var profName = '';
@@ -16236,6 +16517,7 @@ function openMonthlyReport() {
   var periodKey = periodYear + '_' + periodMonthIdx;
   var otTypes   = (typeof getAllOtTypes === 'function') ? getAllOtTypes() : {};
   var recList   = loadReceived();
+  var extraList = loadExtraIncome();
   function _byDateDesc(a, b) { return (b.date || '').localeCompare(a.date || ''); }
 
   var budgetRows = Object.keys(CATEGORIES).filter(function(k) { return budget[k] > 0; }).map(function(k) {
@@ -16250,6 +16532,10 @@ function openMonthlyReport() {
   }).join('');
 
   var recRows = recList.slice().sort(_byDateDesc).map(function(e) {
+    return '<tr><td>' + escHtml(e.date || '') + '</td><td>' + escHtml(e.description || '—') + '</td><td class="num">' + fmt(parseFloat(e.amount) || 0) + '</td></tr>';
+  }).join('');
+
+  var extraRows = extraList.slice().sort(_byDateDesc).map(function(e) {
     return '<tr><td>' + escHtml(e.date || '') + '</td><td>' + escHtml(e.description || '—') + '</td><td class="num">' + fmt(parseFloat(e.amount) || 0) + '</td></tr>';
   }).join('');
 
@@ -16315,9 +16601,11 @@ function openMonthlyReport() {
     + '</div>'
     + '<h2>Income &middot; ' + fmt(income) + '</h2>'
     + '<div class="kv"><span>Nett salary</span><span class="v">' + fmt(nett) + '</span></div>'
+    + (extraInc > 0 ? '<div class="kv"><span>Extra income</span><span class="v">' + fmt(extraInc) + '</span></div>' : '')
     + (received > 0 ? '<div class="kv"><span>Money received</span><span class="v">' + fmt(received) + '</span></div>' : '')
     + (otPay > 0 ? '<div class="kv"><span>Overtime (OT) earned</span><span class="v">' + fmt(otPay) + '</span></div>' : '')
     + '<div class="tot"><span>Total income</span><span>' + fmt(income) + '</span></div>'
+    + (extraRows ? '<h3>Extra Income (' + extraList.length + ')</h3><table><thead><tr><th>Date</th><th>Source</th><th class="num">Amount</th></tr></thead><tbody>' + extraRows + '</tbody></table>' : '')
     + (recRows ? '<h3>Money Received (' + recList.length + ')</h3><table><thead><tr><th>Date</th><th>Source</th><th class="num">Amount</th></tr></thead><tbody>' + recRows + '</tbody></table>' : '')
     + (otRows ? '<h3>Overtime (' + otList.length + ' entr' + (otList.length === 1 ? 'y' : 'ies') + ')</h3><table><thead><tr><th>Date</th><th>Type</th><th class="num">Hours</th><th class="num">Pay</th></tr></thead><tbody>' + otRows + '</tbody></table>' : '')
     + '<h2>Expenses &middot; ' + fmt(expTotal) + '</h2>'
@@ -16325,7 +16613,7 @@ function openMonthlyReport() {
     + (budgetRows ? '<h3>Budget vs Spending</h3><table><thead><tr><th>Category</th><th class="num">Limit</th><th class="num">Spent</th><th class="num">Left</th></tr></thead><tbody>' + budgetRows + '</tbody></table>' : '')
     + '<h2>Commitments &middot; ' + fmt(commitT) + (paidList.length ? ' &middot; ' + paidList.length + ' of ' + commits.length + ' paid' : '') + '</h2>'
     + (commitRows ? '<table><thead><tr><th>Name</th><th class="num">Due day</th><th class="num">Amount</th><th>Status</th></tr></thead><tbody>' + commitRows + '</tbody></table>' : '<div class="kv"><span>No commitments set.</span></div>')
-    + (income > 0 ? '<h2>Commitment Health (CNI)</h2><div class="cni"><div class="p">' + cni.toFixed(1) + '%</div><div><div class="b">' + cb.label + '</div><div class="x">' + fmt(commitT) + ' of ' + fmt(income) + ' income locked in commitments</div></div></div>' : '')
+    + (cniIncome > 0 ? '<h2>Commitment Health (CNI)</h2><div class="cni"><div class="p">' + cni.toFixed(1) + '%</div><div><div class="b">' + cb.label + '</div><div class="x">' + fmt(commitT) + ' of ' + fmt(cniIncome) + ' income locked in commitments</div></div></div>' : '')
     + (debtRows ? '<h2>Debts &middot; ' + fmt(debtRem) + ' remaining</h2><table><thead><tr><th>Debt</th><th class="num">Total</th><th class="num">Remaining</th><th class="num">Min/mo</th><th class="num">Cleared</th></tr></thead><tbody>' + debtRows + '</tbody></table>' : '')
     + (goalRows ? '<h2>Savings Goals &middot; ' + fmt(goalTotal) + ' saved</h2><table><thead><tr><th>Goal</th><th class="num">Saved</th><th class="num">Target</th><th class="num">Progress</th><th>Deadline</th></tr></thead><tbody>' + goalRows + '</tbody></table>' : '')
     + '<div class="foot">Generated by OpmusDigital Financial Tracker &middot; ' + genDate + '<br>This is a personal summary, not an official financial statement.</div>'
@@ -17759,7 +18047,7 @@ function loadSampleData() {
 function clearSampleData() {
   if (!confirm('Clear the sample data and start fresh? This removes the demo entries.')) return;
   saveCommitments([]); saveDebts([]); saveExpenses([]); saveGoals([]);
-  [BUDGET_KEY, salaryKey, SALARY_CONFIG_KEY, SALARY_CFG_KEY, EST_GROSS_KEY, RECEIVED_KEY].forEach(function(k) { localStorage.removeItem(k); });
+  [BUDGET_KEY, salaryKey, SALARY_CONFIG_KEY, SALARY_CFG_KEY, EST_GROSS_KEY, RECEIVED_KEY, EXTRA_INCOME_KEY].forEach(function(k) { localStorage.removeItem(k); });
   _lsRemove('opmus_sample_active');
   try { syncDebtCommitments(); } catch (e) {}
   showToast('Cleared — starting fresh');
