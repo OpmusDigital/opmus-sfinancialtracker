@@ -24,6 +24,11 @@
 
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
+    /* Theme accent variables — defaults (crimson). The per-profile theme
+       injects a later :root that overrides these, so any element using
+       these vars follows the chosen colour automatically. */
+    :root { --th-accent: #ef4444; --th-rgb: 239,68,68; --th-light: #fca5a5; --th-dim: #dc2626; --th-dark: #7f1d1d; }
+
     /* ── Premium scrollbars (app-wide default) ───────────────
        Slim, rounded, padded pill thumb with a soft gradient that
        brightens on hover. The transparent border + background-clip
@@ -599,7 +604,7 @@
     .module-card-desc { font-size: 0.71rem; color: #475569; margin-top: 0.15rem; }
     .module-card-badge { font-size: 0.6rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; background: rgba(99,102,241,0.15); color: #818cf8; border: 1px solid rgba(99,102,241,0.25); border-radius: 20px; padding: 1px 7px; margin-top: 0.25rem; display: inline-block; }
     .module-toggle-btn { flex-shrink: 0; border: 1px solid rgba(255,255,255,0.12); border-radius: 8px; padding: 5px 13px; font-size: 0.72rem; font-weight: 600; cursor: pointer; transition: all 0.2s; white-space: nowrap; }
-    .module-toggle-btn.on { background: linear-gradient(135deg,#ef4444,#b91c1c); border-color: transparent; color: #fff; }
+    .module-toggle-btn.on { background: linear-gradient(135deg,var(--th-accent),var(--th-dim)); border-color: transparent; color: #fff; }
     .module-toggle-btn.off { background: rgba(255,255,255,0.05); color: #64748b; }
     .module-toggle-btn.off:hover { background: rgba(255,255,255,0.1); color: #94a3b8; }
 
@@ -1268,10 +1273,11 @@
     /* Full-screen play on phones/small tablets: nothing can crop the grid, and the
        board scales to fit both width and height. */
     @media (max-width: 860px) {
-      .sudoku-wrap.sk-full, .m3-wrap.m3-full, .bs-wrap.bs-full { position:fixed; inset:0; z-index:3000; margin:0; border:none; border-radius:0;
+      .sudoku-wrap.sk-full, .m3-wrap.m3-full, .bs-wrap.bs-full, .game-full { position:fixed; inset:0; z-index:3000; margin:0; border:none; border-radius:0;
         padding:max(20px, calc(env(safe-area-inset-top) + 8px)) 10px calc(16px + env(safe-area-inset-bottom));
         overflow-y:auto; display:flex; flex-direction:column; align-items:center; justify-content:safe center; gap:0.15rem;
         background:linear-gradient(180deg,#0b1120,#0f172a); }
+      .game-full > * { width:100%; max-width:min(94vw, 66vh); margin-left:auto; margin-right:auto; }
       .sudoku-wrap.sk-full > * { width:100%; max-width:min(93vw, 52vh); margin-left:auto; margin-right:auto; }
       .sudoku-wrap.sk-full .sk-grid { max-width:min(93vw, 52vh); }
       .sudoku-wrap.sk-full .sk-pad, .sudoku-wrap.sk-full .sk-actions { margin-top:0.7rem; }
@@ -1377,6 +1383,98 @@
     .fun-hub-ach-txt b { display:block; font-size:0.82rem; color:#f1f5f9; font-weight:800; }
     .fun-hub-ach-txt span { font-size:0.68rem; color:#94a3b8; }
     .fun-hub-ach-go { margin-left:auto; color:#fbbf24; font-size:0.72rem; font-weight:800; }
+    /* ── Shared styling for the extra games ── */
+    .gm-wrap { border-radius:18px; border:1px solid rgba(var(--gc),0.22); background:radial-gradient(130% 90% at 50% 0%, rgba(var(--gc),0.1), rgba(15,23,42,0.2) 60%); padding:0.9rem; touch-action:manipulation; }
+    .gm-intro { text-align:center; padding:0.7rem 0.4rem; }
+    .gm-intro-ico { font-size:2.7rem; line-height:1; filter:drop-shadow(0 4px 12px rgba(var(--gc),0.4)); }
+    .gm-intro-title { font-size:1.4rem; font-weight:900; margin-top:0.2rem; background:linear-gradient(90deg, rgb(var(--gc)), #cbd5e1); -webkit-background-clip:text; background-clip:text; color:transparent; }
+    .gm-intro-desc { font-size:0.76rem; color:#94a3b8; margin:0.5rem auto 1.1rem; max-width:290px; line-height:1.55; }
+    .gm-best { font-size:0.82rem; font-weight:800; color:#fbbf24; margin-bottom:1rem; }
+    .gm-play { padding:0.85rem 2.2rem; border-radius:14px; border:none; background:linear-gradient(180deg, rgb(var(--gc)), rgba(var(--gc),0.68)); color:#06121c; font-size:1rem; font-weight:900; cursor:pointer; font-family:inherit; box-shadow:0 10px 24px rgba(var(--gc),0.32); transition:transform 0.1s; }
+    .gm-play:active { transform:scale(0.97); }
+    /* Level picker (◀ Level N ▶) on game intros */
+    .gm-lvlpick { display:flex; align-items:center; justify-content:center; gap:0.7rem; margin:0.2rem auto 0.45rem; }
+    .gm-lvlarrow { width:38px; height:38px; border-radius:50%; border:1px solid rgba(var(--gc),0.5); background:rgba(var(--gc),0.12); color:#e2e8f0; font-size:0.95rem; font-weight:900; cursor:pointer; font-family:inherit; display:flex; align-items:center; justify-content:center; transition:transform 0.1s; }
+    .gm-lvlarrow:active { transform:scale(0.9); }
+    .gm-lvlarrow:disabled { opacity:0.28; cursor:default; }
+    .gm-lvlbox { min-width:96px; padding:0.35rem 0.9rem; border-radius:13px; background:rgba(255,255,255,0.05); border:1px solid rgba(var(--gc),0.35); line-height:1.05; }
+    .gm-lvlbox small { display:block; font-size:0.52rem; letter-spacing:0.08em; color:#64748b; font-weight:800; }
+    .gm-lvlbox b { font-size:1.45rem; font-weight:900; color:rgb(var(--gc)); font-variant-numeric:tabular-nums; }
+    .gm-lvlbox span { font-size:0.6rem; color:#94a3b8; font-weight:700; margin-left:0.25rem; }
+    .gm-lvlhint { font-size:0.66rem; color:#94a3b8; margin-bottom:0.9rem; }
+    /* Win / fail banners after a level */
+    .gm-winbanner, .gm-failbanner { border-radius:13px; padding:0.7rem 0.8rem; margin-top:0.4rem; font-size:0.85rem; font-weight:800; line-height:1.45; }
+    .gm-winbanner { background:linear-gradient(180deg, rgba(34,197,94,0.18), rgba(34,197,94,0.06)); border:1px solid rgba(34,197,94,0.4); color:#dcfce7; }
+    .gm-failbanner { background:linear-gradient(180deg, rgba(239,68,68,0.16), rgba(239,68,68,0.05)); border:1px solid rgba(239,68,68,0.38); color:#fee2e2; }
+    .gm-winbtns { display:flex; gap:0.45rem; justify-content:center; flex-wrap:wrap; margin-top:0.6rem; }
+    .gm-nextbtn { padding:0.55rem 1.2rem; border-radius:11px; border:none; background:linear-gradient(180deg,#34d399,#059669); color:#04140c; font-size:0.85rem; font-weight:900; cursor:pointer; font-family:inherit; }
+    .gm-nextbtn:active { transform:scale(0.96); }
+    .gm-allclear { display:inline-block; padding:0.5rem 0.9rem; font-size:0.82rem; font-weight:900; color:#fbbf24; }
+    .gm-subnote { font-size:0.72rem; font-weight:700; color:#94a3b8; margin-top:0.35rem; }
+    .gm-opts { display:flex; gap:0.5rem; justify-content:center; flex-wrap:wrap; margin-bottom:1rem; }
+    .gm-opt { padding:0.5rem 1rem; border-radius:11px; border:1px solid rgba(255,255,255,0.12); background:rgba(255,255,255,0.04); color:#e2e8f0; font-size:0.82rem; font-weight:700; cursor:pointer; font-family:inherit; }
+    .gm-opt:hover { border-color:rgba(var(--gc),0.5); }
+    .gm-hud { display:flex; align-items:center; gap:0.5rem; justify-content:center; flex-wrap:wrap; margin-bottom:0.7rem; }
+    .gm-stat { background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.08); border-radius:11px; padding:0.35rem 0.75rem; text-align:center; line-height:1.1; }
+    .gm-stat small { display:block; font-size:0.55rem; text-transform:uppercase; letter-spacing:0.05em; color:#64748b; font-weight:800; }
+    .gm-stat b { font-size:0.98rem; color:#f1f5f9; font-variant-numeric:tabular-nums; }
+    .gm-hud .sk-newbtn { margin-left:auto; }
+    .gm-msg { text-align:center; font-size:0.82rem; font-weight:700; color:#e2e8f0; margin-top:0.6rem; min-height:1.2em; }
+    /* 2048 */
+    .tw-board { position:relative; display:grid; grid-template-columns:repeat(4,1fr); gap:2.2%; width:100%; max-width:min(92vw,58vh); aspect-ratio:1; margin:0 auto; background:rgba(255,255,255,0.05); border-radius:12px; padding:2.2%; box-sizing:border-box; }
+    .tw-cell { border-radius:8px; background:rgba(255,255,255,0.045); display:flex; align-items:center; justify-content:center; font-weight:800; font-size:clamp(0.9rem,6.5vmin,1.9rem); }
+    /* Snake */
+    .sn-canvas { display:block; width:100%; max-width:min(92vw,58vh); aspect-ratio:1; margin:0 auto; background:#0b1120; border-radius:12px; border:2px solid rgba(34,197,94,0.4); touch-action:none; }
+    /* Memory */
+    .mm-grid { display:grid; gap:2.5%; width:100%; max-width:min(92vw,58vh); margin:0 auto; }
+    .mm-card { aspect-ratio:1; border-radius:10px; cursor:pointer; position:relative; background:linear-gradient(180deg, rgba(168,85,247,0.35), rgba(168,85,247,0.15)); border:1px solid rgba(168,85,247,0.4); display:flex; align-items:center; justify-content:center; font-size:clamp(1.1rem,7vmin,2rem); transition:transform 0.18s, background 0.18s; }
+    .mm-card.up { background:rgba(255,255,255,0.08); transform:rotateY(0); }
+    .mm-card.matched { background:rgba(34,197,94,0.22); border-color:rgba(34,197,94,0.5); }
+    .mm-card:not(.up):not(.matched) span { visibility:hidden; }
+    /* Minesweeper */
+    .ms-board { display:grid; gap:2px; width:100%; max-width:min(94vw,58vh); margin:0 auto; }
+    .ms-cell { aspect-ratio:1; border-radius:4px; background:rgba(255,255,255,0.09); border:1px solid rgba(255,255,255,0.06); display:flex; align-items:center; justify-content:center; font-weight:800; font-size:clamp(0.7rem,4vmin,1.1rem); cursor:pointer; user-select:none; color:#e2e8f0; }
+    .ms-cell.rev { background:rgba(255,255,255,0.03); cursor:default; }
+    .ms-cell.mine { background:rgba(239,68,68,0.7); }
+    .ms-flagbtn.on { background:rgba(239,68,68,0.2) !important; border-color:rgba(239,68,68,0.5) !important; color:#fca5a5 !important; }
+    /* Solitaire */
+    .so-top { display:flex; gap:1.5%; margin-bottom:2.5%; }
+    .so-pile { flex:1; }
+    .so-tabs { display:flex; gap:1.5%; align-items:flex-start; }
+    .so-col { flex:1; min-height:44px; display:flex; flex-direction:column; }
+    .so-col .so-card, .so-col .so-slot { margin-top:-62%; }
+    .so-col .so-card:first-child, .so-col .so-slot:first-child { margin-top:0; }
+    .so-slot { aspect-ratio:0.7; border-radius:6px; border:1px dashed rgba(255,255,255,0.15); background:rgba(255,255,255,0.03); }
+    .so-card { aspect-ratio:0.7; border-radius:6px; background:#f8fafc; color:#0b1120; border:1px solid #cbd5e1; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:clamp(0.7rem,4.2vmin,1.1rem); cursor:pointer; box-shadow:0 1px 3px rgba(0,0,0,0.3); }
+    .so-card.red { color:#dc2626; }
+    .so-card.down { background:linear-gradient(135deg,#1e3a8a,#3730a3); color:transparent; border-color:#1e3a8a; }
+    .so-card.sel { outline:3px solid #fde047; }
+    .so-stack { position:relative; }
+    .so-stack .so-card, .so-stack .so-slot { position:absolute; left:0; right:0; }
+    /* Word Search */
+    .ws-grid { display:grid; gap:1.5%; width:100%; max-width:min(94vw,54vh); margin:0 auto 0.6rem; }
+    .ws-cell { aspect-ratio:1; border-radius:5px; background:rgba(255,255,255,0.06); display:flex; align-items:center; justify-content:center; font-weight:800; font-size:clamp(0.65rem,3.6vmin,1rem); cursor:pointer; user-select:none; color:#e2e8f0; text-transform:uppercase; }
+    .ws-cell.sel { background:rgba(59,130,246,0.5); color:#fff; }
+    .ws-cell.found { background:rgba(34,197,94,0.35); color:#fff; }
+    .ws-words { display:flex; flex-wrap:wrap; gap:0.4rem; justify-content:center; }
+    .ws-word { font-size:0.72rem; font-weight:700; color:#cbd5e1; padding:2px 9px; border-radius:99px; background:rgba(255,255,255,0.05); }
+    .ws-word.done { color:#4ade80; text-decoration:line-through; }
+    /* Tic-Tac-Toe */
+    .tt-board { display:grid; grid-template-columns:repeat(3,1fr); gap:2.5%; width:100%; max-width:min(80vw,44vh); margin:0 auto; }
+    .tt-cell { aspect-ratio:1; border-radius:12px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.08); display:flex; align-items:center; justify-content:center; font-size:clamp(2rem,14vmin,3.5rem); font-weight:800; cursor:pointer; }
+    .tt-cell.x { color:#38bdf8; } .tt-cell.o { color:#f472b6; }
+    .tt-cell.win { background:rgba(34,197,94,0.25); }
+    /* Connect-4 */
+    .c4-board { display:grid; grid-template-columns:repeat(7,1fr); gap:1.5%; width:100%; max-width:min(94vw,52vh); margin:0 auto; background:rgba(59,130,246,0.14); border:1px solid rgba(59,130,246,0.3); border-radius:12px; padding:1.5%; }
+    .c4-cell { aspect-ratio:1; border-radius:50%; background:#0b1120; cursor:pointer; }
+    .c4-cell.r { background:radial-gradient(circle at 34% 30%, #fca5a5, #dc2626); }
+    .c4-cell.y { background:radial-gradient(circle at 34% 30%, #fde68a, #eab308); }
+    /* Whack-a-mole */
+    .wm-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:4%; width:100%; max-width:min(88vw,52vh); margin:0 auto; }
+    .wm-hole { aspect-ratio:1; border-radius:50%; background:radial-gradient(circle at 50% 80%, #3f2d1a, #1c1206); border:2px solid rgba(0,0,0,0.4); display:flex; align-items:center; justify-content:center; font-size:clamp(1.6rem,11vmin,3rem); cursor:pointer; overflow:hidden; }
+    .wm-mole { transform:translateY(120%); transition:transform 0.12s; }
+    .wm-hole.up .wm-mole { transform:translateY(10%); }
+    .wm-hole.bonk .wm-mole { transform:translateY(120%); }
     .sp-scroll::-webkit-scrollbar { width:8px; }
     .sp-scroll::-webkit-scrollbar-thumb { background:linear-gradient(180deg, rgba(255,255,255,0.28), rgba(255,255,255,0.12)); border-radius:10px; }
     .sp-summary-bar { padding:0.75rem 1rem; border-top:1px solid rgba(255,255,255,0.06); flex-shrink:0; }
@@ -1561,8 +1659,8 @@
       transition: all 0.2s;
     }
     .icon-btn:hover { background: rgba(255,255,255,0.1); color: #e2e8f0; }
-    .icon-btn.red { background: linear-gradient(135deg, #ef4444, #b91c1c); border-color: transparent; color: #fff; box-shadow: 0 2px 8px rgba(239,68,68,0.35); }
-    .icon-btn.red:hover { opacity: 0.85; box-shadow: 0 4px 12px rgba(239,68,68,0.5); }
+    .icon-btn.red { background: linear-gradient(135deg, var(--th-accent), var(--th-dim)); border-color: transparent; color: #fff; box-shadow: 0 2px 8px rgba(var(--th-rgb),0.35); }
+    .icon-btn.red:hover { opacity: 0.85; box-shadow: 0 4px 12px rgba(var(--th-rgb),0.5); }
 
     /* Expense list */
     .expense-list {
@@ -1664,7 +1762,7 @@
       font-size: 0.9rem; font-weight: 700; cursor: pointer; transition: all 0.2s;
       font-family: inherit; letter-spacing: 0.02em;
     }
-    .modal-btn.primary { background: linear-gradient(135deg, #ef4444, #b91c1c); color: #fff; box-shadow: 0 4px 16px rgba(239,68,68,0.3); }
+    .modal-btn.primary { background: linear-gradient(135deg, var(--th-accent), var(--th-dim)); color: #fff; box-shadow: 0 4px 16px rgba(var(--th-rgb),0.3); }
     .modal-btn.primary:hover { transform: translateY(-1px); box-shadow: 0 8px 24px rgba(239,68,68,0.45); filter: brightness(1.08); }
     .modal-btn.primary:active { transform: translateY(0); box-shadow: 0 2px 8px rgba(239,68,68,0.3); }
     .modal-btn.secondary { background: rgba(255,255,255,0.05); color: #94a3b8; border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(4px); }
@@ -1770,7 +1868,7 @@
 
     /* Salary input modal */
     .salary-display {
-      font-size: 2rem; font-weight: 700; color: #ef4444; text-align: center;
+      font-size: 2rem; font-weight: 700; color: var(--th-accent); text-align: center;
     }
     .salary-hint { font-size: 0.78rem; color: #475569; text-align: center; }
 
@@ -1859,24 +1957,24 @@
       font-family: 'Inter', system-ui; transition: all 0.2s; display: flex;
       align-items: center; justify-content: center; gap: 0.4rem;
     }
-    .mpanel-tab.active { background: rgba(239,68,68,0.18); color: #fca5a5; }
+    .mpanel-tab.active { background: rgba(var(--th-rgb),0.18); color: var(--th-light); }
     .mpanel-tab-grp {
       flex-shrink: 0; display: flex; align-items: stretch; border-radius: 9px;
       overflow: hidden; transition: background 0.2s;
     }
-    .mpanel-tab-grp.active { background: rgba(239,68,68,0.18); }
+    .mpanel-tab-grp.active { background: rgba(var(--th-rgb),0.18); }
     .mpanel-tab-lbl {
       padding: 9px 11px 9px 13px; border: none; background: none; color: #475569;
       font-size: 0.76rem; font-weight: 600; cursor: pointer; font-family: 'Inter', system-ui;
       white-space: nowrap; transition: color 0.2s;
     }
-    .mpanel-tab-grp.active .mpanel-tab-lbl { color: #fca5a5; }
+    .mpanel-tab-grp.active .mpanel-tab-lbl { color: var(--th-light); }
     .mpanel-tab-add {
       padding: 0 10px; border: none; border-left: 1px solid rgba(255,255,255,0.06);
       background: none; color: #475569; font-size: 1rem; font-weight: 700; cursor: pointer;
       font-family: 'Inter', system-ui; transition: color 0.2s; display: flex; align-items: center;
     }
-    .mpanel-tab-grp.active .mpanel-tab-add { color: #f87171; }
+    .mpanel-tab-grp.active .mpanel-tab-add { color: var(--th-light); }
 
     /* ── Tab mode: one app per screen, premium tab bar pinned to the TOP ── */
     body.tabmode .app-body { overflow-y: auto; }
@@ -1893,8 +1991,8 @@
     body.tabmode .mpanel-tab-grp .mpanel-tab-lbl { padding: 8px 15px; color: #94a3b8; font-weight: 700; font-size: 0.8rem; }
     body.tabmode .mpanel-tab-grp:hover { background: rgba(255,255,255,0.05); }
     body.tabmode .mpanel-tab-grp.active {
-      background: linear-gradient(135deg, #0ea5e9, #2563eb);
-      box-shadow: 0 4px 14px rgba(37,99,235,0.45);
+      background: linear-gradient(135deg, var(--th-accent), var(--th-dim));
+      box-shadow: 0 4px 14px rgba(var(--th-rgb),0.45);
     }
     body.tabmode .mpanel-tab-grp.active .mpanel-tab-lbl { color: #fff; }
     /* Each app fills its own dedicated space instead of floating like a canvas card */
@@ -2698,6 +2796,29 @@
       cursor: pointer; transition: color 0.2s; font-family: inherit;
     }
     .onboard-btn-skip:hover { color: #64748b; }
+    /* ── Onboarding wizard (stepped) ────────────────────────── */
+    .onb-progress { display:flex; align-items:center; justify-content:space-between; padding:0.9rem 1.75rem 0; }
+    .onb-dots { display:flex; gap:0.4rem; }
+    .onb-dot { width:26px; height:5px; border-radius:3px; background:rgba(255,255,255,0.1); transition:background 0.25s; }
+    .onb-dot.on { background:linear-gradient(90deg, var(--th-accent,#ef4444), var(--th-dim,#dc2626)); }
+    .onb-count { font-size:0.68rem; font-weight:700; color:#475569; letter-spacing:0.04em; }
+    .onb-navrow { display:flex; gap:0.55rem; align-items:center; }
+    .onb-navrow .onboard-btn-primary { flex:1; }
+    .onb-back { padding:0.72rem 1.1rem; border-radius:12px; border:1px solid rgba(255,255,255,0.12); background:rgba(255,255,255,0.04); color:#94a3b8; font-size:0.82rem; font-weight:700; cursor:pointer; font-family:inherit; white-space:nowrap; }
+    .onb-back:hover { background:rgba(255,255,255,0.08); color:#cbd5e1; }
+    /* Yes / No choice */
+    .onb-yn { display:flex; gap:0.6rem; margin-top:0.2rem; }
+    .onb-yn-btn { flex:1; padding:0.8rem 0.6rem; border-radius:13px; border:1.5px solid rgba(255,255,255,0.12); background:rgba(255,255,255,0.04); color:#cbd5e1; font-size:0.82rem; font-weight:700; cursor:pointer; font-family:inherit; transition:all 0.18s; }
+    .onb-yn-btn:hover { border-color:rgba(255,255,255,0.25); }
+    .onb-yn-btn.on { border-color:var(--th-accent,#ef4444); background:rgba(239,68,68,0.12); color:#fff; box-shadow:0 0 0 3px rgba(239,68,68,0.1); }
+    /* Bank rows */
+    .onb-bankrow { display:flex; align-items:center; gap:0.4rem; margin-bottom:0.5rem; }
+    .onb-bankrow .onb-bankname { flex:1; min-width:0; }
+    .onb-bankrow .onb-bankbal { width:88px; flex-shrink:0; }
+    .onb-bankdel { width:30px; height:30px; flex-shrink:0; border-radius:8px; border:1px solid rgba(239,68,68,0.25); background:rgba(239,68,68,0.08); color:#f87171; font-size:0.8rem; cursor:pointer; font-family:inherit; }
+    .onb-bankdel:hover { background:rgba(239,68,68,0.16); }
+    .onb-addbank { width:100%; padding:0.55rem; border-radius:10px; border:1px dashed rgba(255,255,255,0.18); background:transparent; color:#64748b; font-size:0.78rem; font-weight:700; cursor:pointer; font-family:inherit; margin-top:0.15rem; }
+    .onb-addbank:hover { color:#94a3b8; border-color:rgba(255,255,255,0.3); }
 
     /* ── Apps button hint (first-time tip) ──────────────────── */
     .apps-hint {
@@ -6037,6 +6158,7 @@ const SALARY_CFG_KEY       = profilePrefix + 'mft_salary_cfg';
 const LEAVE_KEY            = profilePrefix + 'mft_leave';
 const THEME_KEY            = profilePrefix + 'mft_theme';
 const ONBOARDED_KEY        = profilePrefix + 'mft_onboarded';
+const ONB_KEY              = profilePrefix + 'mft_onboard_v2'; // { done, answered:{income,payday,banks} } — syncs across devices
 const APPS_HINT_KEY        = profilePrefix + 'mft_apps_hint_seen';
 const OT_KEY               = profilePrefix + 'mft_ot_' + periodMonthLower + '_' + periodYear;
 const OT_CONFIG_KEY        = profilePrefix + 'mft_ot_config';
@@ -8084,7 +8206,27 @@ var GAME_ACHIEVEMENTS = [
   { id: 'bs_1000',      icon: '🌈', name: 'Sort Legend',     desc: 'Conquer level 1000',               check: function () { return _bsUnlocked() >= 1000; } },
   { id: 'bs_noundo',    icon: '✨', name: 'No Takebacks',    desc: 'Solve a level without undo',       check: function () { return (loadGameStats().bsNoUndo || 0) >= 1; } },
   { id: 'coop_win',     icon: '🤝', name: 'Team Player',     desc: 'Win a co-op Sudoku',               check: function () { return (loadGameStats().coopWins || 0) >= 1; } },
-  { id: 'explorer',     icon: '🎮', name: 'Game Explorer',   desc: 'Try all 3 games',                  check: function () { var s = loadGameStats(); return !!(s.pSud && s.pM3 && s.pBs); } }
+  { id: 'explorer',     icon: '🎮', name: 'Game Explorer',   desc: 'Try Sudoku, Fruit Match & Ball Sort', check: function () { var s = loadGameStats(); return !!(s.pSud && s.pM3 && s.pBs); } },
+  { id: 'g2048_win',  icon: '🔢', name: '2048!',           desc: 'Build the 2048 tile',              check: function () { return (loadGameStats().lvl_2048 || 0) >= 5; } },
+  { id: 'g2048_max',  icon: '🧮', name: 'Tile Master',     desc: 'Clear every 2048 level',           check: function () { return (loadGameStats().lvl_2048 || 0) >= G2048_MAX; } },
+  { id: 'snake_lv6',  icon: '🐍', name: 'Snake Charmer',   desc: 'Reach Snake level 6',              check: function () { return (loadGameStats().lvl_snake || 0) >= 6; } },
+  { id: 'snake_max',  icon: '👑', name: 'Snake King',      desc: 'Clear every Snake level',          check: function () { return (loadGameStats().lvl_snake || 0) >= SNAKE_MAX; } },
+  { id: 'mem_lv5',    icon: '🧠', name: 'Sharp Memory',    desc: 'Reach Memory Match level 5',       check: function () { return (loadGameStats().lvl_memory || 0) >= 5; } },
+  { id: 'mem_max',    icon: '🧩', name: 'Memory Master',   desc: 'Clear every Memory Match level',    check: function () { return (loadGameStats().lvl_memory || 0) >= MEM_MAX; } },
+  { id: 'mine_lv5',   icon: '💣', name: 'Bomb Squad',      desc: 'Reach Minesweeper level 5',        check: function () { return (loadGameStats().lvl_mine || 0) >= 5; } },
+  { id: 'mine_max',   icon: '🎖️', name: 'Bomb Disposal',   desc: 'Clear every Minesweeper level',     check: function () { return (loadGameStats().lvl_mine || 0) >= MINE_MAX; } },
+  { id: 'ws_lv5',     icon: '🔤', name: 'Word Hunter',     desc: 'Reach Word Search level 5',        check: function () { return (loadGameStats().lvl_ws || 0) >= 5; } },
+  { id: 'ws_max',     icon: '📖', name: 'Lexicon Legend',  desc: 'Clear every Word Search level',     check: function () { return (loadGameStats().lvl_ws || 0) >= WS_MAX; } },
+  { id: 'wam_lv6',    icon: '🔨', name: 'Mole Basher',     desc: 'Reach Whack-a-Mole level 6',       check: function () { return (loadGameStats().lvl_whack || 0) >= 6; } },
+  { id: 'wam_max',    icon: '🥇', name: 'Mole Master',     desc: 'Clear every Whack-a-Mole level',    check: function () { return (loadGameStats().lvl_whack || 0) >= WAM_MAX; } },
+  { id: 'ttt_max',    icon: '⭕', name: 'Perfect Defence', desc: 'Survive the perfect Tic-Tac-Toe AI', check: function () { return (loadGameStats().lvl_ttt || 0) >= TTT_MAX; } },
+  { id: 'c4_lv3',     icon: '🔴', name: 'Four Sight',      desc: 'Reach Connect 4 level 3',          check: function () { return (loadGameStats().lvl_connect4 || 0) >= 3; } },
+  { id: 'c4_max',     icon: '🟡', name: 'Connect Champ',   desc: 'Clear every Connect 4 level',       check: function () { return (loadGameStats().lvl_connect4 || 0) >= C4_MAX; } },
+  { id: 'sol_first',  icon: '🃏', name: 'Patience Pays',   desc: 'Win a game of Solitaire',          check: function () { return (loadGameStats().lvl_sol || 0) >= 1; } },
+  { id: 'sol_max',    icon: '♠️', name: 'Solitaire Sage',  desc: 'Clear every Solitaire level',       check: function () { return (loadGameStats().lvl_sol || 0) >= SOL_MAX; } },
+  { id: 'm3_lv10',    icon: '🍭', name: 'Sweet Streak',    desc: 'Reach Fruit Match level 10',       check: function () { return (loadGameStats().lvl_match || 0) >= 10; } },
+  { id: 'm3_lv20',    icon: '🌟', name: 'Fruit Legend',    desc: 'Clear every Fruit Match level',     check: function () { return (loadGameStats().lvl_match || 0) >= M3_MAX; } },
+  { id: 'played_all', icon: '🎡', name: 'Full House',      desc: 'Play all 12 games',                check: function () { var s = loadGameStats(); return !!(s.pSud && s.pM3 && s.pBs && s.p2048 && s.psnake && s.pmem && s.pmine && s.pws && s.pwam && s.pttt && s.pc4 && s.psol); } }
 ];
 function loadGameAch() { try { return JSON.parse(localStorage.getItem(GAME_ACH_KEY)) || {}; } catch (e) { return {}; } }
 function saveGameAch(o) { try { localStorage.setItem(GAME_ACH_KEY, JSON.stringify(o)); } catch (e) {} }
@@ -8149,16 +8291,25 @@ var FUN_GAMES = [
   },
   {
     id: 'match', name: 'Fruit Match', icon: '🍬', color: '236,72,153',
-    tag: 'Swap fruits, match 3+, chain big combos.',
-    container: function () { return '<div class="m3-wrap" id="m3Area">' + _m3IntroHtml() + '</div>'; },
-    sub: function () { var b = _m3Best(); return b ? '🏆 Best ' + b : ''; }
+    tag: 'Swap fruits, match 3+, chain big combos. 20 levels!',
+    container: function () { return '<div class="m3-wrap" id="m3Area" style="--gc:236,72,153">' + _m3IntroHtml() + '</div>'; },
+    sub: function () { return '🎯 Level ' + gameUnlocked('match', M3_MAX) + ' / ' + M3_MAX; }
   },
   {
     id: 'ballsort', name: 'Ball Sort', icon: '🧪', color: '6,182,212',
     tag: 'Pour the balls until each tube is one colour. 1000 levels!',
     container: function () { return '<div class="bs-wrap" id="bsArea">' + _bsIntroHtml() + '</div>'; },
     sub: function () { return '🎯 Level ' + _bsUnlocked() + ' / ' + BS_MAX_LEVEL; }
-  }
+  },
+  { id: '2048', name: '2048', icon: '🔢', color: '237,177,52', tag: 'Slide and merge tiles. 7 levels!', container: function () { return '<div class="gm-wrap" id="g2048Area" style="--gc:237,177,52">' + _2048IntroHtml() + '</div>'; }, sub: function () { return '🎯 Level ' + gameUnlocked('2048', G2048_MAX) + ' / ' + G2048_MAX; } },
+  { id: 'snake', name: 'Snake', icon: '🐍', color: '34,197,94', tag: 'Eat, grow, don\'t crash. 12 levels!', container: function () { return '<div class="gm-wrap" id="snakeArea" style="--gc:34,197,94">' + _snakeIntroHtml() + '</div>'; }, sub: function () { return '🎯 Level ' + gameUnlocked('snake', SNAKE_MAX) + ' / ' + SNAKE_MAX; } },
+  { id: 'memory', name: 'Memory Match', icon: '🧠', color: '168,85,247', tag: 'Find every pair. 10 levels!', container: function () { return '<div class="gm-wrap" id="memArea" style="--gc:168,85,247">' + _memIntroHtml() + '</div>'; }, sub: function () { return '🎯 Level ' + gameUnlocked('memory', MEM_MAX) + ' / ' + MEM_MAX; } },
+  { id: 'mine', name: 'Minesweeper', icon: '💣', color: '148,163,184', tag: 'Clear the field. 10 levels!', container: function () { return '<div class="gm-wrap" id="mineArea" style="--gc:148,163,184">' + _mineIntroHtml() + '</div>'; }, sub: function () { return '🎯 Level ' + gameUnlocked('mine', MINE_MAX) + ' / ' + MINE_MAX; } },
+  { id: 'solitaire', name: 'Solitaire', icon: '🃏', color: '16,185,129', tag: 'Classic Klondike. 5 levels!', container: function () { return '<div class="gm-wrap" id="solArea" style="--gc:16,185,129">' + _solIntroHtml() + '</div>'; }, sub: function () { return '🎯 Level ' + gameUnlocked('sol', SOL_MAX) + ' / ' + SOL_MAX; } },
+  { id: 'wordsearch', name: 'Word Search', icon: '🔤', color: '59,130,246', tag: 'Hunt hidden words. 10 levels!', container: function () { return '<div class="gm-wrap" id="wsArea" style="--gc:59,130,246">' + _wsIntroHtml() + '</div>'; }, sub: function () { return '🎯 Level ' + gameUnlocked('ws', WS_MAX) + ' / ' + WS_MAX; } },
+  { id: 'ttt', name: 'Tic-Tac-Toe', icon: '⭕', color: '236,72,153', tag: 'Beat a smarter AI each level. 5 levels!', container: function () { return '<div class="gm-wrap" id="tttArea" style="--gc:236,72,153">' + _tttIntroHtml() + '</div>'; }, sub: function () { return '🎯 Level ' + gameUnlocked('ttt', TTT_MAX) + ' / ' + TTT_MAX; } },
+  { id: 'connect4', name: 'Connect 4', icon: '🔴', color: '234,179,8', tag: 'Beat a deeper-thinking CPU. 6 levels!', container: function () { return '<div class="gm-wrap" id="c4Area" style="--gc:234,179,8">' + _c4IntroHtml() + '</div>'; }, sub: function () { return '🎯 Level ' + gameUnlocked('connect4', C4_MAX) + ' / ' + C4_MAX; } },
+  { id: 'whack', name: 'Whack-a-Mole', icon: '🔨', color: '249,115,22', tag: 'Bonk moles, faster each level. 12 levels!', container: function () { return '<div class="gm-wrap" id="wamArea" style="--gc:249,115,22">' + _wamIntroHtml() + '</div>'; }, sub: function () { return '🎯 Level ' + gameUnlocked('whack', WAM_MAX) + ' / ' + WAM_MAX; } }
 ];
 function _funGameById(id) { for (var i = 0; i < FUN_GAMES.length; i++) if (FUN_GAMES[i].id === id) return FUN_GAMES[i]; return null; }
 function _funGameCardHtml(g) {
@@ -8179,8 +8330,12 @@ function _stopFunGames() {
   try { if (_sudoku) { if (_sudoku.timer) clearInterval(_sudoku.timer); if (_sudoku.room) { try { _sudoku.room.ref.off('value', _sudoku.room.listener); } catch (e2) {} try { _sudoku.room.ref.child('members/' + _sudoku.room.pid).remove(); } catch (e3) {} } _sudoku = null; } } catch (e) {}
   try { if (_m3) _m3 = null; } catch (e) {}
   try { if (_bs) _bs = null; } catch (e) {}
+  try { if (_snake && _snake.timer) clearInterval(_snake.timer); } catch (e) {}
+  try { if (_wam) { clearInterval(_wam.timer); clearInterval(_wam.spawn); } } catch (e) {}
+  try { _g2048 = _snake = _mem = _mine = _sol = _ws = _ttt = _c4 = _wam = null; _funActive = null; } catch (e) {}
   try { var m3a = document.getElementById('m3Area'); if (m3a) m3a.classList.remove('m3-full'); } catch (e) {}
   try { var bsa = document.getElementById('bsArea'); if (bsa) bsa.classList.remove('bs-full'); } catch (e) {}
+  try { var fs = document.querySelectorAll('.game-full'); for (var _i = 0; _i < fs.length; _i++) fs[_i].classList.remove('game-full'); } catch (e) {}
   try { _skSetFullscreen(false); } catch (e) {}
 }
 function switchFunTab(tab)  { _stopFunGames(); _funTab = tab; if (tab === 'games') _funGame = null; renderFunPanel(); }
@@ -8188,7 +8343,7 @@ function switchFunGame(g)   { _stopFunGames(); _funGame = g;   renderFunPanel();
 
 function renderFunPanel() {
   var el = document.getElementById('funBody');
-  if (!el || _game || (_g3 && _g3.active) || (_sudoku && _sudoku.active) || (_m3 && _m3.active) || (_bs && _bs.active)) return; // don't wipe an in-progress game
+  if (!el || _game || (_g3 && _g3.active) || (_sudoku && _sudoku.active) || (_m3 && _m3.active) || (_bs && _bs.active) || _funActive) return; // don't wipe an in-progress game
 
   var html = '<div class="panel-subtabs" style="margin-bottom:0.7rem;">'
     + '<button class="subtab' + (_funTab === 'rewards' ? ' active' : '') + '" onclick="switchFunTab(\'rewards\')">🏆 Rewards</button>'
@@ -9067,12 +9222,15 @@ function _m3Best() { try { return parseInt(localStorage.getItem(M3_BEST_KEY), 10
 function _m3SaveBest(v) { try { localStorage.setItem(M3_BEST_KEY, String(v)); } catch (e) {} }
 function _m3RandType() { return Math.floor(Math.random() * M3_TYPES.length); }
 function _m3TypeAt(r, c) { var id = _m3.grid[r] && _m3.grid[r][c]; return id ? _m3.tiles[id].type : -1; }
+var M3_MAX = 20;
+function _m3Cfg(lv) { lv = Math.min(M3_MAX, Math.max(1, lv)); return { target: 700 + lv * 300, moves: Math.max(14, 26 - Math.floor((lv - 1) / 2)) }; }
 function _m3IntroHtml() {
-  var best = _m3Best();
+  var best = _m3Best(), lv = gameSelLevel('match', M3_MAX), cf = _m3Cfg(lv);
   return '<div class="m3-intro">'
     + '<div class="m3-intro-ico">🍬</div>'
     + '<div class="m3-intro-title">Fruit Match</div>'
-    + '<div class="m3-intro-desc">Swap two fruits to line up 3 or more of a kind. They pop, and more fall in — chain combos for big points! You get ' + M3_START_MOVES + ' moves.</div>'
+    + '<div class="m3-intro-desc">Swap fruits to match 3+ and chain combos. Score <b>' + cf.target + '</b> points in <b>' + cf.moves + ' moves</b> to clear the level!</div>'
+    + _lvlPickerHtml('match', M3_MAX)
     + (best ? '<div class="m3-intro-best">🏆 Best: ' + best + '</div>' : '')
     + '<button class="m3-play" onclick="startMatch3()">▶  Play</button>'
     + '</div>';
@@ -9080,7 +9238,8 @@ function _m3IntroHtml() {
 function _m3Transform(r, c) { return 'translate(' + (c * 100) + '%,' + (r * 100) + '%)'; }
 function startMatch3() {
   try { gsFlag('pM3'); } catch (e) {}
-  _m3 = { grid: [], tiles: {}, nextId: 1, sel: null, score: 0, moves: M3_START_MOVES, busy: false, active: true, over: false, best: _m3Best(), startBest: _m3Best() };
+  var _m3lv = gameSelLevel('match', M3_MAX), _m3cf = _m3Cfg(_m3lv);
+  _m3 = { grid: [], tiles: {}, nextId: 1, sel: null, score: 0, moves: _m3cf.moves, busy: false, active: true, over: false, best: _m3Best(), startBest: _m3Best(), level: _m3lv, target: _m3cf.target };
   for (var r = 0; r < M3_SIZE; r++) {
     _m3.grid[r] = [];
     for (var c = 0; c < M3_SIZE; c++) {
@@ -9110,6 +9269,7 @@ function renderMatch3() {
   var m = _m3;
   area.innerHTML =
       '<div class="m3-hud">'
+    +   '<div class="m3-stat"><span class="m3-stat-lbl">Lv ' + m.level + ' Goal</span><b>' + m.target + '</b></div>'
     +   '<div class="m3-stat"><span class="m3-stat-lbl">Score</span><b id="m3Score">' + m.score + '</b></div>'
     +   '<div class="m3-stat"><span class="m3-stat-lbl">Moves</span><b id="m3Moves">' + m.moves + '</b></div>'
     +   '<div class="m3-stat"><span class="m3-stat-lbl">Best</span><b id="m3Bestv">' + m.best + '</b></div>'
@@ -9214,7 +9374,23 @@ function _m3AfterResolve() {
   var m = _m3; if (!m) return;
   m.busy = false; m.sel = null;
   if (m.score > m.best) { m.best = m.score; _m3SaveBest(m.best); _m3UpdateHud(); }
+  if (m.score >= m.target) { _m3LevelWin(); return; }
   if (m.moves <= 0) _m3GameOver();
+}
+function _m3LevelWin() {
+  var m = _m3; if (!m) return; m.over = true;
+  try { gsInc('m3Games'); } catch (e) {}
+  var info = gameClearLevel('match', m.level, M3_MAX);
+  var area = document.getElementById('m3Area');
+  if (area) {
+    area.innerHTML = '<div class="sk-win"><div class="sk-win-emoji">🎉</div><div class="sk-win-title">Level ' + m.level + ' complete!</div>'
+      + '<div class="sk-win-sub">Score: ' + m.score + ' / ' + m.target + (info.newlyUnlocked ? ' · 🔓 Level ' + info.next + ' unlocked!' : '') + '</div>'
+      + '<div style="display:flex; gap:0.5rem; justify-content:center; flex-wrap:wrap; margin-top:0.9rem;">'
+      + (m.level < M3_MAX ? '<button class="game-btn" onclick="setGameSel(\'match\',' + info.next + ');startMatch3()">Level ' + info.next + ' ▶</button>' : '<span class="gm-allclear">🏆 All ' + M3_MAX + ' levels cleared!</span>')
+      + '<button class="sk-newbtn" onclick="startMatch3()">↻ Replay</button>'
+      + '<button class="sk-newbtn" onclick="newMatch3()">Menu</button></div></div>';
+  }
+  _m3 = null;
 }
 function _m3UpdateHud() {
   var s = document.getElementById('m3Score'); if (s) s.textContent = _m3.score;
@@ -9229,9 +9405,9 @@ function _m3GameOver() {
   var area = document.getElementById('m3Area');
   if (area) {
     area.innerHTML = '<div class="sk-win"><div class="sk-win-emoji">🍬</div><div class="sk-win-title">Out of moves!</div>'
-      + '<div class="sk-win-sub">Score: ' + score + (beat ? ' · 🏆 New best!' : ' · Best: ' + m.best) + '</div>'
+      + '<div class="sk-win-sub">Score: ' + score + ' / ' + m.target + ' — so close!' + (beat ? ' · 🏆 New best!' : '') + '</div>'
       + '<div style="display:flex; gap:0.5rem; justify-content:center; margin-top:0.9rem;">'
-      + '<button class="game-btn" onclick="startMatch3()">Play again</button>'
+      + '<button class="game-btn" onclick="startMatch3()">↻ Retry</button>'
       + '<button class="sk-newbtn" onclick="newMatch3()">Menu</button></div></div>';
   }
   _m3 = null;
@@ -9500,6 +9676,431 @@ function _bsCheckWin() {
       + '<button class="sk-newbtn" onclick="newBallSort()">Menu</button></div></div>';
   }
 }
+
+// ════════════════ Extra games (2048, Snake, Memory, Minesweeper, Solitaire, Word Search, Tic-Tac-Toe, Connect-4, Whack-a-mole) ════════════════
+// All share one fullscreen + zoom-lock path so play is consistent.
+var _funActive = null;
+function _gameFullscreen(areaId, on) {
+  var a = document.getElementById(areaId);
+  if (a) a.classList.toggle('game-full', !!on);
+  try { document.body.classList.toggle('sk-fs-lock', !!on); } catch (e) {}
+  try { _skSetZoomLock(!!on); } catch (e) {}
+}
+function _swipe(el, cb) {
+  var sx = 0, sy = 0;
+  el.addEventListener('touchstart', function (e) { var t = e.touches[0]; sx = t.clientX; sy = t.clientY; }, { passive: true });
+  el.addEventListener('touchend', function (e) { var t = e.changedTouches[0]; var dx = t.clientX - sx, dy = t.clientY - sy; if (Math.max(Math.abs(dx), Math.abs(dy)) < 24) return; if (Math.abs(dx) > Math.abs(dy)) cb(dx > 0 ? 'R' : 'L'); else cb(dy > 0 ? 'D' : 'U'); }, { passive: true });
+}
+document.addEventListener('keydown', function (e) {
+  var d = e.key === 'ArrowLeft' ? 'L' : e.key === 'ArrowRight' ? 'R' : e.key === 'ArrowUp' ? 'U' : e.key === 'ArrowDown' ? 'D' : null;
+  if (!d) return;
+  if (_g2048 && !_g2048.over) { e.preventDefault(); _2048Move(d); }
+  else if (_snake) { e.preventDefault(); _snakeDir(d); }
+});
+
+/* ── Per-game level ladders (unlock-as-you-win) ─────────────────────────
+   Each game stores its highest UNLOCKED level and its last SELECTED level.
+   Beating your highest unlocked level unlocks the next one. All keys are
+   mft_-prefixed so progress saves + syncs across devices for free. ────── */
+var _lvlIntroFns = {}; // gameId -> intro-HTML fn   (filled at end of games block)
+var _lvlAreaIds  = {}; // gameId -> area element id (filled at end of games block)
+function _lvlUnKey(id)  { return profilePrefix + 'mft_lvl_' + id; }
+function _lvlSelKey(id) { return profilePrefix + 'mft_lvlsel_' + id; }
+function gameUnlocked(id, max) { try { var v = parseInt(localStorage.getItem(_lvlUnKey(id)), 10) || 1; return Math.min(max || 9999, Math.max(1, v)); } catch (e) { return 1; } }
+function gameSelLevel(id, max) { var un = gameUnlocked(id, max), v = un; try { v = parseInt(localStorage.getItem(_lvlSelKey(id)), 10) || un; } catch (e) {} return Math.min(un, Math.max(1, v)); }
+function setGameSel(id, lv) { try { localStorage.setItem(_lvlSelKey(id), String(Math.max(1, lv))); } catch (e) {} }
+function _lvlSetUnlocked(id, n, max) { try { localStorage.setItem(_lvlUnKey(id), String(Math.min(max || 9999, n))); } catch (e) {} }
+// Call when the player clears `level`. Unlocks the next level if this was the frontier.
+function gameClearLevel(id, level, max) {
+  var un = gameUnlocked(id, max), newly = false;
+  if (level >= un && un < max) { _lvlSetUnlocked(id, un + 1, max); newly = true; }
+  try { gsMax('lvl_' + id, level); } catch (e) {}
+  try { awardGameAchievements(); } catch (e) {}
+  return { newlyUnlocked: newly, next: Math.min(max, level + 1) };
+}
+// Level-picker strip shown on a game's intro screen (◀ Level N ▶ + unlocked count).
+function _lvlPickerHtml(id, max) {
+  var sel = gameSelLevel(id, max), un = gameUnlocked(id, max);
+  return '<div class="gm-lvlpick">'
+    + '<button class="gm-lvlarrow" onclick="gameLvlStep(\'' + id + '\',' + max + ',-1)"' + (sel <= 1 ? ' disabled' : '') + '>◀</button>'
+    + '<div class="gm-lvlbox"><small>LEVEL</small><b>' + sel + '</b><span>of ' + max + '</span></div>'
+    + '<button class="gm-lvlarrow" onclick="gameLvlStep(\'' + id + '\',' + max + ',1)"' + (sel >= un ? ' disabled' : '') + '>▶</button>'
+    + '</div>'
+    + '<div class="gm-lvlhint">' + (un >= max ? '🏅 All ' + max + ' levels unlocked!' : '🔓 Unlocked ' + un + ' / ' + max + (sel >= un ? ' · beat it to unlock the next!' : '')) + '</div>';
+}
+function gameLvlStep(id, max, dir) {
+  var sel = gameSelLevel(id, max), un = gameUnlocked(id, max);
+  sel = Math.min(un, Math.max(1, sel + dir));
+  setGameSel(id, sel);
+  var fn = _lvlIntroFns[id], area = _lvlAreaIds[id];
+  if (fn && area) { var a = document.getElementById(area); if (a) a.innerHTML = fn(); }
+}
+// Win banner injected into a game's message area when a level is cleared.
+function _lvlWinBanner(id, max, level, startFn, menuFn) {
+  var info = gameClearLevel(id, level, max);
+  var msg = '🎉 <b>Level ' + level + ' complete!</b>' + (info.newlyUnlocked ? ' &nbsp;🔓 Level ' + info.next + ' unlocked!' : '');
+  var btns = '';
+  if (level < max) btns += '<button class="gm-nextbtn" onclick="setGameSel(\'' + id + '\',' + info.next + ');' + startFn + '()">Level ' + info.next + ' ▶</button>';
+  else btns += '<span class="gm-allclear">🏆 All ' + max + ' levels cleared!</span>';
+  btns += '<button class="sk-newbtn" onclick="' + startFn + '()">↻ Replay</button>';
+  btns += '<button class="sk-newbtn" onclick="' + menuFn + '()">Menu</button>';
+  return '<div class="gm-winbanner">' + msg + '<div class="gm-winbtns">' + btns + '</div></div>';
+}
+// Retry banner when a level is failed.
+function _lvlFailBanner(txt, startFn, menuFn) {
+  return '<div class="gm-failbanner">' + txt + '<div class="gm-winbtns">'
+    + '<button class="gm-nextbtn" onclick="' + startFn + '()">↻ Retry</button>'
+    + '<button class="sk-newbtn" onclick="' + menuFn + '()">Menu</button></div></div>';
+}
+
+/* ── 2048 ── */
+var _g2048 = null; var G2048_BEST_KEY = profilePrefix + 'mft_2048_best';
+function _2048Best() { try { return parseInt(localStorage.getItem(G2048_BEST_KEY), 10) || 0; } catch (e) { return 0; } }
+function _2048SaveBest(v) { try { localStorage.setItem(G2048_BEST_KEY, String(v)); } catch (e) {} }
+function _2048Color(v) { var m = { 2: '#eee4da', 4: '#ede0c8', 8: '#f2b179', 16: '#f59563', 32: '#f67c5f', 64: '#f65e3b', 128: '#edcf72', 256: '#edcc61', 512: '#edc850', 1024: '#edc53f', 2048: '#edc22e' }; return (m[v] || '#3c3a32') + '|' + (v <= 4 ? '#776e65' : '#f9f6f2'); }
+var G2048_MAX = 7;
+function _2048Target(lv) { return [128, 256, 512, 1024, 2048, 4096, 8192][Math.min(G2048_MAX, Math.max(1, lv)) - 1]; }
+function _2048Max(b) { var m = 0; for (var r = 0; r < 4; r++) for (var c = 0; c < 4; c++) if (b[r][c] > m) m = b[r][c]; return m; }
+function _2048IntroHtml() { var b = _2048Best(), lv = gameSelLevel('2048', G2048_MAX), tg = _2048Target(lv); return '<div class="gm-intro"><div class="gm-intro-ico">🔢</div><div class="gm-intro-title">2048</div><div class="gm-intro-desc">Swipe to slide the tiles. Merge matching numbers to build the <b>' + tg + '</b> tile!</div>' + _lvlPickerHtml('2048', G2048_MAX) + (b ? '<div class="gm-best">🏆 Best ' + b + '</div>' : '') + '<button class="gm-play" onclick="start2048()">▶  Play</button></div>'; }
+function start2048() { var lv = gameSelLevel('2048', G2048_MAX); try { gsFlag('p2048'); } catch (e) {} _g2048 = { grid: [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]], score: 0, best: _2048Best(), over: false, won: false, level: lv, target: _2048Target(lv) }; _2048Spawn(); _2048Spawn(); _funActive = '2048'; render2048(); _gameFullscreen('g2048Area', true); }
+function _2048Spawn() { var g = _g2048.grid, em = []; for (var r = 0; r < 4; r++) for (var c = 0; c < 4; c++) if (!g[r][c]) em.push([r, c]); if (!em.length) return; var p = em[Math.floor(Math.random() * em.length)]; g[p[0]][p[1]] = Math.random() < 0.9 ? 2 : 4; }
+function _2048Slide(row) { var a = row.filter(function (v) { return v; }); var gain = 0; for (var i = 0; i < a.length - 1; i++) { if (a[i] === a[i + 1]) { a[i] *= 2; gain += a[i]; a.splice(i + 1, 1); } } while (a.length < 4) a.push(0); return { row: a, gain: gain }; }
+function _2048Move(dir) {
+  var g = _g2048; if (!g || g.over) return; var b = g.grid, moved = false, gain = 0;
+  function line(i) { var arr = []; for (var k = 0; k < 4; k++) arr.push(dir === 'L' ? b[i][k] : dir === 'R' ? b[i][3 - k] : dir === 'U' ? b[k][i] : b[3 - k][i]); return arr; }
+  function setLine(i, arr) { for (var k = 0; k < 4; k++) { var v = arr[k]; if (dir === 'L') b[i][k] = v; else if (dir === 'R') b[i][3 - k] = v; else if (dir === 'U') b[k][i] = v; else b[3 - k][i] = v; } }
+  for (var i = 0; i < 4; i++) { var before = line(i); var r = _2048Slide(before.slice()); gain += r.gain; if (before.join(',') !== r.row.join(',')) moved = true; setLine(i, r.row); }
+  if (!moved) return;
+  g.score += gain; if (g.score > g.best) { g.best = g.score; _2048SaveBest(g.best); }
+  if (!g.won) { for (var r2 = 0; r2 < 4; r2++) for (var c2 = 0; c2 < 4; c2++) if (b[r2][c2] === g.target) g.won = true; }
+  _2048Spawn(); render2048();
+  if (g.won) { g.over = true; var wm = document.getElementById('tw2048msg'); if (wm) wm.innerHTML = _lvlWinBanner('2048', G2048_MAX, g.level, 'start2048', '_2048Menu'); return; }
+  if (_2048Over()) { g.over = true; var el = document.getElementById('tw2048msg'); if (el) el.innerHTML = _lvlFailBanner('💀 Stuck! Reached ' + _2048Max(b) + ' — needed ' + g.target + '.', 'start2048', '_2048Menu'); }
+}
+function _2048Over() { var b = _g2048.grid; for (var r = 0; r < 4; r++) for (var c = 0; c < 4; c++) { if (!b[r][c]) return false; if (c < 3 && b[r][c] === b[r][c + 1]) return false; if (r < 3 && b[r][c] === b[r + 1][c]) return false; } return true; }
+function render2048() {
+  var a = document.getElementById('g2048Area'); if (!a) return; var g = _g2048, cells = '';
+  for (var r = 0; r < 4; r++) for (var c = 0; c < 4; c++) { var v = g.grid[r][c], st = ''; if (v) { var col = _2048Color(v).split('|'); st = 'background:' + col[0] + ';color:' + col[1] + ';'; } cells += '<div class="tw-cell" style="' + st + '">' + (v || '') + '</div>'; }
+  a.innerHTML = '<div class="gm-hud"><div class="gm-stat"><small>Lv ' + g.level + ' · Goal</small><b>' + g.target + '</b></div><div class="gm-stat"><small>Score</small><b>' + g.score + '</b></div><div class="gm-stat"><small>Best</small><b>' + g.best + '</b></div><button class="sk-newbtn" onclick="start2048()">↻ New</button><button class="sk-newbtn" onclick="_2048Menu()">Menu</button></div><div class="tw-board" id="tw2048">' + cells + '</div><div class="gm-msg" id="tw2048msg"></div>';
+  var bd = document.getElementById('tw2048'); if (bd) _swipe(bd, _2048Move);
+}
+function _2048Menu() { _g2048 = null; _funActive = null; _gameFullscreen('g2048Area', false); var a = document.getElementById('g2048Area'); if (a) a.innerHTML = _2048IntroHtml(); }
+
+/* ── Snake ── */
+var _snake = null; var SNAKE_BEST_KEY = profilePrefix + 'mft_snake_best';
+function _snakeBest() { try { return parseInt(localStorage.getItem(SNAKE_BEST_KEY), 10) || 0; } catch (e) { return 0; } }
+var SNAKE_MAX = 12;
+function _snakeCfg(lv) { lv = Math.min(SNAKE_MAX, Math.max(1, lv)); return { target: 4 + lv * 2, speed: Math.max(60, 150 - lv * 8) }; }
+function _snakeIntroHtml() { var b = _snakeBest(), lv = gameSelLevel('snake', SNAKE_MAX), cf = _snakeCfg(lv); return '<div class="gm-intro"><div class="gm-intro-ico">🐍</div><div class="gm-intro-title">Snake</div><div class="gm-intro-desc">Swipe or use arrow keys to steer. Eat <b>' + cf.target + ' apples</b> to clear the level — it gets faster the higher you go!</div>' + _lvlPickerHtml('snake', SNAKE_MAX) + (b ? '<div class="gm-best">🏆 Best ' + b + '</div>' : '') + '<button class="gm-play" onclick="startSnake()">▶  Play</button></div>'; }
+function startSnake() {
+  var lv = gameSelLevel('snake', SNAKE_MAX), cf = _snakeCfg(lv); try { gsFlag('psnake'); } catch (e) {}
+  var N = 15; _snake = { N: N, cells: [{ x: 7, y: 7 }], dir: 'R', next: 'R', food: null, score: 0, best: _snakeBest(), over: false, timer: null, level: lv, target: cf.target }; _snakeFood(); _funActive = 'snake';
+  var a = document.getElementById('snakeArea'); if (a) a.innerHTML = '<div class="gm-hud"><div class="gm-stat"><small>Lv ' + lv + ' · Goal</small><b>' + cf.target + '</b></div><div class="gm-stat"><small>Apples</small><b id="snScore">0</b></div><div class="gm-stat"><small>Best</small><b>' + _snake.best + '</b></div><button class="sk-newbtn" onclick="startSnake()">↻ New</button><button class="sk-newbtn" onclick="_snakeMenu()">Menu</button></div><canvas class="sn-canvas" id="snCanvas" width="300" height="300"></canvas><div class="gm-msg" id="snMsg"></div>';
+  _gameFullscreen('snakeArea', true); var cv = document.getElementById('snCanvas'); if (cv) _swipe(cv, _snakeDir); _snakeDraw();
+  _snake.timer = setInterval(_snakeTick, cf.speed);
+}
+function _snakeDir(d) { var s = _snake; if (!s) return; var opp = { L: 'R', R: 'L', U: 'D', D: 'U' }; if (d === opp[s.dir]) return; s.next = d; }
+function _snakeFood() { var s = _snake, N = s.N; for (var tries = 0; tries < 500; tries++) { var x = Math.floor(Math.random() * N), y = Math.floor(Math.random() * N), hit = false; for (var i = 0; i < s.cells.length; i++) if (s.cells[i].x === x && s.cells[i].y === y) { hit = true; break; } if (!hit) { s.food = { x: x, y: y }; return; } } }
+function _snakeTick() {
+  var s = _snake; if (!s || s.over) return; s.dir = s.next; var h = s.cells[0], nx = h.x, ny = h.y;
+  if (s.dir === 'L') nx--; else if (s.dir === 'R') nx++; else if (s.dir === 'U') ny--; else ny++;
+  if (nx < 0 || ny < 0 || nx >= s.N || ny >= s.N) { _snakeEnd(); return; }
+  for (var i = 0; i < s.cells.length; i++) if (s.cells[i].x === nx && s.cells[i].y === ny) { _snakeEnd(); return; }
+  s.cells.unshift({ x: nx, y: ny });
+  if (s.food && nx === s.food.x && ny === s.food.y) { s.score++; var el = document.getElementById('snScore'); if (el) el.textContent = s.score; if (s.score > s.best) { s.best = s.score; try { localStorage.setItem(SNAKE_BEST_KEY, String(s.best)); } catch (e) {} } _snakeFood(); if (s.score >= s.target) { _snakeDraw(); _snakeWin(); return; } } else s.cells.pop();
+  _snakeDraw();
+}
+function _snakeWin() { var s = _snake; if (!s) return; s.over = true; if (s.timer) clearInterval(s.timer); var m = document.getElementById('snMsg'); if (m) m.innerHTML = _lvlWinBanner('snake', SNAKE_MAX, s.level, 'startSnake', '_snakeMenu'); }
+function _snakeDraw() {
+  var s = _snake, cv = document.getElementById('snCanvas'); if (!cv || !s) return; var ctx = cv.getContext('2d'), N = s.N, W = cv.width, cell = W / N; ctx.clearRect(0, 0, W, W);
+  if (s.food) { ctx.fillStyle = '#ef4444'; ctx.beginPath(); ctx.arc((s.food.x + 0.5) * cell, (s.food.y + 0.5) * cell, cell * 0.36, 0, 7); ctx.fill(); }
+  for (var i = 0; i < s.cells.length; i++) { var c = s.cells[i]; ctx.fillStyle = i === 0 ? '#4ade80' : '#22c55e'; var pad = cell * 0.1; _snakeRound(ctx, c.x * cell + pad, c.y * cell + pad, cell - 2 * pad, cell - 2 * pad, cell * 0.22); }
+}
+function _snakeRound(ctx, x, y, w, h, r) { ctx.beginPath(); ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r); ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.fill(); }
+function _snakeEnd() { var s = _snake; if (!s) return; s.over = true; if (s.timer) clearInterval(s.timer); var m = document.getElementById('snMsg'); if (m) m.innerHTML = _lvlFailBanner('💀 Crashed at ' + s.score + ' / ' + s.target + ' apples.', 'startSnake', '_snakeMenu'); }
+function _snakeMenu() { if (_snake && _snake.timer) clearInterval(_snake.timer); _snake = null; _funActive = null; _gameFullscreen('snakeArea', false); var a = document.getElementById('snakeArea'); if (a) a.innerHTML = _snakeIntroHtml(); }
+
+/* ── Memory Match ── */
+var _mem = null; var MEM_BEST_KEY = profilePrefix + 'mft_mem_best';
+var MEM_SYMS = ['🍎', '🚀', '🌟', '🎈', '🐶', '🍕', '⚽', '🎧', '🌈', '🍩', '🐱', '🚗', '🍒', '🎁', '🔥', '👑'];
+function _memBest() { try { return parseInt(localStorage.getItem(MEM_BEST_KEY), 10) || 0; } catch (e) { return 0; } }
+var MEM_MAX = 10;
+function _memCfg(lv) { lv = Math.min(MEM_MAX, Math.max(1, lv)); var pairs = 5 + lv, cards = pairs * 2; return { pairs: pairs, cols: cards <= 12 ? 4 : cards <= 20 ? 5 : 6 }; }
+function _memIntroHtml() { var b = _memBest(), lv = gameSelLevel('memory', MEM_MAX), cf = _memCfg(lv); return '<div class="gm-intro"><div class="gm-intro-ico">🧠</div><div class="gm-intro-title">Memory Match</div><div class="gm-intro-desc">Flip cards to find all <b>' + cf.pairs + ' pairs</b>. More pairs each level — clear the board to advance!</div>' + _lvlPickerHtml('memory', MEM_MAX) + (b ? '<div class="gm-best">🏆 Fewest moves ' + b + '</div>' : '') + '<button class="gm-play" onclick="startMemory()">▶  Play</button></div>'; }
+function startMemory() { var lv = gameSelLevel('memory', MEM_MAX), cf = _memCfg(lv); try { gsFlag('pmem'); } catch (e) {} var pairs = cf.pairs, syms = MEM_SYMS.slice(0, pairs), deck = syms.concat(syms); for (var i = deck.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)); var t = deck[i]; deck[i] = deck[j]; deck[j] = t; } _mem = { cards: deck.map(function (s) { return { s: s, up: false, matched: false }; }), first: null, lock: false, moves: 0, matched: 0, pairs: pairs, cols: cf.cols, level: lv, best: _memBest() }; _funActive = 'memory'; renderMemory(); _gameFullscreen('memArea', true); }
+function renderMemory() {
+  var a = document.getElementById('memArea'); if (!a) return; var m = _mem, cards = '';
+  for (var i = 0; i < m.cards.length; i++) { var c = m.cards[i]; cards += '<div class="mm-card' + (c.up ? ' up' : '') + (c.matched ? ' matched' : '') + '" onclick="memFlip(' + i + ')"><span>' + c.s + '</span></div>'; }
+  a.innerHTML = '<div class="gm-hud"><div class="gm-stat"><small>Level</small><b>' + m.level + '</b></div><div class="gm-stat"><small>Moves</small><b id="memMoves">' + m.moves + '</b></div><div class="gm-stat"><small>Pairs</small><b>' + m.matched + '/' + m.pairs + '</b></div><button class="sk-newbtn" onclick="startMemory()">↻ New</button><button class="sk-newbtn" onclick="_memMenu()">Menu</button></div><div class="mm-grid" style="grid-template-columns:repeat(' + m.cols + ',1fr)">' + cards + '</div><div class="gm-msg" id="memMsg"></div>';
+}
+function memFlip(i) {
+  var m = _mem; if (!m || m.lock) return; var c = m.cards[i]; if (c.up || c.matched) return; c.up = true; renderMemory();
+  if (m.first === null) { m.first = i; return; }
+  m.moves++; var f = m.cards[m.first]; m.first = null;
+  if (f.s === c.s) { f.matched = true; c.matched = true; m.matched++; renderMemory(); if (m.matched === m.pairs) _memWin(); }
+  else { m.lock = true; renderMemory(); setTimeout(function () { f.up = false; c.up = false; m.lock = false; renderMemory(); }, 750); }
+  var el = document.getElementById('memMoves'); if (el) el.textContent = m.moves;
+}
+function _memWin() { var m = _mem, beat = !m.best || m.moves < m.best; if (beat) { try { localStorage.setItem(MEM_BEST_KEY, String(m.moves)); } catch (e) {} } m.done = true; var el = document.getElementById('memMsg'); if (el) el.innerHTML = _lvlWinBanner('memory', MEM_MAX, m.level, 'startMemory', '_memMenu') + '<div class="gm-subnote">Cleared in ' + m.moves + ' moves' + (beat ? ' · 🏆 New best!' : '') + '</div>'; }
+function _memMenu() { _mem = null; _funActive = null; _gameFullscreen('memArea', false); var a = document.getElementById('memArea'); if (a) a.innerHTML = _memIntroHtml(); }
+
+/* ── Minesweeper ── */
+var _mine = null; var MINE_BEST_KEY = profilePrefix + 'mft_mine_best';
+function _mineBest() { try { return parseInt(localStorage.getItem(MINE_BEST_KEY), 10) || 0; } catch (e) { return 0; } }
+var MINE_MAX = 10;
+function _mineCfg(lv) { lv = Math.min(MINE_MAX, Math.max(1, lv)); var N = [9, 9, 10, 10, 11, 11, 12, 12, 13, 14][lv - 1], M = [10, 13, 16, 20, 25, 30, 36, 42, 50, 60][lv - 1]; return { N: N, M: M }; }
+function _mineIntroHtml() { var b = _mineBest(), lv = gameSelLevel('mine', MINE_MAX), cf = _mineCfg(lv); return '<div class="gm-intro"><div class="gm-intro-ico">💣</div><div class="gm-intro-title">Minesweeper</div><div class="gm-intro-desc">Clear a <b>' + cf.N + '×' + cf.N + '</b> field with <b>' + cf.M + ' mines</b> without hitting one. Bigger fields each level!</div>' + _lvlPickerHtml('mine', MINE_MAX) + (b ? '<div class="gm-best">🏆 Best time ' + b + 's</div>' : '') + '<button class="gm-play" onclick="startMine()">▶  Play</button></div>'; }
+function startMine() { var lv = gameSelLevel('mine', MINE_MAX), cf = _mineCfg(lv), N = cf.N, M = cf.M; try { gsFlag('pmine'); } catch (e) {} _mine = { N: N, M: M, grid: [], rev: [], flag: [], started: false, over: false, win: false, flagMode: false, left: N * N - M, start: 0, level: lv, banner: '', best: _mineBest() }; for (var r = 0; r < N; r++) { _mine.grid[r] = []; _mine.rev[r] = []; _mine.flag[r] = []; for (var c = 0; c < N; c++) { _mine.grid[r][c] = 0; _mine.rev[r][c] = false; _mine.flag[r][c] = false; } } _funActive = 'mine'; renderMine(); _gameFullscreen('mineArea', true); }
+function _minePlace(sr, sc) {
+  var m = _mine, placed = 0;
+  while (placed < m.M) { var r = Math.floor(Math.random() * m.N), c = Math.floor(Math.random() * m.N); if (m.grid[r][c] === -1) continue; if (Math.abs(r - sr) <= 1 && Math.abs(c - sc) <= 1) continue; m.grid[r][c] = -1; placed++; }
+  for (var r = 0; r < m.N; r++) for (var c = 0; c < m.N; c++) { if (m.grid[r][c] === -1) continue; var n = 0; for (var dr = -1; dr <= 1; dr++) for (var dc = -1; dc <= 1; dc++) { var rr = r + dr, cc = c + dc; if (rr >= 0 && cc >= 0 && rr < m.N && cc < m.N && m.grid[rr][cc] === -1) n++; } m.grid[r][c] = n; }
+}
+function mineTap(r, c) {
+  var m = _mine; if (!m || m.over) return;
+  if (m.flagMode) { if (!m.rev[r][c]) m.flag[r][c] = !m.flag[r][c]; renderMine(); return; }
+  if (m.flag[r][c]) return;
+  if (!m.started) { m.started = true; m.start = Date.now(); _minePlace(r, c); }
+  _mineReveal(r, c);
+  if (m.over && !m.win) { m.banner = _lvlFailBanner('💥 Boom! You hit a mine.', 'startMine', '_mineMenu'); }
+  if (!m.over && m.left <= 0) { m.win = true; m.over = true; var secs = Math.round((Date.now() - m.start) / 1000); var beat = !m.best || secs < m.best; if (beat) { try { localStorage.setItem(MINE_BEST_KEY, String(secs)); } catch (e) {} } m.banner = _lvlWinBanner('mine', MINE_MAX, m.level, 'startMine', '_mineMenu') + '<div class="gm-subnote">⏱ ' + secs + 's' + (beat ? ' · 🏆 New best!' : '') + '</div>'; }
+  renderMine();
+}
+function _mineReveal(r, c) { var m = _mine; if (r < 0 || c < 0 || r >= m.N || c >= m.N || m.rev[r][c] || m.flag[r][c]) return; m.rev[r][c] = true; if (m.grid[r][c] === -1) { m.over = true; return; } m.left--; if (m.grid[r][c] === 0) for (var dr = -1; dr <= 1; dr++) for (var dc = -1; dc <= 1; dc++) if (dr || dc) _mineReveal(r + dr, c + dc); }
+function mineFlagMode() { var m = _mine; if (!m || m.over) return; m.flagMode = !m.flagMode; renderMine(); }
+function renderMine() {
+  var a = document.getElementById('mineArea'); if (!a) return; var m = _mine, NC = ['', '#60a5fa', '#4ade80', '#f87171', '#c084fc', '#fb923c', '#22d3ee', '#e2e8f0', '#94a3b8'], cells = '';
+  for (var r = 0; r < m.N; r++) for (var c = 0; c < m.N; c++) { var cls = 'ms-cell', txt = ''; if (m.rev[r][c]) { cls += ' rev'; if (m.grid[r][c] === -1) { cls += ' mine'; txt = '💣'; } else if (m.grid[r][c] > 0) txt = '<span style="color:' + NC[m.grid[r][c]] + '">' + m.grid[r][c] + '</span>'; } else if (m.flag[r][c]) txt = '🚩'; cells += '<div class="' + cls + '" onclick="mineTap(' + r + ',' + c + ')">' + txt + '</div>'; }
+  var msg = m.over ? (m.banner || '') : '';
+  a.innerHTML = '<div class="gm-hud"><div class="gm-stat"><small>Level</small><b>' + m.level + '</b></div><div class="gm-stat"><small>Mines</small><b>' + m.M + '</b></div><button class="gm-opt ms-flagbtn' + (m.flagMode ? ' on' : '') + '" onclick="mineFlagMode()">🚩 Flag</button><button class="sk-newbtn" onclick="startMine()">↻ New</button><button class="sk-newbtn" onclick="_mineMenu()">Menu</button></div><div class="ms-board" style="grid-template-columns:repeat(' + m.N + ',1fr)">' + cells + '</div><div class="gm-msg">' + msg + '</div>';
+}
+function _mineMenu() { _mine = null; _funActive = null; _gameFullscreen('mineArea', false); var a = document.getElementById('mineArea'); if (a) a.innerHTML = _mineIntroHtml(); }
+
+/* ── Tic-Tac-Toe (vs unbeatable AI) ── */
+var _ttt = null; var TTT_WINS_KEY = profilePrefix + 'mft_ttt_wins';
+function _tttWins() { try { return parseInt(localStorage.getItem(TTT_WINS_KEY), 10) || 0; } catch (e) { return 0; } }
+var TTT_MAX = 5;
+function _tttP(lv) { return [0, 0.4, 0.65, 0.85, 1][Math.min(TTT_MAX, Math.max(1, lv)) - 1]; }
+function _tttIntroHtml() { var w = _tttWins(), lv = gameSelLevel('ttt', TTT_MAX); return '<div class="gm-intro"><div class="gm-intro-ico">⭕</div><div class="gm-intro-title">Tic-Tac-Toe</div><div class="gm-intro-desc">You are ✕. Don\'t lose to clear the level — the computer gets smarter each level. On Level ' + TTT_MAX + ' it plays perfectly, so a draw is a win!</div>' + _lvlPickerHtml('ttt', TTT_MAX) + (w ? '<div class="gm-best">🏆 Wins ' + w + '</div>' : '') + '<button class="gm-play" onclick="startTTT()">▶  Play</button></div>'; }
+function startTTT() { var lv = gameSelLevel('ttt', TTT_MAX); try { gsFlag('pttt'); } catch (e) {} _ttt = { b: ['', '', '', '', '', '', '', '', ''], over: false, winLine: null, level: lv, p: _tttP(lv), banner: '' }; _funActive = 'ttt'; renderTTT(); _gameFullscreen('tttArea', true); }
+function _tttRandMove(b) { var f = []; for (var i = 0; i < 9; i++) if (!b[i]) f.push(i); return f.length ? f[Math.floor(Math.random() * f.length)] : null; }
+function _tttWinLine(b) { var L = [[0, 1, 2], [3, 4, 5], [6, 7, 8], [0, 3, 6], [1, 4, 7], [2, 5, 8], [0, 4, 8], [2, 4, 6]]; for (var i = 0; i < L.length; i++) { var l = L[i]; if (b[l[0]] && b[l[0]] === b[l[1]] && b[l[1]] === b[l[2]]) return l; } return null; }
+function _tttFull(b) { for (var i = 0; i < 9; i++) if (!b[i]) return false; return true; }
+function _tttMinimax(b, player) { var wl = _tttWinLine(b); if (wl) return { score: b[wl[0]] === 'O' ? 10 : -10 }; if (_tttFull(b)) return { score: 0 }; var best = null; for (var i = 0; i < 9; i++) { if (b[i]) continue; b[i] = player; var sc = _tttMinimax(b, player === 'O' ? 'X' : 'O').score; b[i] = ''; if (player === 'O') { if (best === null || sc > best.score) best = { score: sc, move: i }; } else { if (best === null || sc < best.score) best = { score: sc, move: i }; } } return best; }
+function tttTap(i) {
+  var t = _ttt; if (!t || t.over || t.b[i]) return; t.b[i] = 'X';
+  if (_tttEnd()) { renderTTT(); return; }
+  var mv;
+  if (Math.random() < t.p) { var m = _tttMinimax(t.b.slice(), 'O'); mv = m && m.move != null ? m.move : _tttRandMove(t.b); }
+  else mv = _tttRandMove(t.b);
+  if (mv != null) t.b[mv] = 'O';
+  _tttEnd(); renderTTT();
+}
+function _tttEnd() {
+  var t = _ttt; var wl = _tttWinLine(t.b);
+  if (wl) {
+    t.over = true; t.winLine = wl;
+    if (t.b[wl[0]] === 'X') { try { localStorage.setItem(TTT_WINS_KEY, String(_tttWins() + 1)); } catch (e) {} t.banner = _lvlWinBanner('ttt', TTT_MAX, t.level, 'startTTT', '_tttMenu'); }
+    else t.banner = _lvlFailBanner('🤖 Computer wins — try again!', 'startTTT', '_tttMenu');
+    return true;
+  }
+  if (_tttFull(t.b)) { t.over = true; t.banner = _lvlWinBanner('ttt', TTT_MAX, t.level, 'startTTT', '_tttMenu') + '<div class="gm-subnote">🤝 A draw counts as a pass!</div>'; return true; }
+  return false;
+}
+function renderTTT() {
+  var a = document.getElementById('tttArea'); if (!a) return; var t = _ttt, cells = '';
+  for (var i = 0; i < 9; i++) { var v = t.b[i], cls = 'tt-cell' + (v === 'X' ? ' x' : v === 'O' ? ' o' : '') + (t.winLine && t.winLine.indexOf(i) >= 0 ? ' win' : ''); cells += '<div class="' + cls + '" onclick="tttTap(' + i + ')">' + (v === 'X' ? '✕' : v === 'O' ? '◯' : '') + '</div>'; }
+  var msg = t.over ? (t.banner || '') : '';
+  a.innerHTML = '<div class="gm-hud"><div class="gm-stat"><small>Level</small><b>' + t.level + '</b></div><div class="gm-stat"><small>You</small><b>✕</b></div><div class="gm-stat"><small>CPU</small><b>◯</b></div><button class="sk-newbtn" onclick="startTTT()">↻ New</button><button class="sk-newbtn" onclick="_tttMenu()">Menu</button></div><div class="tt-board">' + cells + '</div><div class="gm-msg">' + msg + '</div>';
+}
+function _tttMenu() { _ttt = null; _funActive = null; _gameFullscreen('tttArea', false); var a = document.getElementById('tttArea'); if (a) a.innerHTML = _tttIntroHtml(); }
+
+/* ── Connect-4 (vs AI) ── */
+var _c4 = null;
+var C4_MAX = 6;
+var C4_DEPTHS = [0, 2, 3, 4, 5, 6];
+function _c4IntroHtml() { var lv = gameSelLevel('connect4', C4_MAX); return '<div class="gm-intro"><div class="gm-intro-ico">🔴</div><div class="gm-intro-title">Connect 4</div><div class="gm-intro-desc">Drop discs and line up four in a row. <b>Beat the computer</b> to advance — it thinks deeper each level.</div>' + _lvlPickerHtml('connect4', C4_MAX) + '<button class="gm-play" onclick="startC4()">▶  Play</button></div>'; }
+function startC4() { var lv = gameSelLevel('connect4', C4_MAX); try { gsFlag('pc4'); } catch (e) {} _c4 = { b: [], over: false, win: null, level: lv, depth: C4_DEPTHS[lv - 1], banner: '' }; for (var r = 0; r < 6; r++) { _c4.b[r] = []; for (var c = 0; c < 7; c++) _c4.b[r][c] = ''; } _funActive = 'c4'; renderC4(); _gameFullscreen('c4Area', true); }
+function _c4Drop(board, col, who) { for (var r = 5; r >= 0; r--) if (!board[r][col]) { board[r][col] = who; return r; } return -1; }
+function _c4Win(board, who) {
+  for (var r = 0; r < 6; r++) for (var c = 0; c < 7; c++) { if (board[r][c] !== who) continue;
+    if (c + 3 < 7 && board[r][c + 1] === who && board[r][c + 2] === who && board[r][c + 3] === who) return [[r, c], [r, c + 1], [r, c + 2], [r, c + 3]];
+    if (r + 3 < 6 && board[r + 1][c] === who && board[r + 2][c] === who && board[r + 3][c] === who) return [[r, c], [r + 1, c], [r + 2, c], [r + 3, c]];
+    if (r + 3 < 6 && c + 3 < 7 && board[r + 1][c + 1] === who && board[r + 2][c + 2] === who && board[r + 3][c + 3] === who) return [[r, c], [r + 1, c + 1], [r + 2, c + 2], [r + 3, c + 3]];
+    if (r + 3 < 6 && c - 3 >= 0 && board[r + 1][c - 1] === who && board[r + 2][c - 2] === who && board[r + 3][c - 3] === who) return [[r, c], [r + 1, c - 1], [r + 2, c - 2], [r + 3, c - 3]]; }
+  return null;
+}
+function _c4Full(b) { for (var c = 0; c < 7; c++) if (!b[0][c]) return false; return true; }
+function _c4AI(b) {
+  function valid() { var a = []; for (var c = 0; c < 7; c++) if (!b[0][c]) a.push(c); return a; }
+  var cols = valid();
+  for (var i = 0; i < cols.length; i++) { var t = b.map(function (r) { return r.slice(); }); _c4Drop(t, cols[i], 'y'); if (_c4Win(t, 'y')) return cols[i]; }
+  for (var i = 0; i < cols.length; i++) { var t = b.map(function (r) { return r.slice(); }); _c4Drop(t, cols[i], 'r'); if (_c4Win(t, 'r')) return cols[i]; }
+  var order = [3, 2, 4, 1, 5, 0, 6]; for (var i = 0; i < order.length; i++) if (cols.indexOf(order[i]) >= 0) return order[i]; return cols[0];
+}
+// Alpha-beta minimax for the higher levels ('y' = AI = maximizing).
+function _c4ValidCols(b) { var a = []; for (var c = 0; c < 7; c++) if (!b[0][c]) a.push(c); return a; }
+function _c4Eval(b) {
+  var score = 0;
+  for (var r = 0; r < 6; r++) if (b[r][3] === 'y') score += 6; else if (b[r][3] === 'r') score -= 6;
+  function win(cells) {
+    var me = 0, op = 0, em = 0;
+    for (var k = 0; k < 4; k++) { var v = cells[k]; if (v === 'y') me++; else if (v === 'r') op++; else em++; }
+    if (me && op) return 0;
+    if (me === 3 && em === 1) return 50; if (me === 2 && em === 2) return 8;
+    if (op === 3 && em === 1) return -60; if (op === 2 && em === 2) return -8;
+    return 0;
+  }
+  for (var r2 = 0; r2 < 6; r2++) for (var c = 0; c < 7; c++) {
+    if (c + 3 < 7) score += win([b[r2][c], b[r2][c + 1], b[r2][c + 2], b[r2][c + 3]]);
+    if (r2 + 3 < 6) score += win([b[r2][c], b[r2 + 1][c], b[r2 + 2][c], b[r2 + 3][c]]);
+    if (r2 + 3 < 6 && c + 3 < 7) score += win([b[r2][c], b[r2 + 1][c + 1], b[r2 + 2][c + 2], b[r2 + 3][c + 3]]);
+    if (r2 + 3 < 6 && c - 3 >= 0) score += win([b[r2][c], b[r2 + 1][c - 1], b[r2 + 2][c - 2], b[r2 + 3][c - 3]]);
+  }
+  return score;
+}
+function _c4Minimax(b, depth, alpha, beta, maxing) {
+  if (_c4Win(b, 'y')) return { score: 100000 + depth };
+  if (_c4Win(b, 'r')) return { score: -100000 - depth };
+  var cols = _c4ValidCols(b);
+  if (depth === 0 || !cols.length) return { score: _c4Eval(b) };
+  var order = [3, 2, 4, 1, 5, 0, 6].filter(function (c) { return cols.indexOf(c) >= 0; });
+  var bestCol = order[0];
+  if (maxing) {
+    var best = -Infinity;
+    for (var i = 0; i < order.length; i++) { var c = order[i], nb = b.map(function (row) { return row.slice(); }); _c4Drop(nb, c, 'y'); var sc = _c4Minimax(nb, depth - 1, alpha, beta, false).score; if (sc > best) { best = sc; bestCol = c; } if (best > alpha) alpha = best; if (alpha >= beta) break; }
+    return { score: best, col: bestCol };
+  }
+  var worst = Infinity;
+  for (var j = 0; j < order.length; j++) { var c2 = order[j], nb2 = b.map(function (row) { return row.slice(); }); _c4Drop(nb2, c2, 'r'); var sc2 = _c4Minimax(nb2, depth - 1, alpha, beta, true).score; if (sc2 < worst) { worst = sc2; bestCol = c2; } if (worst < beta) beta = worst; if (alpha >= beta) break; }
+  return { score: worst, col: bestCol };
+}
+function _c4Think(b, depth) { var r = _c4Minimax(b, depth, -Infinity, Infinity, true); return r.col != null ? r.col : _c4ValidCols(b)[0]; }
+function c4Tap(col) {
+  var g = _c4; if (!g || g.over || g.b[0][col]) return;
+  _c4Drop(g.b, col, 'r'); var w = _c4Win(g.b, 'r'); if (w) { g.over = true; g.win = w; g.banner = _lvlWinBanner('connect4', C4_MAX, g.level, 'startC4', '_c4Menu'); renderC4(); return; } if (_c4Full(g.b)) { g.over = true; g.banner = _lvlFailBanner('🤝 Draw — you need to win!', 'startC4', '_c4Menu'); renderC4(); return; }
+  var mv = g.depth ? _c4Think(g.b, g.depth) : _c4AI(g.b); _c4Drop(g.b, mv, 'y'); var w2 = _c4Win(g.b, 'y'); if (w2) { g.over = true; g.win = w2; g.banner = _lvlFailBanner('🤖 Computer wins — try again!', 'startC4', '_c4Menu'); } else if (_c4Full(g.b)) { g.over = true; g.banner = _lvlFailBanner('🤝 Draw — you need to win!', 'startC4', '_c4Menu'); } renderC4();
+}
+function renderC4() {
+  var a = document.getElementById('c4Area'); if (!a) return; var g = _c4, cells = '';
+  for (var r = 0; r < 6; r++) for (var c = 0; c < 7; c++) { var v = g.b[r][c]; cells += '<div class="c4-cell' + (v === 'r' ? ' r' : v === 'y' ? ' y' : '') + '" onclick="c4Tap(' + c + ')"></div>'; }
+  var msg = g.over ? (g.banner || '') : '';
+  a.innerHTML = '<div class="gm-hud"><div class="gm-stat"><small>Level</small><b>' + g.level + '</b></div><div class="gm-stat"><small>You</small><b>🔴</b></div><div class="gm-stat"><small>CPU</small><b>🟡</b></div><button class="sk-newbtn" onclick="startC4()">↻ New</button><button class="sk-newbtn" onclick="_c4Menu()">Menu</button></div><div class="c4-board">' + cells + '</div><div class="gm-msg">' + msg + '</div>';
+}
+function _c4Menu() { _c4 = null; _funActive = null; _gameFullscreen('c4Area', false); var a = document.getElementById('c4Area'); if (a) a.innerHTML = _c4IntroHtml(); }
+
+/* ── Whack-a-mole ── */
+var _wam = null; var WAM_BEST_KEY = profilePrefix + 'mft_wam_best';
+function _wamBest() { try { return parseInt(localStorage.getItem(WAM_BEST_KEY), 10) || 0; } catch (e) { return 0; } }
+var WAM_MAX = 12;
+function _wamCfg(lv) { lv = Math.min(WAM_MAX, Math.max(1, lv)); return { target: 8 + lv * 2, spawn: Math.max(300, 760 - lv * 40), up: Math.max(380, 820 - lv * 40) }; }
+function _wamIntroHtml() { var b = _wamBest(), lv = gameSelLevel('whack', WAM_MAX), cf = _wamCfg(lv); return '<div class="gm-intro"><div class="gm-intro-ico">🔨</div><div class="gm-intro-title">Whack-a-Mole</div><div class="gm-intro-desc">Bonk <b>' + cf.target + ' moles</b> in 30 seconds to clear the level. They pop faster the higher you go!</div>' + _lvlPickerHtml('whack', WAM_MAX) + (b ? '<div class="gm-best">🏆 Best ' + b + '</div>' : '') + '<button class="gm-play" onclick="startWhack()">▶  Play</button></div>'; }
+function startWhack() {
+  var lv = gameSelLevel('whack', WAM_MAX), cf = _wamCfg(lv); try { gsFlag('pwam'); } catch (e) {}
+  _wam = { score: 0, time: 30, holes: 9, up: {}, best: _wamBest(), timer: null, spawn: null, level: lv, target: cf.target, uptime: cf.up }; _funActive = 'wam'; renderWhack(); _gameFullscreen('wamArea', true);
+  _wam.timer = setInterval(function () { if (!_wam) return; _wam.time--; var el = document.getElementById('wamTime'); if (el) el.textContent = _wam.time; if (_wam.time <= 0) _wamEnd(); }, 1000);
+  _wam.spawn = setInterval(_wamPop, cf.spawn);
+}
+function _wamPop() { var w = _wam; if (!w) return; var i = Math.floor(Math.random() * w.holes); if (w.up[i]) return; w.up[i] = true; var el = document.getElementById('wm' + i); if (el) el.classList.add('up'); setTimeout(function () { if (w && w.up[i]) { w.up[i] = false; var e2 = document.getElementById('wm' + i); if (e2) e2.classList.remove('up'); } }, w.uptime); }
+function wamHit(i) { var w = _wam; if (!w || w.time <= 0 || !w.up[i]) return; w.up[i] = false; w.score++; var el = document.getElementById('wm' + i); if (el) { el.classList.remove('up'); el.classList.add('bonk'); setTimeout(function () { if (el) el.classList.remove('bonk'); }, 150); } var s = document.getElementById('wamScore'); if (s) s.textContent = w.score; if (w.score >= w.target) _wamWin(); }
+function renderWhack() {
+  var a = document.getElementById('wamArea'); if (!a) return; var w = _wam, holes = '';
+  for (var i = 0; i < w.holes; i++) holes += '<div class="wm-hole" id="wm' + i + '" onclick="wamHit(' + i + ')"><div class="wm-mole">🐹</div></div>';
+  a.innerHTML = '<div class="gm-hud"><div class="gm-stat"><small>Lv ' + w.level + ' · Goal</small><b>' + w.target + '</b></div><div class="gm-stat"><small>Score</small><b id="wamScore">' + w.score + '</b></div><div class="gm-stat"><small>Time</small><b id="wamTime">' + w.time + '</b></div><button class="sk-newbtn" onclick="_wamMenu()">Menu</button></div><div class="wm-grid">' + holes + '</div><div class="gm-msg" id="wamMsg"></div>';
+}
+function _wamWin() { var w = _wam; if (!w) return; clearInterval(w.timer); clearInterval(w.spawn); w.time = 0; if (w.score > w.best) { try { localStorage.setItem(WAM_BEST_KEY, String(w.score)); } catch (e) {} } var m = document.getElementById('wamMsg'); if (m) m.innerHTML = _lvlWinBanner('whack', WAM_MAX, w.level, 'startWhack', '_wamMenu'); }
+function _wamEnd() { var w = _wam; if (!w) return; clearInterval(w.timer); clearInterval(w.spawn); var beat = w.score > w.best; if (beat) { try { localStorage.setItem(WAM_BEST_KEY, String(w.score)); } catch (e) {} } var m = document.getElementById('wamMsg'); if (m) m.innerHTML = _lvlFailBanner('⏰ Time! Scored ' + w.score + ' / ' + w.target + (beat ? ' · 🏆 New best!' : ''), 'startWhack', '_wamMenu'); }
+function _wamMenu() { if (_wam) { clearInterval(_wam.timer); clearInterval(_wam.spawn); } _wam = null; _funActive = null; _gameFullscreen('wamArea', false); var a = document.getElementById('wamArea'); if (a) a.innerHTML = _wamIntroHtml(); }
+
+/* ── Word Search ── */
+var _ws = null; var WS_WORDS = ['MONEY', 'SAVE', 'BUDGET', 'GOAL', 'INCOME', 'SPEND', 'BANK', 'CASH', 'WEALTH', 'INVEST', 'DEBT', 'PROFIT', 'SALARY', 'LOAN', 'BONUS', 'FUND'];
+var WS_MAX = 10;
+function _wsCfg(lv) { lv = Math.min(WS_MAX, Math.max(1, lv)); return { words: 4 + lv, N: Math.min(14, 9 + Math.floor(lv / 2)) }; }
+function _wsIntroHtml() { var lv = gameSelLevel('ws', WS_MAX), cf = _wsCfg(lv); return '<div class="gm-intro"><div class="gm-intro-ico">🔤</div><div class="gm-intro-title">Word Search</div><div class="gm-intro-desc">Find all <b>' + cf.words + ' words</b> in a ' + cf.N + '×' + cf.N + ' grid. Tap the first letter, then the last letter of a word.</div>' + _lvlPickerHtml('ws', WS_MAX) + '<button class="gm-play" onclick="startWordSearch()">▶  Play</button></div>'; }
+function startWordSearch() { var lv = gameSelLevel('ws', WS_MAX), cf = _wsCfg(lv); try { gsFlag('pws'); } catch (e) {} var words = WS_WORDS.slice(); for (var i = words.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)); var t = words[i]; words[i] = words[j]; words[j] = t; } words = words.slice(0, cf.words); _ws = _wsGenerate(cf.N, words); _ws.sel = null; _ws.level = lv; _funActive = 'ws'; renderWordSearch(); _gameFullscreen('wsArea', true); }
+function _wsGenerate(N, words) {
+  var grid = []; for (var r = 0; r < N; r++) { grid[r] = []; for (var c = 0; c < N; c++) grid[r][c] = ''; }
+  var dirs = [[0, 1], [1, 0], [1, 1], [-1, 1], [0, -1], [-1, 0], [-1, -1], [1, -1]], placed = [];
+  words.forEach(function (w) {
+    for (var tries = 0; tries < 250; tries++) { var d = dirs[Math.floor(Math.random() * dirs.length)], r = Math.floor(Math.random() * N), c = Math.floor(Math.random() * N), er = r + d[0] * (w.length - 1), ec = c + d[1] * (w.length - 1); if (er < 0 || ec < 0 || er >= N || ec >= N) continue; var fit = true; for (var k = 0; k < w.length; k++) { var rr = r + d[0] * k, cc = c + d[1] * k; if (grid[rr][cc] && grid[rr][cc] !== w[k]) { fit = false; break; } } if (!fit) continue; for (var k = 0; k < w.length; k++) grid[r + d[0] * k][c + d[1] * k] = w[k]; placed.push({ w: w, found: false }); break; }
+  });
+  var A = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'; for (var r = 0; r < N; r++) for (var c = 0; c < N; c++) if (!grid[r][c]) grid[r][c] = A[Math.floor(Math.random() * 26)];
+  return { N: N, grid: grid, words: placed, found: {} };
+}
+function _wsLine(r1, c1, r2, c2) { var dr = r2 - r1, dc = c2 - c1, adr = Math.abs(dr), adc = Math.abs(dc); if (!(dr === 0 || dc === 0 || adr === adc)) return null; var len = Math.max(adr, adc) + 1, sr = dr === 0 ? 0 : dr / adr, sc = dc === 0 ? 0 : dc / adc, line = []; for (var k = 0; k < len; k++) line.push([r1 + sr * k, c1 + sc * k]); return line; }
+function wsTap(r, c) {
+  var w = _ws; if (!w || w.done) return;
+  if (!w.sel) { w.sel = { r: r, c: c }; renderWordSearch(); return; }
+  var s = w.sel; w.sel = null; var line = _wsLine(s.r, s.c, r, c);
+  if (line) { var str = line.map(function (p) { return w.grid[p[0]][p[1]]; }).join(''), rev = str.split('').reverse().join(''); w.words.forEach(function (wd) { if (!wd.found && (wd.w === str || wd.w === rev)) { wd.found = true; line.forEach(function (p) { w.found[p[0] + '_' + p[1]] = 1; }); } }); }
+  renderWordSearch();
+  if (w.words.every(function (wd) { return wd.found; })) { w.done = true; var m = document.getElementById('wsMsg'); if (m) m.innerHTML = _lvlWinBanner('ws', WS_MAX, w.level, 'startWordSearch', '_wsMenu'); }
+}
+function renderWordSearch() {
+  var a = document.getElementById('wsArea'); if (!a) return; var w = _ws, cells = '';
+  for (var r = 0; r < w.N; r++) for (var c = 0; c < w.N; c++) { var cls = 'ws-cell'; if (w.found[r + '_' + c]) cls += ' found'; if (w.sel && w.sel.r === r && w.sel.c === c) cls += ' sel'; cells += '<div class="' + cls + '" onclick="wsTap(' + r + ',' + c + ')">' + w.grid[r][c] + '</div>'; }
+  var wl = w.words.map(function (wd) { return '<span class="ws-word' + (wd.found ? ' done' : '') + '">' + wd.w + '</span>'; }).join('');
+  var nf = w.words.filter(function (wd) { return wd.found; }).length;
+  a.innerHTML = '<div class="gm-hud"><div class="gm-stat"><small>Level</small><b>' + (w.level || 1) + '</b></div><div class="gm-stat"><small>Found</small><b>' + nf + '/' + w.words.length + '</b></div><button class="sk-newbtn" onclick="startWordSearch()">↻ New</button><button class="sk-newbtn" onclick="_wsMenu()">Menu</button></div><div class="ws-grid" style="grid-template-columns:repeat(' + w.N + ',1fr)">' + cells + '</div><div class="ws-words">' + wl + '</div><div class="gm-msg" id="wsMsg"></div>';
+}
+function _wsMenu() { _ws = null; _funActive = null; _gameFullscreen('wsArea', false); var a = document.getElementById('wsArea'); if (a) a.innerHTML = _wsIntroHtml(); }
+
+/* ── Solitaire (Klondike, tap to move) ── */
+var _sol = null;
+var SOL_MAX = 5;
+function _solCfg(lv) { lv = Math.min(SOL_MAX, Math.max(1, lv)); return [{ draw: 1, passes: Infinity }, { draw: 1, passes: 3 }, { draw: 3, passes: Infinity }, { draw: 3, passes: 2 }, { draw: 3, passes: 1 }][lv - 1]; }
+function _solPassTxt(p) { return p === Infinity ? '∞' : String(p); }
+function _solIntroHtml() { var lv = gameSelLevel('sol', SOL_MAX), cf = _solCfg(lv); return '<div class="gm-intro"><div class="gm-intro-ico">🃏</div><div class="gm-intro-title">Solitaire</div><div class="gm-intro-desc">Classic Klondike — build the 4 foundations Ace→King. This level: <b>draw ' + cf.draw + '</b>, <b>' + _solPassTxt(cf.passes) + ' redeals</b>. Harder each level!</div>' + _lvlPickerHtml('sol', SOL_MAX) + '<button class="gm-play" onclick="startSolitaire()">▶  Play</button></div>'; }
+function _solRed(s) { return s === 1 || s === 2; }
+function _solSym(c) { var R = { 1: 'A', 11: 'J', 12: 'Q', 13: 'K' }, SU = ['♠', '♥', '♦', '♣']; return (R[c.r] || c.r) + SU[c.s]; }
+function startSolitaire() {
+  var d = []; for (var s = 0; s < 4; s++) for (var r = 1; r <= 13; r++) d.push({ r: r, s: s, up: false }); for (var i = d.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)); var t = d[i]; d[i] = d[j]; d[j] = t; }
+  var tab = [[], [], [], [], [], [], []], idx = 0; for (var i = 0; i < 7; i++) for (var k = 0; k <= i; k++) { var card = d[idx++]; card.up = (k === i); tab[i].push(card); }
+  var stock = d.slice(idx); stock.forEach(function (c) { c.up = false; });
+  var lv = gameSelLevel('sol', SOL_MAX), cf = _solCfg(lv); try { gsFlag('psol'); } catch (e) {}
+  _sol = { stock: stock, waste: [], found: [[], [], [], []], tab: tab, sel: null, moves: 0, level: lv, drawN: cf.draw, passesLeft: cf.passes }; _funActive = 'sol'; renderSolitaire(); _gameFullscreen('solArea', true);
+}
+function solStock() {
+  var s = _sol; if (!s) return;
+  if (s.stock.length) { for (var k = 0; k < s.drawN && s.stock.length; k++) { var c = s.stock.pop(); c.up = true; s.waste.push(c); } }
+  else { if (s.passesLeft <= 0) { s.sel = null; renderSolitaire(); return; } if (s.passesLeft !== Infinity) s.passesLeft--; while (s.waste.length) { var c2 = s.waste.pop(); c2.up = false; s.stock.push(c2); } }
+  s.sel = null; renderSolitaire();
+}
+function _solCanTab(card, destTop) { if (!destTop) return card.r === 13; return _solRed(card.s) !== _solRed(destTop.s) && card.r === destTop.r - 1; }
+function _solCanFound(card, f) { if (!f.length) return card.r === 1; var top = f[f.length - 1]; return top.s === card.s && card.r === top.r + 1; }
+function _solSelCards(sel) { var s = _sol; if (sel.type === 'waste') return [s.waste[s.waste.length - 1]]; if (sel.type === 'tab') return s.tab[sel.col].slice(sel.idx); return []; }
+function _solRemoveSel(sel) { var s = _sol; if (sel.type === 'waste') s.waste.pop(); else if (sel.type === 'tab') s.tab[sel.col].splice(sel.idx); }
+function _solFlip() { var s = _sol; for (var i = 0; i < 7; i++) { var p = s.tab[i]; if (p.length && !p[p.length - 1].up) p[p.length - 1].up = true; } }
+function _solWin() { return _sol.found.every(function (f) { return f.length === 13; }); }
+function solPick(type, a, b) {
+  var s = _sol; if (!s || s.won) return;
+  if (!s.sel) {
+    if (type === 'waste') { if (s.waste.length) s.sel = { type: 'waste' }; }
+    else if (type === 'tab') { var pile = s.tab[a]; if (b < pile.length && pile[b].up) { var ok = true; for (var k = b; k < pile.length - 1; k++) if (!(_solRed(pile[k].s) !== _solRed(pile[k + 1].s) && pile[k].r === pile[k + 1].r + 1)) { ok = false; break; } if (ok) s.sel = { type: 'tab', col: a, idx: b }; } }
+    renderSolitaire(); return;
+  }
+  var sel = s.sel, cards = _solSelCards(sel), moved = false;
+  if (type === 'found') { if (cards.length === 1 && _solCanFound(cards[0], s.found[a])) { _solRemoveSel(sel); s.found[a].push(cards[0]); moved = true; } }
+  else if (type === 'tab') { var destTop = s.tab[a].length ? s.tab[a][s.tab[a].length - 1] : null; if (_solCanTab(cards[0], destTop)) { _solRemoveSel(sel); for (var i = 0; i < cards.length; i++) s.tab[a].push(cards[i]); moved = true; } }
+  if (moved) { s.moves++; _solFlip(); s.sel = null; renderSolitaire(); if (_solWin()) { s.won = true; var m = document.getElementById('solMsg'); if (m) m.innerHTML = _lvlWinBanner('sol', SOL_MAX, s.level, 'startSolitaire', '_solMenu') + '<div class="gm-subnote">Won in ' + s.moves + ' moves!</div>'; } }
+  else { s.sel = null; if (type === 'tab') solPick('tab', a, b); else if (type === 'waste') solPick('waste'); else renderSolitaire(); }
+}
+function renderSolitaire() {
+  var a = document.getElementById('solArea'); if (!a) return; var s = _sol;
+  function card(c, oc, extra) { if (!c) return ''; return '<div class="so-card' + (_solRed(c.s) ? ' red' : '') + (c.up ? '' : ' down') + (extra || '') + '"' + (oc ? ' onclick="' + oc + '"' : '') + '>' + (c.up ? _solSym(c) : '') + '</div>'; }
+  var stock = s.stock.length ? '<div class="so-card down" onclick="solStock()"></div>' : '<div class="so-slot" onclick="solStock()"></div>';
+  var waste = s.waste.length ? card(s.waste[s.waste.length - 1], 'solPick(\'waste\')', s.sel && s.sel.type === 'waste' ? ' sel' : '') : '<div class="so-slot"></div>';
+  var founds = ''; for (var f = 0; f < 4; f++) { var fp = s.found[f]; founds += '<div class="so-pile">' + (fp.length ? card(fp[fp.length - 1], 'solPick(\'found\',' + f + ')') : '<div class="so-slot" onclick="solPick(\'found\',' + f + ')"></div>') + '</div>'; }
+  var cols = ''; for (var i = 0; i < 7; i++) { var pile = s.tab[i], inner = ''; if (!pile.length) inner = '<div class="so-slot" onclick="solPick(\'tab\',' + i + ',0)"></div>'; else for (var j = 0; j < pile.length; j++) { var selc = (s.sel && s.sel.type === 'tab' && s.sel.col === i && j >= s.sel.idx) ? ' sel' : ''; inner += card(pile[j], 'solPick(\'tab\',' + i + ',' + j + ')', selc); } cols += '<div class="so-col">' + inner + '</div>'; }
+  a.innerHTML = '<div class="gm-hud"><div class="gm-stat"><small>Lv ' + s.level + ' · Draw</small><b>' + s.drawN + '</b></div><div class="gm-stat"><small>Redeals</small><b>' + _solPassTxt(s.passesLeft) + '</b></div><div class="gm-stat"><small>Moves</small><b>' + s.moves + '</b></div><button class="sk-newbtn" onclick="startSolitaire()">↻ New</button><button class="sk-newbtn" onclick="_solMenu()">Menu</button></div>'
+    + '<div class="so-top"><div class="so-pile">' + stock + '</div><div class="so-pile">' + waste + '</div><div style="flex:1"></div>' + founds + '</div>'
+    + '<div class="so-tabs">' + cols + '</div><div class="gm-msg" id="solMsg"></div>';
+}
+function _solMenu() { _sol = null; _funActive = null; _gameFullscreen('solArea', false); var a = document.getElementById('solArea'); if (a) a.innerHTML = _solIntroHtml(); }
+
+// Wire each game's level-picker (◀/▶) to re-render its own intro screen.
+_lvlIntroFns = { '2048': _2048IntroHtml, snake: _snakeIntroHtml, memory: _memIntroHtml, mine: _mineIntroHtml, ws: _wsIntroHtml, whack: _wamIntroHtml, ttt: _tttIntroHtml, connect4: _c4IntroHtml, sol: _solIntroHtml, match: _m3IntroHtml };
+_lvlAreaIds  = { '2048': 'g2048Area', snake: 'snakeArea', memory: 'memArea', mine: 'mineArea', ws: 'wsArea', whack: 'wamArea', ttt: 'tttArea', connect4: 'c4Area', sol: 'solArea', match: 'm3Area' };
 
 function _ovPaydayHtml() {
   try {
@@ -10457,7 +11058,7 @@ function _updateSalaryBreakdown(gross) {
     html += '<div style="display:flex;justify-content:space-between;font-size:0.75rem;"><span style="color:#64748b;">' + escHtml(label) + '</span><span style="color:#f87171;">− ' + fmt(amt) + '</span></div>';
   });
   var nett = Math.max(0, gross + totalAlw - totalDed);
-  html += '<div style="border-top:1px solid rgba(255,255,255,0.08);margin-top:0.4rem;padding-top:0.4rem;display:flex;justify-content:space-between;"><span style="font-weight:700;color:#f1f5f9;">Monthly Nett Income</span><span style="font-weight:800;color:#ef4444;font-size:1rem;">' + fmt(nett) + '</span></div>';
+  html += '<div style="border-top:1px solid rgba(255,255,255,0.08);margin-top:0.4rem;padding-top:0.4rem;display:flex;justify-content:space-between;"><span style="font-weight:700;color:#f1f5f9;">Monthly Nett Income</span><span style="font-weight:800;color:var(--th-accent);font-size:1rem;">' + fmt(nett) + '</span></div>';
   el.innerHTML = html;
 }
 
@@ -11959,6 +12560,7 @@ function checkLayoutPicker() {
   if (!activeProfileId) return;
   if (localStorage.getItem(LAYOUT_MODE_KEY) !== null) return;       // already chosen
   if (!localStorage.getItem(ONBOARDED_KEY)) return;                 // finish onboarding first
+  if (_onbRefreshPending() && !_onbClosing) return;                 // let the setup wizard finish first
   setTimeout(function() {
     var m = document.getElementById('layoutPickerModal');
     if (m) m.classList.add('open');
@@ -16875,6 +17477,7 @@ function _renderWnRelease(r) {
 function checkWhatsNew() {
   if (!activeProfileId) return;
   if (!localStorage.getItem(ONBOARDED_KEY)) return; // brand-new users get onboarding, not this
+  if (_onbRefreshPending() && !_onbClosing) return; // let the setup wizard finish first
   if (localStorage.getItem(LAYOUT_MODE_KEY) === null) return; // let the layout picker go first
   if (!CHANGELOG.length) return;
   if (localStorage.getItem(SEEN_CHANGELOG_KEY) === _latestChangelogId()) return;
@@ -16900,53 +17503,192 @@ function closeWhatsNew() {
   if (m) m.classList.remove("open");
 }
 
-// ── First-login Onboarding ───────────────────────────────
+// ── First-login setup wizard (income · payday · banks) ──────
+// New user  → all questions. Existing user → only what they haven't answered.
+// Skip a question = ask again next login. Answer all = never asked again.
+var ONB_FIELDS = ['income', 'payday', 'banks'];
+var _onb = null;         // wizard runtime state
+var _onbClosing = false; // lets what's-new / layout picker run right after the wizard
+
+function _onbLoad() { try { return JSON.parse(localStorage.getItem(ONB_KEY)) || {}; } catch (e) { return {}; } }
+function _onbSave(o) { try { localStorage.setItem(ONB_KEY, JSON.stringify(o)); } catch (e) {} }
+function _onbAnswered(f) { var o = _onbLoad(); return !!(o.answered && o.answered[f]); }
+function _onbMark(f) { var o = _onbLoad(); if (!o.answered) o.answered = {}; o.answered[f] = 1; _onbSave(o); }
+function _onbAllDone() { return ONB_FIELDS.every(_onbAnswered); }
+// Existing user (past the first onboarding) who still has essentials unanswered?
+function _onbRefreshPending() {
+  if (!activeProfileId) return false;
+  if (!localStorage.getItem(ONBOARDED_KEY)) return false; // brand-new users use full onboarding
+  var o = _onbLoad(); if (o.done) return false;
+  return ONB_FIELDS.some(function (f) { return !_onbAnswered(f); });
+}
+
 function checkFirstTimeSetup() {
   if (!activeProfileId) return;
-  if (!localStorage.getItem(ONBOARDED_KEY)) {
-    setTimeout(showOnboarding, 350);
-  } else if (!localStorage.getItem(APPS_HINT_KEY)) {
-    setTimeout(showAppsHint, 600);
-  }
+  if (!localStorage.getItem(ONBOARDED_KEY)) { setTimeout(function () { startOnbWizard(true); }, 350); return; }
+  if (_onbRefreshPending()) { setTimeout(function () { startOnbWizard(false); }, 400); return; }
+  var o = _onbLoad(); if (!o.done && _onbAllDone()) { o.done = 1; _onbSave(o); }
+  if (!localStorage.getItem(APPS_HINT_KEY)) setTimeout(showAppsHint, 600);
 }
 
-function showOnboarding() {
+// Prefill from whatever the profile already has (so existing users just confirm).
+function _onbCurIncome()  { var v = parseFloat(localStorage.getItem(salaryKey)); return v > 0 ? v : ''; }
+function _onbCurPayday()  { try { var c = JSON.parse(localStorage.getItem(SALARY_CFG_KEY)); return (c && c.day) ? c.day : ''; } catch (e) { return ''; } }
+function _onbCurWeekend() { try { var c = JSON.parse(localStorage.getItem(SALARY_CFG_KEY)); return (c && c.weekend) ? c.weekend : 'friday'; } catch (e) { return 'friday'; } }
+function _onbCurBanks()   { try { return loadAccounts().map(function (a) { return { id: a.id, name: a.name, bal: a.opening }; }); } catch (e) { return []; } }
+
+function startOnbWizard(isNew) {
+  var steps = ONB_FIELDS.filter(function (f) { return !_onbAnswered(f); });
+  if (!steps.length) { var o = _onbLoad(); o.done = 1; _onbSave(o); if (isNew) _closeOnboarding(); return; }
+  var banks = _onbCurBanks();
+  _onb = { isNew: !!isNew, steps: steps, idx: 0, multi: (banks.length > 1 ? true : null), banks: banks };
   var el = document.getElementById('onboardingOverlay');
-  if (!el) return;
-  var profiles = getProfiles();
-  var p = profiles.find(function(pr) { return pr.id === activeProfileId; });
-  if (!p) return;
-  var avatarEl = document.getElementById('onboardAvatar');
-  var nameEl   = document.getElementById('onboardName');
-  if (avatarEl) { _setAvatarEl(avatarEl, p); avatarEl.style.boxShadow = '0 8px 28px rgba(0,0,0,0.5), 0 0 0 3px ' + p.color + '44'; }
-  if (nameEl)   nameEl.textContent = p.name;
-  // Show weekend rule only when payday input has a value
-  var salDayEl = document.getElementById('obSalDay');
-  if (salDayEl) salDayEl.addEventListener('input', function() {
-    var wf = document.getElementById('obWeekendField');
-    if (wf) wf.style.display = this.value ? '' : 'none';
+  if (el) el.classList.add('open');
+  renderOnbStep();
+}
+// Back-compat aliases (older buttons / callers).
+function showOnboarding() { startOnbWizard(true); }
+function dismissOnboarding() { onbFinish(); }
+
+function renderOnbStep() {
+  var box = document.getElementById('onboardBox'); if (!box || !_onb) return;
+  var field = _onb.steps[_onb.idx], total = _onb.steps.length, n = _onb.idx + 1;
+  var p = getProfiles().find(function (pr) { return pr.id === activeProfileId; }) || {};
+  var dots = '';
+  for (var i = 0; i < total; i++) dots += '<span class="onb-dot' + (i <= _onb.idx ? ' on' : '') + '"></span>';
+  var head;
+  if (_onb.isNew && _onb.idx === 0) {
+    head = '<div class="onboard-header"><div class="onboard-avatar-wrap" id="obAv"></div>'
+      + '<div class="onboard-welcome">Welcome</div><div class="onboard-name">' + escHtml(p.name || '') + '</div>'
+      + '<div class="onboard-tagline">A few quick questions to set up your tracker. Not sure about one? Tap <b>Skip</b> — you can change it anytime.</div></div>';
+  } else {
+    head = '<div class="onboard-header"><div class="onboard-welcome">' + (_onb.isNew ? 'Quick setup' : 'Quick check') + '</div>'
+      + '<div class="onboard-name" style="font-size:1.2rem;">Let’s set up your tracker</div>'
+      + '<div class="onboard-tagline">Just confirm a couple of details so everything adds up. Tap Skip to do it later.</div></div>';
+  }
+  box.innerHTML = head
+    + '<div class="onb-progress"><div class="onb-dots">' + dots + '</div><div class="onb-count">' + n + ' / ' + total + '</div></div>'
+    + '<div class="onboard-body">' + _onbFieldHtml(field) + '</div>'
+    + _onbFooterHtml();
+  var av = document.getElementById('obAv'); if (av && p.id) { try { _setAvatarEl(av, p); } catch (e) {} }
+  if (field === 'payday') {
+    var d = document.getElementById('obSalDay');
+    if (d) d.addEventListener('input', function () { var wf = document.getElementById('obWeekendField'); if (wf) wf.style.display = this.value ? '' : 'none'; });
+  }
+  var focusId = field === 'income' ? 'obSalary' : field === 'payday' ? 'obSalDay' : null;
+  if (focusId) setTimeout(function () { var fe = document.getElementById(focusId); if (fe) fe.focus(); }, 60);
+}
+
+function _onbFieldHtml(field) {
+  if (field === 'income') {
+    var v = _onbCurIncome();
+    return '<div class="onboard-section"><div class="onboard-section-title">💰 Monthly income</div>'
+      + '<div class="onboard-field"><label class="onboard-label">How much money do you take home each month, after any deductions?</label>'
+      + '<div class="onboard-row"><span class="onboard-unit">RM</span><input id="obSalary" type="number" inputmode="decimal" min="0" step="1" class="onboard-input" placeholder="e.g. 3500" style="flex:1;" value="' + (v !== '' ? v : '') + '" /></div>'
+      + '<div class="onboard-hint">Your take-home pay — what actually lands in your account each month.</div></div></div>';
+  }
+  if (field === 'payday') {
+    var d = _onbCurPayday(), wk = _onbCurWeekend();
+    function opt(val, txt) { return '<option value="' + val + '"' + (wk === val ? ' selected' : '') + '>' + txt + '</option>'; }
+    return '<div class="onboard-section"><div class="onboard-section-title">📅 Payday</div>'
+      + '<div class="onboard-field"><label class="onboard-label">What day of the month do you usually get paid?</label>'
+      + '<div class="onboard-row"><input id="obSalDay" type="number" inputmode="numeric" min="1" max="31" class="onboard-input" placeholder="e.g. 25" style="width:90px;" value="' + (d !== '' ? d : '') + '" /><span class="onboard-unit">of every month</span></div></div>'
+      + '<div class="onboard-field" id="obWeekendField" style="display:' + (d !== '' ? '' : 'none') + ';"><label class="onboard-label">If payday lands on a weekend, when do you actually get paid?</label>'
+      + '<select id="obSalWeekend" class="onboard-input">' + opt('friday', 'Friday before (most common)') + opt('monday', 'Monday after') + opt('exact', 'The exact date, always') + '</select></div></div>';
+  }
+  if (field === 'banks') {
+    return '<div class="onboard-section"><div class="onboard-section-title">🏦 Bank accounts</div>'
+      + '<div class="onboard-field"><label class="onboard-label">Do you have more than one bank account or e-wallet?</label>'
+      + '<div class="onb-yn"><button type="button" class="onb-yn-btn' + (_onb.multi === true ? ' on' : '') + '" onclick="onbPickMulti(true)">Yes, a few</button>'
+      + '<button type="button" class="onb-yn-btn' + (_onb.multi === false ? ' on' : '') + '" onclick="onbPickMulti(false)">No, just one</button></div>'
+      + '<div id="onbBankArea">' + _onbBankAreaHtml() + '</div></div></div>';
+  }
+  return '';
+}
+
+function _onbBankAreaHtml() {
+  if (_onb.multi === false) return '<div class="onboard-hint" style="margin-top:0.7rem;">Got it — your entries just won’t ask which bank. You can always add banks later in the 🏦 Accounts tab.</div>';
+  if (_onb.multi !== true) return '';
+  if (!_onb.banks.length) _onb.banks = [{ name: '', bal: '' }];
+  var html = '<div class="onboard-hint" style="margin:0.7rem 0 0.5rem;">Add each bank / e-wallet and how much is in it right now.</div>';
+  _onb.banks.forEach(function (b, i) {
+    html += '<div class="onb-bankrow">'
+      + '<input class="onboard-input onb-bankname" placeholder="Bank name (e.g. CIMB)" value="' + escHtml(b.name || '') + '" oninput="_onbBankInput(' + i + ',\'name\',this.value)" />'
+      + '<span class="onboard-unit">RM</span>'
+      + '<input class="onboard-input onb-bankbal" type="number" inputmode="decimal" min="0" step="1" placeholder="0" value="' + (b.bal !== '' && b.bal != null ? b.bal : '') + '" oninput="_onbBankInput(' + i + ',\'bal\',this.value)" />'
+      + (_onb.banks.length > 1 ? '<button type="button" class="onb-bankdel" onclick="onbDelBank(' + i + ')">✕</button>' : '')
+      + '</div>';
   });
-  el.classList.add('open');
+  html += '<button type="button" class="onb-addbank" onclick="onbAddBank()">+ Add another bank</button>';
+  return html;
+}
+function _onbRefreshBankArea() { var a = document.getElementById('onbBankArea'); if (a) a.innerHTML = _onbBankAreaHtml(); }
+function onbPickMulti(yes) {
+  _onb.multi = !!yes;
+  if (yes && !_onb.banks.length) _onb.banks = [{ name: '', bal: '' }];
+  var yn = document.querySelectorAll('.onb-yn-btn');
+  if (yn[0]) yn[0].classList.toggle('on', yes); if (yn[1]) yn[1].classList.toggle('on', !yes);
+  _onbRefreshBankArea();
+}
+function _onbBankInput(i, key, val) { if (_onb && _onb.banks[i]) _onb.banks[i][key] = val; }
+function onbAddBank() { _onb.banks.push({ name: '', bal: '' }); _onbRefreshBankArea(); }
+function onbDelBank(i) { _onb.banks.splice(i, 1); if (!_onb.banks.length) _onb.banks = [{ name: '', bal: '' }]; _onbRefreshBankArea(); }
+
+function _onbFooterHtml() {
+  var isFirst = _onb.idx === 0, isLast = _onb.idx === _onb.steps.length - 1;
+  var html = '<div class="onboard-footer"><div class="onb-navrow">';
+  if (!isFirst) html += '<button class="onb-back" onclick="onbBack()">← Back</button>';
+  html += '<button class="onboard-btn-primary" onclick="onbNext()">' + (isLast ? 'Finish ✓' : 'Next →') + '</button></div>';
+  html += '<button class="onboard-btn-skip" onclick="onbSkip()">Skip this — I’ll do it later</button>';
+  if (_onb.isNew) html += '<button class="onboard-btn-skip" onclick="loadSampleData()" style="color:#38bdf8;">🎈 Or explore with sample data first</button>';
+  html += '</div>';
+  return html;
 }
 
-function submitOnboarding() {
-  var salDay     = parseInt((document.getElementById('obSalDay')      || {}).value)  || 0;
-  var salWeekend = (document.getElementById('obSalWeekend') || {}).value || 'friday';
-  var salary     = parseFloat((document.getElementById('obSalary')    || {}).value)  || 0;
-
-  if (salDay >= 1 && salDay <= 31) {
-    localStorage.setItem(SALARY_CFG_KEY, JSON.stringify({ day: salDay, weekend: salWeekend }));
-  }
-  if (salary > 0) localStorage.setItem(salaryKey, salary.toString());
-
-  _closeOnboarding();
-  if (salDay || salary) {
-    renderPanelA(); renderPanelB(); renderBudget(); renderCommitments(); renderOtPanel(); renderDebtPanel(); renderWeddingPanel(); renderStudyPanel(); renderOtPanel(); renderDashboard();
-    showToast('All set — your tracker is ready!');
+function _onbSaveField(field) {
+  if (field === 'income') {
+    var v = parseFloat((document.getElementById('obSalary') || {}).value);
+    if (v > 0) {
+      localStorage.setItem(salaryKey, v.toFixed(2));
+      localStorage.setItem(SALARY_CONFIG_KEY, JSON.stringify({ gross: v, deductions: [], allowances: [] }));
+      _onbMark('income');
+    }
+  } else if (field === 'payday') {
+    var d = parseInt((document.getElementById('obSalDay') || {}).value);
+    var w = (document.getElementById('obSalWeekend') || {}).value || 'friday';
+    if (d >= 1 && d <= 31) { localStorage.setItem(SALARY_CFG_KEY, JSON.stringify({ day: d, weekend: w })); _onbMark('payday'); }
+  } else if (field === 'banks') {
+    if (_onb.multi === false) { _onbMark('banks'); }
+    else if (_onb.multi === true) {
+      var rows = _onb.banks.filter(function (b) { return (b.name || '').trim(); });
+      if (rows.length) {
+        var pal = ['#3b82f6', '#22c55e', '#a855f7', '#f59e0b', '#ec4899', '#06b6d4', '#ef4444', '#84cc16'];
+        var accts = rows.map(function (b, i) { return { id: b.id || uid(), name: b.name.trim(), color: pal[i % pal.length], opening: parseFloat(b.bal) || 0 }; });
+        saveAccounts(accts);
+        if (!getSalaryBank() && accts.length) localStorage.setItem(SALARY_BANK_KEY, accts[0].id);
+        _onbMark('banks');
+      }
+    }
   }
 }
 
-function dismissOnboarding() { _closeOnboarding(); }
+function onbNext() { _onbSaveField(_onb.steps[_onb.idx]); _onbAdvance(); }
+function onbSkip() { _onbAdvance(); }
+function onbBack() { if (_onb.idx > 0) { _onb.idx--; renderOnbStep(); } }
+function _onbAdvance() { if (_onb.idx < _onb.steps.length - 1) { _onb.idx++; renderOnbStep(); } else onbFinish(); }
+
+function onbFinish() {
+  var o = _onbLoad(); if (_onbAllDone()) o.done = 1; _onbSave(o);
+  var wasNew = !!(_onb && _onb.isNew);
+  var el = document.getElementById('onboardingOverlay'); if (el) el.classList.remove('open');
+  try { renderPanelA(); renderPanelB(); renderBudget(); renderCommitments(); renderOtPanel(); renderDebtPanel(); renderDashboard(); if (typeof renderAccountsList === 'function') renderAccountsList(); } catch (e) {}
+  _onb = null;
+  showToast('All set — your tracker is ready!');
+  _onbClosing = true;
+  if (wasNew) { try { _closeOnboarding(); } catch (e) {} }
+  else { try { checkLayoutPicker(); } catch (e) {} try { checkWhatsNew(); } catch (e) {} }
+  _onbClosing = false;
+}
 
 function _closeOnboarding() {
   localStorage.setItem(ONBOARDED_KEY, '1');
@@ -17008,6 +17750,7 @@ function loadSampleData() {
   saveGoals([{ id: uid(), name: 'Emergency Fund', target: 5000, deadline: '', contributions: [{ id: uid(), amount: 1200, date: dstr(20), note: 'Starter' }] }]);
 
   _lsSet('opmus_sample_active', '1');
+  try { _onbSave({ done: 1, answered: { income: 1, payday: 1, banks: 1 } }); } catch (e) {}
   try { _closeOnboarding(); } catch (e) {}
   showToast('Sample data loaded — explore!');
   setTimeout(function() { location.reload(); }, 400);
@@ -17552,55 +18295,7 @@ _syncKey = getSyncKey();
 </script>
 <!-- ── First-login Onboarding ─────────────────────────── -->
 <div class="onboard-overlay" id="onboardingOverlay">
-  <div class="onboard-box">
-    <div class="onboard-header">
-      <div class="onboard-avatar-wrap" id="onboardAvatar"></div>
-      <div class="onboard-welcome">Welcome</div>
-      <div class="onboard-name" id="onboardName">—</div>
-      <div class="onboard-tagline">Two quick things and you're done. Skip anything you're unsure about — you can change it anytime.</div>
-    </div>
-
-    <div class="onboard-body">
-      <!-- Salary section -->
-      <div class="onboard-section">
-        <div class="onboard-section-title">💰 Salary</div>
-
-        <div class="onboard-field">
-          <label class="onboard-label">What day of the month do you get paid?</label>
-          <div class="onboard-row">
-            <input id="obSalDay" type="number" inputmode="numeric" min="1" max="31" class="onboard-input" placeholder="e.g. 25" style="width:90px;" />
-            <span class="onboard-unit">of every month</span>
-          </div>
-          <div class="onboard-hint">Not sure? Leave blank — you can set this later in calendar settings.</div>
-        </div>
-
-        <div class="onboard-field" id="obWeekendField" style="display:none;">
-          <label class="onboard-label">If payday falls on a weekend, when do you get paid?</label>
-          <select id="obSalWeekend" class="onboard-input">
-            <option value="friday">Friday before (most common)</option>
-            <option value="monday">Monday after</option>
-            <option value="exact">The exact date, always</option>
-          </select>
-        </div>
-
-        <div class="onboard-field">
-          <label class="onboard-label">What's your monthly take-home pay? <span class="onboard-optional">optional</span></label>
-          <div class="onboard-row">
-            <span class="onboard-unit">RM</span>
-            <input id="obSalary" type="number" inputmode="decimal" min="0" step="1" class="onboard-input" placeholder="e.g. 3500" style="flex:1;" />
-          </div>
-        </div>
-      </div>
-
-      <!-- Overtime section -->
-    </div>
-
-    <div class="onboard-footer">
-      <button class="onboard-btn-primary" onclick="submitOnboarding()">All Done — Start Tracking →</button>
-      <button class="onboard-btn-skip" onclick="loadSampleData()" style="color:#38bdf8;">🎈 Or explore with sample data first</button>
-      <button class="onboard-btn-skip" onclick="dismissOnboarding()">Skip for now — I'll fill these in later</button>
-    </div>
-  </div>
+  <div class="onboard-box" id="onboardBox"><!-- rendered by renderOnbStep() --></div>
 </div>
 
 <!-- ── Theme Picker Modal ────────────────────────────── -->
