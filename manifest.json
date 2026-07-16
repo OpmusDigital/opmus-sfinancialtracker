@@ -1,23 +1,32 @@
 {
-  "name": "My Financial Tracker",
-  "short_name": "FinTracker",
-  "description": "Personal financial tracker with receipt scanning",
-  "start_url": "./index.html",
+  "name": "OpmusDigital Financial Tracker",
+  "short_name": "Finance",
+  "start_url": "./",
+  "scope": "./",
   "display": "standalone",
-  "background_color": "#080808",
-  "theme_color": "#ef4444",
-  "icons": [
-    { "src": "./icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
-  ],
+  "background_color": "#0a0f1e",
+  "theme_color": "#0a0f1e",
   "share_target": {
-    "action": "./index.html",
+    "action": "./share-receipt",
     "method": "POST",
     "enctype": "multipart/form-data",
     "params": {
-      "files": [{
-        "name": "receipt",
-        "accept": ["application/pdf", "image/png", "image/jpeg", "image/jpg", "image/webp"]
-      }]
+      "title": "title",
+      "text": "text",
+      "url": "url",
+      "files": [
+        {
+          "name": "receipt",
+          "accept": ["image/*"]
+        }
+      ]
     }
-  }
+  },
+  "icons": [
+    {
+      "src": "apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    }
+  ]
 }

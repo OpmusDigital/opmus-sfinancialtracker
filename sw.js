@@ -1,6 +1,9 @@
 // Minimal service worker — enables installability + local notifications.
-// No push/fetch handling: reminders are triggered locally via
-// registration.showNotification() from the app's own JS.
+// Reminders are triggered locally via registration.showNotification() from the
+// app's own JS. The only fetch handling is the receipt share target below, which
+// touches nothing but its own POST URL.
+
+importScripts('./share-target-sw.js');
 
 self.addEventListener('install', function(event) {
   self.skipWaiting();

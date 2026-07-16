@@ -241,9 +241,23 @@
     .cal-expand-btn:hover { color:#f1f5f9; background:rgba(255,255,255,0.08); }
     .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; }
     .cal-hdr { font-size: 0.58rem; color: #475569; text-align: center; padding: 3px 0; font-weight: 600; }
-    .cal-cell { font-size: 0.72rem; color: #64748b; text-align: center; padding: 4px 2px; border-radius: 5px; line-height: 1.4; }
+    .cal-cell { font-size: 0.72rem; color: #64748b; text-align: center; padding: 4px 2px; border-radius: 5px; line-height: 1.4; position: relative; }
+    /* OT marker — dot only; the compact cell has no room for text */
+    .cal-ot-dot { position: absolute; bottom: 1px; left: 50%; transform: translateX(-50%); width: 4px; height: 4px; border-radius: 50%; }
     .cal-today { background: #ef4444; color: #fff !important; font-weight: 700; }
-    .cal-salary-sm { outline: 2px solid #22c55e; outline-offset: -2px; border-radius: 5px; font-weight: 700; color: #22c55e !important; }
+    /* Payday, small calendar. Same idea as the big one, scaled down — the coin
+       badge is the bit that survives .cal-today painting over the cell. */
+    .cal-salary-sm {
+      background: rgba(34,197,94,0.16);
+      outline: 1px solid rgba(34,197,94,0.5); outline-offset: -1px;
+      border-radius: 5px; font-weight: 800; color: #86efac !important;
+      z-index: 2; /* the coin overhangs the cell — keep later siblings off it */
+    }
+    .cal-salary-sm::after {
+      content: '💰'; position: absolute; top: -4px; right: -3px;
+      font-size: 0.52rem; line-height: 1; pointer-events: none;
+      filter: drop-shadow(0 1px 1px rgba(0,0,0,0.7));
+    }
     .cal-offday-sm  { background: rgba(6,182,212,0.18); color: #06b6d4 !important; border-radius: 5px; }
     .cal-restday-sm { background: rgba(168,85,247,0.18); color: #a855f7 !important; border-radius: 5px; }
     .cal-ph-sm      { color: #fb923c !important; font-weight: 600; }
@@ -311,9 +325,30 @@
     .cal-big-cell.cal-offday-day { background:rgba(6,182,212,0.12); color:#06b6d4 !important; font-weight:600; border:1px solid rgba(6,182,212,0.25); }
     .cal-big-cell.cal-restday-day { background:rgba(168,85,247,0.12); color:#a855f7 !important; font-weight:600; border:1px solid rgba(168,85,247,0.25); }
     .cal-big-cell.cal-ph-day { background:rgba(251,146,60,0.12); color:#fb923c !important; font-weight:600; border:1px solid rgba(251,146,60,0.25); }
+    /* Payday. Filled money-green with a coin badge, so it reads as "money lands
+       today" rather than just another highlighted cell. Uses outline (not
+       border) so it can't nudge the grid, and the badge is a ::after so it
+       survives .cal-today painting over the cell — today-is-payday keeps both. */
     .cal-big-cell.cal-salary {
-      outline:2px solid #22c55e; outline-offset:-2px; font-weight:700;
-      box-shadow:0 0 14px rgba(34,197,94,0.18);
+      background:linear-gradient(160deg, rgba(34,197,94,0.32) 0%, rgba(16,185,129,0.10) 100%);
+      outline:1.5px solid rgba(34,197,94,0.55); outline-offset:-1.5px;
+      color:#86efac !important; font-weight:800;
+      box-shadow:0 0 16px rgba(34,197,94,0.22), inset 0 1px 0 rgba(255,255,255,0.07);
+      z-index:2; /* the coin overhangs the cell — keep later siblings off it */
+    }
+    .cal-big-cell.cal-salary::after {
+      content:'💰'; position:absolute; top:-6px; right:-5px;
+      font-size:0.66rem; line-height:1; pointer-events:none;
+      filter:drop-shadow(0 1px 2px rgba(0,0,0,0.7));
+    }
+    /* Payday that IS today — let the coin breathe a little. */
+    .cal-big-cell.cal-salary.cal-today::after { animation:salaryCoin 1.8s ease-in-out infinite; }
+    @keyframes salaryCoin {
+      0%, 100% { transform:translateY(0) scale(1); }
+      50%      { transform:translateY(-2px) scale(1.14); }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .cal-big-cell.cal-salary.cal-today::after { animation:none; }
     }
     .cal-big-cell.cal-today {
       background:linear-gradient(135deg,#ef4444,#dc2626) !important;
@@ -327,6 +362,166 @@
       min-height:2.8rem; display:flex; align-items:center;
     }
     .cal-ph-tip { font-size:0.5rem; color:#fb923c; display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:100%; }
+    /* ── Receipt scanner ── */
+    .rcp-scan-btn {
+      width:100%; margin:0.2rem 0 1rem; padding:0.7rem 0.85rem; border-radius:12px;
+      cursor:pointer; font-family:inherit; display:flex; align-items:center; gap:0.7rem;
+      text-align:left; transition:background 0.15s, border-color 0.15s;
+      background:rgba(var(--th-rgb, 239,68,68),0.08);
+      border:1px solid rgba(var(--th-rgb, 239,68,68),0.22);
+    }
+    .rcp-scan-btn:hover { background:rgba(var(--th-rgb, 239,68,68),0.14); border-color:rgba(var(--th-rgb, 239,68,68),0.4); }
+    .rcp-scan-ico { font-size:1.15rem; line-height:1; flex-shrink:0; }
+    .rcp-scan-txt { display:flex; flex-direction:column; gap:1px; min-width:0; }
+    .rcp-scan-t1 { font-size:0.78rem; font-weight:700; color:var(--th-light, #fca5a5); }
+    .rcp-scan-t2 { font-size:0.66rem; color:#64748b; }
+    .rcp-scan-arw { margin-left:auto; font-size:0.9rem; color:var(--th-accent, #ef4444); opacity:0.6; flex-shrink:0; }
+    .rcp-preview {
+      display:block; width:100%; max-height:190px; object-fit:contain;
+      border-radius:10px; margin-bottom:0.8rem; background:rgba(0,0,0,0.35);
+      border:1px solid rgba(255,255,255,0.08);
+    }
+    .rcp-bar-wrap { margin-bottom:0.55rem; }
+    .rcp-bar { height:6px; border-radius:20px; background:rgba(255,255,255,0.07); overflow:hidden; }
+    .rcp-bar-fill {
+      height:100%; width:0%; border-radius:20px; transition:width 0.25s ease;
+      background:linear-gradient(90deg, var(--th-dim, #dc2626), var(--th-accent, #ef4444));
+    }
+    .rcp-status { font-size:0.72rem; color:#64748b; text-align:center; margin-bottom:1rem; min-height:1.1rem; line-height:1.45; }
+    .rcp-hint {
+      margin-top:0.9rem; padding:0.6rem 0.75rem; border-radius:9px;
+      background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06);
+      font-size:0.66rem; color:#64748b; line-height:1.55;
+    }
+    .rcp-hint b { color:#94a3b8; }
+    /* OT day tag on the expanded calendar, e.g. "RD 5h" — sits where the
+       holiday tip goes, so only ever one of the two is rendered. */
+    .cal-ot-tag { font-size:0.5rem; font-weight:800; display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:100%; letter-spacing:0.01em; }
+    .cal-big-cell.cal-today .cal-ot-tag { color:#fff !important; opacity:0.9; }
+    /* OT closing (submission cut-off) — the blue on a payroll calendar. */
+    .cal-close-sm {
+      background: rgba(56,189,248,0.18);
+      outline: 1px solid rgba(56,189,248,0.5); outline-offset: -1px;
+      border-radius: 5px; font-weight: 800; color: #7dd3fc !important;
+      z-index: 2;
+    }
+    .cal-close-sm::after {
+      content: '⏰'; position: absolute; top: -4px; right: -3px;
+      font-size: 0.52rem; line-height: 1; pointer-events: none;
+      filter: drop-shadow(0 1px 1px rgba(0,0,0,0.7));
+    }
+    .cal-big-cell.cal-close-day {
+      background: linear-gradient(160deg, rgba(56,189,248,0.30) 0%, rgba(14,165,233,0.10) 100%);
+      outline: 1.5px solid rgba(56,189,248,0.55); outline-offset: -1.5px;
+      color: #7dd3fc !important; font-weight: 800;
+      box-shadow: 0 0 16px rgba(56,189,248,0.2);
+      z-index: 2;
+    }
+    .cal-big-cell.cal-close-day::after {
+      content: '⏰'; position: absolute; top: -6px; right: -5px;
+      font-size: 0.62rem; line-height: 1; pointer-events: none;
+      filter: drop-shadow(0 1px 2px rgba(0,0,0,0.7));
+    }
+    .cal-close-tag {
+      font-size: 0.42rem; font-weight: 800; color: #7dd3fc; display: block;
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+      max-width: 100%; letter-spacing: 0.02em;
+    }
+    .cal-big-cell.cal-today .cal-close-tag { color: #fff !important; opacity: 0.9; }
+    /* Layer chips */
+    .cal-layers { margin-top: 0.85rem; padding-top: 0.8rem; border-top: 1px solid rgba(255,255,255,0.07); }
+    .cal-layers-lbl {
+      font-size: 0.58rem; font-weight: 700; color: #475569;
+      text-transform: uppercase; letter-spacing: 0.09em; margin-bottom: 0.5rem;
+    }
+    .cal-layers-row { display: flex; flex-wrap: wrap; gap: 0.35rem; }
+    .cal-layer-chip {
+      display: flex; align-items: center; gap: 0.3rem;
+      font-family: inherit; font-size: 0.68rem; font-weight: 600;
+      padding: 0.35rem 0.6rem; border-radius: 20px; cursor: pointer;
+      background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.07);
+      color: #475569; transition: background 0.15s, border-color 0.15s, color 0.15s, opacity 0.15s;
+      opacity: 0.55;
+    }
+    .cal-layer-chip:hover { opacity: 0.85; }
+    .cal-layer-chip.on { opacity: 1; }
+    .cal-layer-ico { font-size: 0.72rem; line-height: 1; }
+    .cal-layer-chip:not(.on) .cal-layer-ico { filter: grayscale(1); }
+    /* OT closing config */
+    /* Cut-off banner at the top of the OT app */
+    .otc-banner {
+      display: flex; align-items: center; gap: 0.55rem;
+      margin: 0 0.85rem 0.6rem; padding: 0.55rem 0.7rem; border-radius: 10px;
+      background: rgba(56,189,248,0.1); border: 1px solid rgba(56,189,248,0.28);
+    }
+    /* On the Overview the container already provides the side padding. */
+    .otc-banner.ov { margin: 0 0 0.6rem; }
+    .otc-banner.urgent { background: rgba(251,146,60,0.12); border-color: rgba(251,146,60,0.4); }
+    .otc-banner.done   { background: rgba(34,197,94,0.09);  border-color: rgba(34,197,94,0.25); }
+    .otc-banner-ico { font-size: 1rem; line-height: 1; flex-shrink: 0; }
+    .otc-banner-txt { display: flex; flex-direction: column; gap: 1px; min-width: 0; flex: 1; }
+    .otc-banner-txt b { font-size: 0.74rem; font-weight: 700; color: #7dd3fc; }
+    .otc-banner.urgent .otc-banner-txt b { color: #fdba74; }
+    .otc-banner.done   .otc-banner-txt b { color: #86efac; }
+    .otc-banner-txt span {
+      font-size: 0.63rem; color: #64748b;
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    .otc-banner-btn {
+      flex-shrink: 0; font-family: inherit; font-size: 0.66rem; font-weight: 700;
+      padding: 0.32rem 0.6rem; border-radius: 7px; cursor: pointer; color: #64748b;
+      background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+      transition: background 0.15s, color 0.15s, border-color 0.15s;
+    }
+    .otc-banner-btn:hover { background: rgba(255,255,255,0.09); color: #e2e8f0; }
+    .otc-banner-btn.go {
+      background: rgba(34,197,94,0.16); border-color: rgba(34,197,94,0.4); color: #4ade80;
+    }
+    .otc-banner-btn.go:hover { background: rgba(34,197,94,0.26); color: #86efac; }
+    .otc-enable {
+      width: 100%; margin-bottom: 0.85rem; padding: 0.6rem 0.85rem; border-radius: 10px;
+      cursor: pointer; font-family: inherit; font-size: 0.76rem; font-weight: 600;
+      display: flex; align-items: center; gap: 0.5rem; text-align: left;
+      background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
+      color: #64748b; transition: background 0.15s, border-color 0.15s, color 0.15s;
+    }
+    .otc-enable:hover { background: rgba(255,255,255,0.07); color: #e2e8f0; }
+    .otc-enable.on { background: rgba(56,189,248,0.1); border-color: rgba(56,189,248,0.32); color: #38bdf8; }
+    .otc-pill {
+      margin-left: auto; font-size: 0.6rem; font-weight: 800; letter-spacing: 0.06em;
+      padding: 2px 8px; border-radius: 20px; background: rgba(255,255,255,0.07);
+    }
+    .otc-enable.on .otc-pill { background: rgba(56,189,248,0.25); color: #7dd3fc; }
+    .otc-yr-row { display: flex; align-items: center; gap: 0.4rem; margin-bottom: 0.5rem; }
+    .otc-yr-lbl { font-size: 0.8rem; font-weight: 700; color: #cbd5e1; min-width: 3rem; text-align: center; }
+    .otc-clear {
+      margin-left: auto; font-family: inherit; font-size: 0.62rem; font-weight: 600;
+      padding: 3px 9px; border-radius: 6px; cursor: pointer; color: #64748b;
+      background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
+    }
+    .otc-clear:hover { color: #f87171; border-color: rgba(248,113,113,0.3); }
+    .otc-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 0.3rem; margin-bottom: 0.7rem; }
+    .otc-cell {
+      display: flex; flex-direction: column; align-items: center; gap: 2px;
+      padding: 0.3rem 0.15rem; border-radius: 8px;
+      background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05);
+    }
+    .otc-cell.set { background: rgba(56,189,248,0.1); border-color: rgba(56,189,248,0.3); }
+    .otc-mon { font-size: 0.55rem; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: 0.04em; }
+    .otc-cell.set .otc-mon { color: #38bdf8; }
+    .otc-inp {
+      width: 100%; text-align: center; font-family: inherit; font-size: 0.8rem; font-weight: 700;
+      padding: 2px 0; border-radius: 5px; border: none; background: transparent; color: #e2e8f0;
+      -moz-appearance: textfield; appearance: textfield;
+    }
+    .otc-inp::-webkit-outer-spin-button, .otc-inp::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+    .otc-inp::placeholder { color: #334155; font-weight: 500; }
+    .otc-inp:focus { outline: 1px solid rgba(56,189,248,0.5); }
+    .otc-note {
+      font-size: 0.66rem; color: #64748b; line-height: 1.5; margin-bottom: 0.85rem;
+      padding: 0.5rem 0.65rem; border-radius: 8px;
+      background: rgba(56,189,248,0.06); border: 1px solid rgba(56,189,248,0.15);
+    }
     /* Calendar config grid */
     .cal-cfg-grid { display:grid; grid-template-columns:1fr 1fr; gap:0.6rem; margin-top:1rem; }
     .cal-cfg-card { padding:0.9rem 1rem; border:1px solid rgba(255,255,255,0.07); border-radius:12px; background:rgba(255,255,255,0.025); display:flex; flex-direction:column; }
@@ -376,6 +571,7 @@
     .cfg-save-btn:hover { filter:brightness(1.1); }
     .cfg-save-blue  { background:linear-gradient(135deg,#3b82f6,#2563eb); box-shadow:0 2px 10px rgba(59,130,246,0.3); }
     .cfg-save-green { background:linear-gradient(135deg,#22c55e,#16a34a); box-shadow:0 2px 10px rgba(34,197,94,0.3); }
+    .cfg-save-sky   { background:linear-gradient(135deg,#38bdf8,#0ea5e9); box-shadow:0 2px 10px rgba(56,189,248,0.3); }
     .cfg-date-inp { flex:1; padding:0.5rem 0.7rem; border-radius:8px; border:1px solid rgba(255,255,255,0.1); background:rgba(255,255,255,0.05); color:#f1f5f9; font-size:0.84rem; }
     .cfg-section { margin-bottom:1.3rem; }
     .cfg-sec-head { display:flex; align-items:center; gap:0.55rem; margin-bottom:0.28rem; }
@@ -2924,6 +3120,24 @@
     .style-card.active .style-name { color:#94a3b8; }
     .style-check { font-size:0.72rem; color:#64748b; opacity:0; line-height:1; }
     .style-card.active .style-check { opacity:1; }
+    /* Text size + font style pickers — same card language as .style-card.
+       Sizes here are px on purpose: these previews must NOT rescale when the
+       root font-size changes, or every option would look identical. */
+    .fs-grid, .ff-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:0.5rem; margin-bottom:1.1rem; }
+    .fs-card, .ff-card {
+      display:flex; flex-direction:column; align-items:center; justify-content:center; gap:0.3rem;
+      padding:0.6rem 0.3rem 0.5rem; border-radius:12px; cursor:pointer;
+      border:1px solid rgba(255,255,255,0.06); background:rgba(255,255,255,0.02);
+      transition:background 0.15s, border-color 0.15s, transform 0.15s; min-height:62px;
+    }
+    .fs-card { font-family:inherit; }
+    .fs-card:hover, .ff-card:hover { background:rgba(255,255,255,0.05); border-color:rgba(255,255,255,0.13); transform:translateY(-1px); }
+    .fs-card.active, .ff-card.active { border-color:var(--th-accent,#ef4444); background:rgba(var(--th-rgb,239,68,68),0.1); }
+    .fs-sample { font-weight:800; color:#475569; line-height:1; transition:color 0.15s; }
+    .ff-sample { font-size:17px; font-weight:700; color:#475569; line-height:1; transition:color 0.15s; }
+    .fs-card.active .fs-sample, .ff-card.active .ff-sample { color:var(--th-light,#fca5a5); }
+    .fs-name, .ff-name { font-size:10px; font-weight:600; color:#334155; transition:color 0.15s; font-family:'Inter','Segoe UI',system-ui,sans-serif; }
+    .fs-card.active .fs-name, .ff-card.active .ff-name { color:#94a3b8; }
   #liveSyncToast {
     position: fixed; bottom: 72px; left: 50%; transform: translateX(-50%) translateY(16px);
     background: #0f172a; border: 1px solid #10b981; color: #10b981;
@@ -4755,6 +4969,15 @@
     <div class="modal-title" id="expModalTitle">Add Expense</div>
     <div class="modal-sub"><span id="expModalMonth" style="color:#ef4444;font-weight:600;"></span></div>
 
+    <button class="rcp-scan-btn" id="expScanBtn" onclick="openReceiptScan()">
+      <span class="rcp-scan-ico">📷</span>
+      <span class="rcp-scan-txt">
+        <span class="rcp-scan-t1">Scan a receipt</span>
+        <span class="rcp-scan-t2">Fill this in from your banking app</span>
+      </span>
+      <span class="rcp-scan-arw">&#8250;</span>
+    </button>
+
     <div class="field-label">Date (DD / MM / YYYY)</div>
     <div class="date-row">
       <input type="number" id="expDay" inputmode="numeric" placeholder="DD" min="1" max="31" style="width:60px;"
@@ -4780,6 +5003,32 @@
 
     <button class="modal-btn primary" id="expSaveBtn" onclick="saveExpense()">Add Expense</button>
     <button class="modal-btn secondary" onclick="closeAddExpense()">Cancel</button>
+  </div>
+</div>
+
+<!-- Receipt Scanner -->
+<div class="modal-overlay" id="receiptModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeReceiptScan()">✕</button>
+    <div class="modal-icon">📷</div>
+    <div class="modal-title">Scan Receipt</div>
+    <div class="modal-sub">Reads the amount, date and who you paid — right here on your phone. Nothing is uploaded.</div>
+
+    <input type="file" id="rcpFile" accept="image/*" style="display:none;" onchange="rcpFileChosen(this)" />
+    <img id="rcpPreview" class="rcp-preview" alt="" style="display:none;" />
+
+    <div id="rcpBarWrap" class="rcp-bar-wrap" style="display:none;">
+      <div class="rcp-bar"><div class="rcp-bar-fill" id="rcpBarFill"></div></div>
+    </div>
+    <div class="rcp-status" id="rcpStatus">Share or upload the receipt from your banking app.</div>
+
+    <button class="modal-btn primary" onclick="rcpPick()">Choose / Take Photo</button>
+    <button class="modal-btn secondary" onclick="closeReceiptScan()">Cancel</button>
+
+    <div class="rcp-hint">
+      <b>Tip:</b> on Android you can tap <b>Share</b> in your banking app and pick
+      <b>Finance</b> — the receipt comes straight here.
+    </div>
   </div>
 </div>
 
@@ -5193,9 +5442,10 @@
     <div class="cal-big-grid" id="calExpandGrid"></div>
     <div id="calExpandNote" class="cal-salary-note"></div>
     <div id="calExpandLegend" class="cal-legend"></div>
+    <div id="calLayers" class="cal-layers"></div>
     <button class="cfg-open-btn" onclick="openCalCfg()">
       <span class="cfg-open-btn-icon">&#9881;</span>
-      <span>Configure Shift Pattern &amp; Pay Day</span>
+      <span>Configure Shift Pattern, Pay Day &amp; OT Closing</span>
       <span style="margin-left:auto;font-size:0.7rem;opacity:0.4;">&#8250;</span>
     </button>
   </div>
@@ -5283,6 +5533,51 @@
         <option value="exact">exact</option>
       </select>
       <button onclick="saveSalaryCfg()" class="cfg-save-btn cfg-save-green">Save Pay Day</button>
+    </div>
+
+    <div class="cfg-divider"></div>
+
+    <!-- OT Closing Date -->
+    <div class="cfg-section">
+      <div class="cfg-sec-head">
+        <div class="cfg-sec-bar" style="background:#38bdf8;"></div>
+        <span class="cfg-sec-title">OT Closing Date</span>
+      </div>
+      <div class="cfg-sec-sub">The cut-off for submitting your overtime &amp; claims. Turn this on and you'll be reminded before it closes.</div>
+
+      <button class="otc-enable" id="otcEnable" onclick="otcToggleEnable()"></button>
+
+      <div id="otcBody" style="display:none;">
+        <div class="cfg-payday-picker" style="flex-wrap:wrap;">
+          <div class="cfg-payday-lbl">Closes on the</div>
+          <input type="number" id="otcDayInput" min="1" max="31" value="12"
+            class="cfg-num-inp cfg-num-inp-lg" oninput="otcSetDay(this.value)" />
+          <div class="cfg-payday-lbl">by</div>
+          <select id="otcHourInput" class="prem-select" style="width:auto;flex:0 0 auto;"
+            onchange="otcSetHour(this.value)"></select>
+        </div>
+
+        <div class="cfg-sec-micro" style="margin-bottom:0.4rem;">Where do you submit it?
+          <span style="color:#475569;font-weight:400;text-transform:none;letter-spacing:0;">(optional)</span>
+        </div>
+        <input type="text" id="otcPlaceInput" maxlength="30" placeholder="e.g. Pulsera, HR office, email…"
+          style="margin-bottom:0.9rem;" oninput="otcSetPlace(this.value)" />
+
+        <div class="cfg-sec-micro" style="margin-bottom:0.4rem;">
+          Different date each month?
+          <span style="color:#475569;font-weight:400;text-transform:none;letter-spacing:0;">Fill only the months that differ — blank follows the day above.</span>
+        </div>
+        <div class="otc-yr-row">
+          <button class="cal-nav-btn" onclick="otcShiftYear(-1)">&#8249;</button>
+          <span class="otc-yr-lbl" id="otcYearLbl"></span>
+          <button class="cal-nav-btn" onclick="otcShiftYear(1)">&#8250;</button>
+          <button class="otc-clear" onclick="otcClearYear()">Clear year</button>
+        </div>
+        <div class="otc-grid" id="otcGrid"></div>
+        <div class="otc-note" id="otcPreview"></div>
+      </div>
+
+      <button onclick="saveOtCloseSettings()" class="cfg-save-btn cfg-save-sky">Save OT Closing</button>
     </div>
 
     <div class="cfg-divider"></div>
@@ -6648,7 +6943,46 @@ function getDailyRate() {
 // multiplier) once a daily rate is set — e.g. RM100.38 daily × 2.0 = RM200.76.
 // Hours beyond a normal day are logged separately as OT3.
 function _isPhFlat(type) { return type === 'ph' && getDailyRate() > 0; }
+
+// ── Tiered ("custom rules") OT ─────────────────────────────
+// A tiered type is built from ordered blocks measured in HOURS FROM CLOCK-IN:
+//   { from, to (blank = no limit), kind, amount | rate | mult }
+//   kind 'daily'   → your Daily Rate, paid once as soon as the block is reached
+//   kind 'flat'    → a fixed amount, paid once as soon as the block is reached
+//   kind 'perhour' → a fixed amount per hour, for the hours inside this block
+//   kind 'hourly'  → Hourly Rate x multiplier, for the hours inside this block
+// e.g. Rest Day: 0-4h = Daily Rate, 4-5h = flat 120, 5h+ = 20/hr
+//      → 10 hours worked = 100.38 + 120 + (5 x 20) = 320.38
+function _otTierPay(tiers, hours) {
+  var total = 0;
+  (tiers || []).forEach(function(t) {
+    if (!t) return;
+    var from = parseFloat(t.from) || 0;
+    var to   = (t.to === '' || t.to == null) ? Infinity : (parseFloat(t.to) || 0);
+    if (!(hours > from)) return;                 // never worked into this block
+    var blockHrs = Math.min(hours, to) - from;
+    if (blockHrs <= 0) return;
+    if (t.kind === 'daily')        total += getDailyRate();
+    else if (t.kind === 'flat')    total += parseFloat(t.amount) || 0;
+    else if (t.kind === 'perhour') total += blockHrs * (parseFloat(t.rate) || 0);
+    else                           total += blockHrs * getHourlyRate() * (parseFloat(t.mult) || 1);
+  });
+  return total;
+}
+function _otTypeDef(type) { var all = getAllOtTypes(); return all[type] || null; }
+function _isTiered(type) { var d = _otTypeDef(type); return !!(d && d.mode === 'tiers' && d.tiers && d.tiers.length); }
+// Plain-English summary of a tier, for the settings list and the OT dropdown.
+function _otTierLabel(t) {
+  var to = (t.to === '' || t.to == null) ? '∞' : t.to;
+  var what = t.kind === 'daily' ? 'Daily Rate'
+    : t.kind === 'flat' ? fmt(parseFloat(t.amount) || 0) + ' fixed'
+    : t.kind === 'perhour' ? fmt(parseFloat(t.rate) || 0) + '/hr'
+    : 'Hourly x' + (parseFloat(t.mult) || 1);
+  return (parseFloat(t.from) || 0) + '–' + to + 'h: ' + what;
+}
+
 function calcOtPay(type, hours) {
+  if (_isTiered(type)) return _otTierPay(_otTypeDef(type).tiers, hours);
   if (_isPhFlat(type)) return getDailyRate() * getOtMult(type);
   return hours * getHourlyRate() * getOtMult(type) + calcOtIncentive(type, hours);
 }
@@ -6666,6 +7000,8 @@ function getAllOtTypes() {
       color: base.color, useEndTime: base.useEndTime,
       incentive: ov.incentive != null ? ov.incentive : base.incentive,
       incentiveMinHours: ov.incentiveMinHours != null ? ov.incentiveMinHours : base.incentiveMinHours,
+      mode: ov.mode === 'tiers' ? 'tiers' : 'simple',
+      tiers: ov.tiers || [],
       isBuiltin: true
     };
   });
@@ -6677,6 +7013,8 @@ function getAllOtTypes() {
         mult: c.mult || 1.5, color: c.color || '#22c55e',
         useEndTime: c.useEndTime || false,
         incentive: c.incentive || 0, incentiveMinHours: c.incentiveMinHours || 0,
+        mode: c.mode === 'tiers' ? 'tiers' : 'simple',
+        tiers: c.tiers || [],
         isCustom: true
       };
     }
@@ -6690,7 +7028,8 @@ function populateOtTypeSelect(selectedValue) {
   var html = '';
   Object.keys(types).forEach(function(k) {
     var t = types[k];
-    html += '<option value="' + k + '">' + escHtml(t.label) + ' (' + t.mult + '\xd7)</option>';
+    var tag = (t.mode === 'tiers' && t.tiers && t.tiers.length) ? 'custom rules' : t.mult + '\xd7';
+    html += '<option value="' + k + '">' + escHtml(t.label) + ' (' + tag + ')</option>';
   });
   sel.innerHTML = html;
   if (selectedValue && sel.querySelector('[value="' + selectedValue + '"]')) sel.value = selectedValue;
@@ -6711,6 +7050,7 @@ function getOtIncentiveMinHrs(type) {
   return OT_TYPES[type] ? OT_TYPES[type].incentiveMinHours : 6;
 }
 function calcOtIncentive(type, hours) {
+  if (_isTiered(type)) return 0; // tiered types bake any bonus into their rules
   var amt = getOtIncentiveAmt(type);
   if (!amt) return 0;
   return hours > getOtIncentiveMinHrs(type) ? amt : 0;
@@ -6952,150 +7292,286 @@ function deleteOtEntry(id) {
   renderOtPanel(); renderDashboard();
 }
 
+// ── OT Settings ────────────────────────────────────────────
+// Working copy while the modal is open. Every edit writes here; Save commits it.
+// This keeps dynamic rows (rules) from being lost on re-render.
+var _otDraft = null;
+
 function openOtSettings() {
-  var cfg       = getOtConfig();
-  var baseRate  = parseFloat(localStorage.getItem(OT_RATE_OVERRIDE_KEY)) || 0;
-  var dailyRate = parseFloat(localStorage.getItem(OT_DAILY_RATE_KEY)) || 0;
-  var iBase     = 'border-radius:6px;border:1px solid #334155;background:#0f172a;color:#f1f5f9;box-sizing:border-box;padding:0.35rem 0.5rem;font-size:0.84rem;';
-  var html = '';
-
-  // ── Base hourly rate (compact single row) ─────────────
-  html += '<div style="display:flex;align-items:center;gap:0.55rem;padding:0.7rem 0.9rem;background:linear-gradient(135deg,rgba(99,102,241,0.1),rgba(79,70,229,0.05));border:1px solid rgba(99,102,241,0.22);border-radius:9px;margin-bottom:0.9rem;">';
-  html += '<span style="font-size:1rem;">💵</span>';
-  html += '<div style="flex:1;">';
-  html += '<div style="font-weight:700;color:#f1f5f9;font-size:0.85rem;">Base Hourly Rate</div>';
-  html += '<div style="color:#64748b;font-size:0.74rem;">Your pay per hour — all OT is calculated from this</div>';
-  html += '</div>';
-  html += '<span style="color:#64748b;font-size:0.82rem;">' + escHtml(_currency) + '</span>';
-  html += '<input type="number" id="cfg_base_rate" step="0.01" min="0" value="' + (baseRate || '') + '" placeholder="e.g. 15.00" style="' + iBase + 'width:90px;text-align:center;" />';
-  html += '<span style="color:#64748b;font-size:0.82rem;">/hr</span>';
-  html += '</div>';
-
-  // ── Public Holiday daily rate ─────────────────────────
-  html += '<div style="display:flex;align-items:center;gap:0.55rem;padding:0.7rem 0.9rem;background:linear-gradient(135deg,rgba(249,115,22,0.1),rgba(234,88,12,0.05));border:1px solid rgba(249,115,22,0.22);border-radius:9px;margin-bottom:0.9rem;">';
-  html += '<span style="font-size:1rem;">🎌</span>';
-  html += '<div style="flex:1;">';
-  html += '<div style="font-weight:700;color:#f1f5f9;font-size:0.85rem;">Public Holiday Daily Rate</div>';
-  html += '<div style="color:#64748b;font-size:0.74rem;">Your daily rate for a public holiday. PH pay = this × the <b style="color:#fb923c;">Public Holiday</b> multiplier below (e.g. 100.38 × 2.0 = 200.76). Leave blank to fall back to hourly pay. Log hours beyond your normal day as a separate OT3 entry.</div>';
-  html += '</div>';
-  html += '<span style="color:#64748b;font-size:0.82rem;">' + escHtml(_currency) + '</span>';
-  html += '<input type="number" id="cfg_daily_rate" step="0.01" min="0" value="' + (dailyRate || '') + '" placeholder="e.g. 100.38" style="' + iBase + 'width:90px;text-align:center;" />';
-  html += '<span style="color:#64748b;font-size:0.82rem;">/day</span>';
-  html += '</div>';
-
-  // ── OT Types table ────────────────────────────────────
-  html += '<div style="display:flex;align-items:baseline;gap:0.5rem;margin-bottom:0.15rem;">';
-  html += '<div style="font-weight:700;color:#f1f5f9;font-size:0.82rem;">Overtime Types</div>';
-  html += '</div>';
-  html += '<div style="color:#64748b;font-size:0.74rem;margin-bottom:0.55rem;">Edit the name shown in the dropdown, and the pay multiplier (e.g. 1.5 = time-and-a-half). Optional: add a flat bonus when hours exceed a threshold.</div>';
-
-  // Table header
-  html += '<div style="display:grid;grid-template-columns:10px 1fr 90px 12px 60px 36px 60px 28px;gap:0.35rem;align-items:center;padding:0 0.5rem 0.3rem;border-bottom:1px solid rgba(255,255,255,0.07);margin-bottom:0.25rem;">';
-  html += '<div></div>';
-  html += '<div style="font-size:0.7rem;color:#475569;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;">Name</div>';
-  html += '<div style="font-size:0.7rem;color:#475569;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;text-align:center;">Multiplier</div>';
-  html += '<div></div>';
-  html += '<div style="font-size:0.7rem;color:#475569;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;text-align:center;">Flat Bonus</div>';
-  html += '<div style="font-size:0.7rem;color:#475569;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;text-align:center;">After</div>';
-  html += '<div style="font-size:0.7rem;color:#475569;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;text-align:center;">Hours</div>';
-  html += '<div></div>';
-  html += '</div>';
-
-  function typeRow(k, color, label, mult, incAmt, incMin, isCustom) {
-    var rowBg = isCustom ? 'rgba(34,197,94,0.04)' : 'transparent';
-    html += '<div style="display:grid;grid-template-columns:10px 1fr 90px 12px 60px 36px 60px 28px;gap:0.35rem;align-items:center;padding:0.28rem 0.5rem;border-radius:6px;background:' + rowBg + ';" id="otrow_' + k + '">';
-    html += '<div style="width:8px;height:8px;border-radius:50%;background:' + color + ';margin:auto;"></div>';
-    html += '<input type="text" id="cfg_label_' + k + '" value="' + escHtml(label) + '" placeholder="Name" style="' + iBase + 'width:100%;font-weight:500;" />';
-    html += '<div style="display:flex;align-items:center;gap:4px;">';
-    html += '<input type="number" id="cfg_mult_' + k + '" step="0.5" min="0.5" value="' + mult + '" style="width:56px;padding:0.4rem 0.4rem;border-radius:7px;border:1px solid rgba(99,102,241,0.4);background:rgba(99,102,241,0.1);color:#c7d2fe;font-size:1rem;font-weight:700;text-align:center;box-sizing:border-box;" />';
-    html += '<span style="color:#6366f1;font-size:0.9rem;font-weight:700;">×</span>';
-    html += '</div>';
-    html += '<span style="color:#22c55e;font-size:0.82rem;font-weight:700;text-align:center;">+</span>';
-    html += '<input type="number" id="cfg_inc_' + k + '" step="1" min="0" value="' + incAmt + '" placeholder="0" title="Flat bonus added on top of OT pay (0 = none)" style="' + iBase + 'width:100%;text-align:center;" />';
-    html += '<span style="color:#475569;font-size:0.72rem;text-align:center;">if &gt;</span>';
-    html += '<input type="number" id="cfg_incmin_' + k + '" step="0.5" min="0" value="' + incMin + '" placeholder="0" title="Bonus applies only when hours worked exceeds this number" style="' + iBase + 'width:100%;text-align:center;" />';
-    if (isCustom) {
-      html += '<button onclick="removeCustomOtType(\'' + k + '\')" style="background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.25);color:#ef4444;border-radius:5px;padding:2px 5px;font-size:0.72rem;cursor:pointer;white-space:nowrap;">✕</button>';
-    } else {
-      html += '<span style="color:#334155;font-size:0.72rem;text-align:center;">hrs</span>';
-    }
-    html += '</div>';
-  }
-
-  Object.keys(OT_TYPES).forEach(function(k) {
-    var base = OT_TYPES[k];
-    typeRow(k, base.color,
-      (cfg[k] && cfg[k].label) ? cfg[k].label : base.label,
-      getOtMult(k), getOtIncentiveAmt(k), getOtIncentiveMinHrs(k), false);
-  });
-
-  // Custom types
-  var customKeys = Object.keys(cfg).filter(function(k) { return k.indexOf('custom_') === 0 && cfg[k]; });
-  if (customKeys.length > 0) {
-    html += '<div style="border-top:1px solid rgba(34,197,94,0.2);margin:0.4rem 0 0.25rem;"></div>';
-    customKeys.forEach(function(k) {
-      var c = cfg[k];
-      typeRow(k, '#22c55e', c.label || 'Custom OT', c.mult || 1.5, c.incentive || 0, c.incentiveMinHours || 0, true);
-    });
-  }
-
-  html += '<button onclick="addCustomOtType()" style="width:100%;padding:0.45rem;border-radius:7px;border:1px dashed rgba(34,197,94,0.35);background:rgba(34,197,94,0.05);color:#4ade80;font-size:0.8rem;cursor:pointer;margin-top:0.55rem;">+ Add Custom OT Type</button>';
-
-  document.getElementById('otSettingsBody').innerHTML = html;
+  _otDraftInit();
+  _otRenderSettings();
   document.getElementById('otSettingsModal').classList.add('open');
 }
-
-function addCustomOtType() {
-  var cfg = getOtConfig();
-  var newKey = 'custom_' + uid();
-  cfg[newKey] = { label: 'Custom OT', mult: 1.5, incentive: 0, incentiveMinHours: 0, useEndTime: false, color: '#22c55e', isCustom: true };
-  localStorage.setItem(OT_CONFIG_KEY, JSON.stringify(cfg));
-  openOtSettings();
-}
-
-function removeCustomOtType(key) {
-  var cfg = getOtConfig();
-  delete cfg[key];
-  localStorage.setItem(OT_CONFIG_KEY, JSON.stringify(cfg));
-  openOtSettings();
-}
-
 function closeOtSettings() { document.getElementById('otSettingsModal').classList.remove('open'); }
 
-function saveOtSettings() {
-  var cfg = getOtConfig();
-  // Save built-in type overrides (label + multiplier + bonus)
-  Object.keys(OT_TYPES).forEach(function(k) {
-    if (!cfg[k]) cfg[k] = {};
-    var labelEl  = document.getElementById('cfg_label_'  + k);
-    var multEl   = document.getElementById('cfg_mult_'   + k);
-    var incEl    = document.getElementById('cfg_inc_'    + k);
-    var incMinEl = document.getElementById('cfg_incmin_' + k);
-    if (labelEl)  cfg[k].label             = labelEl.value.trim() || OT_TYPES[k].label;
-    if (multEl)   cfg[k].mult              = parseFloat(multEl.value)   || OT_TYPES[k].mult;
-    if (incEl)    cfg[k].incentive         = parseFloat(incEl.value)    || 0;
-    if (incMinEl) cfg[k].incentiveMinHours = parseFloat(incMinEl.value) || 0;
+function _otDraftInit() {
+  var types = getAllOtTypes();
+  var order = Object.keys(OT_TYPES).concat(Object.keys(types).filter(function(k) { return k.indexOf('custom_') === 0; }));
+  var d = {
+    hourly: parseFloat(localStorage.getItem(OT_RATE_OVERRIDE_KEY)) || '',
+    daily:  parseFloat(localStorage.getItem(OT_DAILY_RATE_KEY))    || '',
+    order: order, types: {}
+  };
+  order.forEach(function(k) {
+    var t = types[k]; if (!t) return;
+    d.types[k] = {
+      label: t.label, color: t.color, isCustom: !!t.isCustom,
+      mode: t.mode || 'simple',
+      mult: t.mult, incentive: t.incentive || 0, incentiveMinHours: t.incentiveMinHours || 0,
+      tiers: (t.tiers || []).map(function(x) { return { from: x.from, to: x.to, kind: x.kind, amount: x.amount, rate: x.rate, mult: x.mult }; }),
+      test: '', _open: false
+    };
   });
-  // Save custom type edits
-  Object.keys(cfg).forEach(function(k) {
-    if (k.indexOf('custom_') !== 0) return;
-    var labelEl  = document.getElementById('cfg_label_'  + k);
-    if (!labelEl) return;
-    var multEl   = document.getElementById('cfg_mult_'   + k);
-    var incEl    = document.getElementById('cfg_inc_'    + k);
-    var incMinEl = document.getElementById('cfg_incmin_' + k);
-    if (!cfg[k]) cfg[k] = {};
-    cfg[k].label             = labelEl.value.trim() || 'Custom OT';
-    cfg[k].mult              = parseFloat(multEl ? multEl.value : '') || 1.5;
-    cfg[k].incentive         = parseFloat(incEl ? incEl.value : '')   || 0;
-    cfg[k].incentiveMinHours = parseFloat(incMinEl ? incMinEl.value : '') || 0;
+  _otDraft = d;
+}
+
+// A sensible starting pattern, matching the most common shift shape:
+// first block = your daily rate, a fixed bonus block, then a flat hourly rate.
+function _otStarterTiers() {
+  return [
+    { from: 0, to: 4,  kind: 'daily' },
+    { from: 4, to: 5,  kind: 'flat',    amount: 120 },
+    { from: 5, to: '', kind: 'perhour', rate: 20 }
+  ];
+}
+
+function _otSetRate(field, val)      { if (_otDraft) _otDraft[field] = val; }
+function _otSet(k, field, val)       { if (_otDraft && _otDraft.types[k]) _otDraft.types[k][field] = val; }
+function _otSetTier(k, i, field, val) { var t = _otDraft.types[k].tiers[i]; if (t) t[field] = val; }
+function _otToggleCard(k)            { _otDraft.types[k]._open = !_otDraft.types[k]._open; _otRenderSettings(); }
+function _otSetMode(k, mode) {
+  var t = _otDraft.types[k]; if (!t) return;
+  t.mode = mode;
+  if (mode === 'tiers' && !t.tiers.length) t.tiers = _otStarterTiers();
+  t._open = true;
+  _otRenderSettings();
+}
+function _otSetTierKind(k, i, kind) { _otSetTier(k, i, 'kind', kind); _otRenderSettings(); }
+function _otAddTier(k) {
+  var t = _otDraft.types[k]; if (!t) return;
+  var last = t.tiers[t.tiers.length - 1];
+  var from = last ? ((last.to === '' || last.to == null) ? (parseFloat(last.from) || 0) + 1 : (parseFloat(last.to) || 0)) : 0;
+  t.tiers.push({ from: from, to: '', kind: 'perhour', rate: 0 });
+  _otRenderSettings();
+}
+function _otRemoveTier(k, i) { _otDraft.types[k].tiers.splice(i, 1); _otRenderSettings(); }
+
+function addCustomOtType() {
+  var key = 'custom_' + uid();
+  _otDraft.types[key] = {
+    label: 'My OT Rule', color: '#22c55e', isCustom: true, mode: 'tiers',
+    mult: 1.5, incentive: 0, incentiveMinHours: 0,
+    tiers: _otStarterTiers(), test: '', _open: true
+  };
+  _otDraft.order.push(key);
+  _otRenderSettings();
+  setTimeout(function() { var el = document.getElementById('cfg_label_' + key); if (el) { el.focus(); el.select(); } }, 60);
+}
+function removeCustomOtType(key) {
+  delete _otDraft.types[key];
+  _otDraft.order = _otDraft.order.filter(function(k) { return k !== key; });
+  _otRenderSettings();
+}
+
+// Preview uses the DRAFT rates so the example updates before you hit Save.
+function _otDraftTierPay(k, hours) {
+  var t = _otDraft.types[k];
+  var hourly = parseFloat(_otDraft.hourly) || 0, daily = parseFloat(_otDraft.daily) || 0, total = 0;
+  (t.tiers || []).forEach(function(x) {
+    var from = parseFloat(x.from) || 0;
+    var to   = (x.to === '' || x.to == null) ? Infinity : (parseFloat(x.to) || 0);
+    if (!(hours > from)) return;
+    var bh = Math.min(hours, to) - from;
+    if (bh <= 0) return;
+    if (x.kind === 'daily')        total += daily;
+    else if (x.kind === 'flat')    total += parseFloat(x.amount) || 0;
+    else if (x.kind === 'perhour') total += bh * (parseFloat(x.rate) || 0);
+    else                           total += bh * hourly * (parseFloat(x.mult) || 1);
+  });
+  return total;
+}
+function _otPreview(k) {
+  var el = document.getElementById('otprev_' + k); if (!el) return;
+  var h = parseFloat(_otDraft.types[k].test);
+  if (!(h > 0)) { el.innerHTML = '<span style="color:#475569;">Type hours to preview</span>'; return; }
+  var parts = [];
+  var t = _otDraft.types[k];
+  var hourly = parseFloat(_otDraft.hourly) || 0, daily = parseFloat(_otDraft.daily) || 0;
+  (t.tiers || []).forEach(function(x) {
+    var from = parseFloat(x.from) || 0;
+    var to   = (x.to === '' || x.to == null) ? Infinity : (parseFloat(x.to) || 0);
+    if (!(h > from)) return;
+    var bh = Math.min(h, to) - from; if (bh <= 0) return;
+    if (x.kind === 'daily')        parts.push(fmt(daily));
+    else if (x.kind === 'flat')    parts.push(fmt(parseFloat(x.amount) || 0));
+    else if (x.kind === 'perhour') parts.push(bh + 'h x ' + (parseFloat(x.rate) || 0));
+    else                           parts.push(bh + 'h x ' + fmt(hourly) + ' x' + (parseFloat(x.mult) || 1));
+  });
+  el.innerHTML = '<b style="color:#4ade80;">' + fmt(_otDraftTierPay(k, h)) + '</b>'
+    + (parts.length ? '<span style="color:#475569;"> &nbsp;=&nbsp; ' + parts.join(' + ') + '</span>' : '');
+}
+function _otTestChange(k, val) { _otDraft.types[k].test = val; _otPreview(k); }
+
+function _otSummary(k) {
+  var t = _otDraft.types[k];
+  if (t.mode === 'tiers') {
+    if (!t.tiers.length) return 'No rules yet';
+    return t.tiers.map(function(x) {
+      var to = (x.to === '' || x.to == null) ? '&infin;' : x.to;
+      var what = x.kind === 'daily' ? 'Daily Rate'
+        : x.kind === 'flat' ? (parseFloat(x.amount) || 0) + ' fixed'
+        : x.kind === 'perhour' ? (parseFloat(x.rate) || 0) + '/hr'
+        : 'Hourly x' + (parseFloat(x.mult) || 1);
+      return (parseFloat(x.from) || 0) + '-' + to + 'h: ' + what;
+    }).join(' &middot; ');
+  }
+  var s = (t.mult || 1.5) + 'x hourly';
+  if (parseFloat(t.incentive) > 0) s += ' &middot; +' + t.incentive + ' bonus after ' + (t.incentiveMinHours || 0) + 'h';
+  return s;
+}
+
+function _otRenderSettings() {
+  var d = _otDraft; if (!d) return;
+  var iBase = 'border-radius:6px;border:1px solid #334155;background:#0f172a;color:#f1f5f9;box-sizing:border-box;padding:0.4rem 0.5rem;font-size:0.84rem;';
+  var html = '';
+
+  // ── 1) Hourly rate ────────────────────────────────────
+  html += '<div style="display:flex;align-items:center;gap:0.55rem;padding:0.7rem 0.9rem;background:linear-gradient(135deg,rgba(99,102,241,0.1),rgba(79,70,229,0.05));border:1px solid rgba(99,102,241,0.22);border-radius:9px;margin-bottom:0.6rem;">';
+  html += '<span style="font-size:1rem;">&#128181;</span>';
+  html += '<div style="flex:1;"><div style="font-weight:700;color:#f1f5f9;font-size:0.85rem;">1. Hourly Rate <span style="color:#64748b;font-weight:500;font-size:0.74rem;">(if known)</span></div>';
+  html += '<div style="color:#64748b;font-size:0.74rem;">Your pay for one hour. Used by any rule paid by the hour.</div></div>';
+  html += '<span style="color:#64748b;font-size:0.82rem;">' + escHtml(_currency) + '</span>';
+  html += '<input type="number" id="cfg_base_rate" step="0.01" min="0" value="' + (d.hourly || '') + '" placeholder="e.g. 15.00" oninput="_otSetRate(\'hourly\', this.value)" style="' + iBase + 'width:90px;text-align:center;" />';
+  html += '<span style="color:#64748b;font-size:0.82rem;">/hr</span></div>';
+
+  // ── 2) Daily rate ─────────────────────────────────────
+  html += '<div style="display:flex;align-items:center;gap:0.55rem;padding:0.7rem 0.9rem;background:linear-gradient(135deg,rgba(249,115,22,0.1),rgba(234,88,12,0.05));border:1px solid rgba(249,115,22,0.22);border-radius:9px;margin-bottom:0.9rem;">';
+  html += '<span style="font-size:1rem;">&#128197;</span>';
+  html += '<div style="flex:1;"><div style="font-weight:700;color:#f1f5f9;font-size:0.85rem;">2. Daily Rate <span style="color:#64748b;font-weight:500;font-size:0.74rem;">(if known)</span></div>';
+  html += '<div style="color:#64748b;font-size:0.74rem;">Your pay for one full day. Used by Public Holiday, and by any rule set to <b style="color:#fb923c;">Daily Rate</b>.</div></div>';
+  html += '<span style="color:#64748b;font-size:0.82rem;">' + escHtml(_currency) + '</span>';
+  html += '<input type="number" id="cfg_daily_rate" step="0.01" min="0" value="' + (d.daily || '') + '" placeholder="e.g. 100.38" oninput="_otSetRate(\'daily\', this.value)" style="' + iBase + 'width:90px;text-align:center;" />';
+  html += '<span style="color:#64748b;font-size:0.82rem;">/day</span></div>';
+
+  // ── 3) Types of OT ────────────────────────────────────
+  html += '<div style="font-weight:700;color:#f1f5f9;font-size:0.85rem;margin-bottom:0.15rem;">3. Types of OT</div>';
+  html += '<div style="color:#64748b;font-size:0.74rem;margin-bottom:0.6rem;line-height:1.5;">Tap a type to set how it is paid. <b style="color:#c7d2fe;">Simple</b> = hourly &times; a multiplier. <b style="color:#4ade80;">Custom rules</b> = build your own by hours from clock-in (for when your company pays differently).</div>';
+
+  d.order.forEach(function(k) {
+    var t = d.types[k]; if (!t) return;
+    var isT = t.mode === 'tiers';
+    html += '<div style="border:1px solid ' + (isT ? 'rgba(34,197,94,0.28)' : 'rgba(255,255,255,0.08)') + ';border-radius:10px;margin-bottom:0.45rem;background:' + (isT ? 'rgba(34,197,94,0.04)' : 'rgba(255,255,255,0.02)') + ';overflow:hidden;">';
+
+    // Header row
+    html += '<div style="display:flex;align-items:center;gap:0.5rem;padding:0.55rem 0.6rem;">';
+    html += '<div style="width:8px;height:8px;border-radius:50%;background:' + t.color + ';flex-shrink:0;"></div>';
+    html += '<input type="text" id="cfg_label_' + k + '" value="' + escHtml(t.label) + '" placeholder="Name" oninput="_otSet(\'' + k + '\',\'label\',this.value)" style="' + iBase + 'flex:1;min-width:0;font-weight:600;" />';
+    html += '<select onchange="_otSetMode(\'' + k + '\', this.value)" style="' + iBase + 'width:132px;flex-shrink:0;cursor:pointer;">';
+    html += '<option value="simple"' + (isT ? '' : ' selected') + '>Simple</option>';
+    html += '<option value="tiers"' + (isT ? ' selected' : '') + '>Custom rules</option>';
+    html += '</select>';
+    if (t.isCustom) html += '<button onclick="removeCustomOtType(\'' + k + '\')" title="Delete this type" style="background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.25);color:#ef4444;border-radius:5px;padding:3px 6px;font-size:0.72rem;cursor:pointer;flex-shrink:0;">&#10005;</button>';
+    html += '<button onclick="_otToggleCard(\'' + k + '\')" title="Show / hide" style="background:none;border:none;color:#64748b;font-size:0.8rem;cursor:pointer;flex-shrink:0;padding:2px 4px;">' + (t._open ? '&#9650;' : '&#9660;') + '</button>';
+    html += '</div>';
+
+    // Summary line (collapsed)
+    if (!t._open) {
+      html += '<div style="padding:0 0.6rem 0.5rem 1.35rem;font-size:0.7rem;color:#64748b;">' + _otSummary(k) + '</div>';
+    } else {
+      html += '<div style="padding:0.1rem 0.6rem 0.65rem;">';
+      if (!isT) {
+        // Simple mode
+        html += '<div style="display:flex;align-items:center;gap:0.45rem;flex-wrap:wrap;font-size:0.78rem;color:#94a3b8;">';
+        html += '<span>Pay =</span><span style="color:#c7d2fe;">hourly</span><span>&times;</span>';
+        html += '<input type="number" id="cfg_mult_' + k + '" step="0.5" min="0.5" value="' + t.mult + '" oninput="_otSet(\'' + k + '\',\'mult\',this.value)" style="width:62px;padding:0.35rem;border-radius:7px;border:1px solid rgba(99,102,241,0.4);background:rgba(99,102,241,0.1);color:#c7d2fe;font-size:0.9rem;font-weight:700;text-align:center;box-sizing:border-box;" />';
+        html += '</div>';
+        html += '<div style="display:flex;align-items:center;gap:0.45rem;flex-wrap:wrap;font-size:0.78rem;color:#94a3b8;margin-top:0.4rem;">';
+        html += '<span style="color:#22c55e;font-weight:700;">+</span><span>flat bonus</span>';
+        html += '<input type="number" id="cfg_inc_' + k + '" step="1" min="0" value="' + (t.incentive || 0) + '" placeholder="0" oninput="_otSet(\'' + k + '\',\'incentive\',this.value)" style="' + iBase + 'width:66px;text-align:center;" />';
+        html += '<span>if worked over</span>';
+        html += '<input type="number" id="cfg_incmin_' + k + '" step="0.5" min="0" value="' + (t.incentiveMinHours || 0) + '" placeholder="0" oninput="_otSet(\'' + k + '\',\'incentiveMinHours\',this.value)" style="' + iBase + 'width:56px;text-align:center;" />';
+        html += '<span>hrs</span></div>';
+        html += '<div style="font-size:0.68rem;color:#475569;margin-top:0.35rem;">Leave the bonus at 0 for none. Need something different? Switch to <b style="color:#4ade80;">Custom rules</b>.</div>';
+      } else {
+        // Custom rules (tiers)
+        html += '<div style="display:grid;grid-template-columns:52px 52px 1fr 92px 26px;gap:0.3rem;padding:0 0 0.25rem;font-size:0.62rem;color:#475569;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;">';
+        html += '<div style="text-align:center;">From</div><div style="text-align:center;">To</div><div>How it pays</div><div style="text-align:center;">Amount</div><div></div></div>';
+
+        (t.tiers || []).forEach(function(x, i) {
+          html += '<div style="display:grid;grid-template-columns:52px 52px 1fr 92px 26px;gap:0.3rem;align-items:center;margin-bottom:0.28rem;">';
+          html += '<input type="number" step="0.5" min="0" value="' + (x.from != null ? x.from : '') + '" oninput="_otSetTier(\'' + k + '\',' + i + ',\'from\',this.value)" style="' + iBase + 'width:100%;text-align:center;" />';
+          html += '<input type="number" step="0.5" min="0" value="' + (x.to === '' || x.to == null ? '' : x.to) + '" placeholder="&#8734;" oninput="_otSetTier(\'' + k + '\',' + i + ',\'to\',this.value)" style="' + iBase + 'width:100%;text-align:center;" />';
+          html += '<select onchange="_otSetTierKind(\'' + k + '\',' + i + ',this.value)" style="' + iBase + 'width:100%;cursor:pointer;">';
+          html += '<option value="daily"' + (x.kind === 'daily' ? ' selected' : '') + '>Daily Rate (once)</option>';
+          html += '<option value="flat"' + (x.kind === 'flat' ? ' selected' : '') + '>Fixed amount (once)</option>';
+          html += '<option value="perhour"' + (x.kind === 'perhour' ? ' selected' : '') + '>Per hour</option>';
+          html += '<option value="hourly"' + (x.kind === 'hourly' ? ' selected' : '') + '>Hourly &times; mult</option>';
+          html += '</select>';
+          if (x.kind === 'daily') {
+            html += '<div style="font-size:0.66rem;color:#fb923c;text-align:center;">uses Daily Rate</div>';
+          } else if (x.kind === 'flat') {
+            html += '<input type="number" step="0.01" min="0" value="' + (x.amount != null ? x.amount : '') + '" placeholder="120" oninput="_otSetTier(\'' + k + '\',' + i + ',\'amount\',this.value)" style="' + iBase + 'width:100%;text-align:center;" />';
+          } else if (x.kind === 'perhour') {
+            html += '<input type="number" step="0.01" min="0" value="' + (x.rate != null ? x.rate : '') + '" placeholder="20" oninput="_otSetTier(\'' + k + '\',' + i + ',\'rate\',this.value)" style="' + iBase + 'width:100%;text-align:center;" />';
+          } else {
+            html += '<input type="number" step="0.1" min="0" value="' + (x.mult != null ? x.mult : 1.5) + '" placeholder="1.5" oninput="_otSetTier(\'' + k + '\',' + i + ',\'mult\',this.value)" style="' + iBase + 'width:100%;text-align:center;" />';
+          }
+          html += '<button onclick="_otRemoveTier(\'' + k + '\',' + i + ')" title="Remove rule" style="background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.22);color:#ef4444;border-radius:5px;padding:2px 0;font-size:0.7rem;cursor:pointer;">&#10005;</button>';
+          html += '</div>';
+        });
+
+        html += '<button onclick="_otAddTier(\'' + k + '\')" style="width:100%;padding:0.35rem;border-radius:6px;border:1px dashed rgba(34,197,94,0.35);background:rgba(34,197,94,0.05);color:#4ade80;font-size:0.75rem;cursor:pointer;margin-top:0.15rem;">+ Add rule</button>';
+
+        // Live preview
+        html += '<div style="display:flex;align-items:center;gap:0.4rem;margin-top:0.5rem;padding-top:0.45rem;border-top:1px solid rgba(255,255,255,0.06);font-size:0.74rem;color:#94a3b8;">';
+        html += '<span>Try it:</span>';
+        html += '<input type="number" step="0.5" min="0" value="' + escHtml(String(t.test || '')) + '" placeholder="10" oninput="_otTestChange(\'' + k + '\', this.value)" style="' + iBase + 'width:58px;text-align:center;" />';
+        html += '<span>hrs &rarr;</span><span id="otprev_' + k + '" style="flex:1;min-width:0;"><span style="color:#475569;">Type hours to preview</span></span>';
+        html += '</div>';
+        html += '<div style="font-size:0.66rem;color:#475569;margin-top:0.3rem;line-height:1.5;">Hours are counted <b>from clock-in</b>. Leave <b>To</b> blank for "no limit". <i>Once</i> means paid one time as soon as you reach that block.</div>';
+      }
+      html += '</div>';
+    }
+    html += '</div>';
+  });
+
+  html += '<button onclick="addCustomOtType()" style="width:100%;padding:0.5rem;border-radius:8px;border:1px dashed rgba(34,197,94,0.4);background:rgba(34,197,94,0.06);color:#4ade80;font-size:0.82rem;font-weight:600;cursor:pointer;margin-top:0.35rem;">+ Add OT Type</button>';
+
+  document.getElementById('otSettingsBody').innerHTML = html;
+  d.order.forEach(function(k) { if (d.types[k] && d.types[k]._open && d.types[k].mode === 'tiers') _otPreview(k); });
+}
+
+function saveOtSettings() {
+  var d = _otDraft;
+  if (!d) { closeOtSettings(); return; }
+  var cfg = {};
+  Object.keys(d.types).forEach(function(k) {
+    var t = d.types[k];
+    var entry = {
+      label: (t.label || '').trim() || (OT_TYPES[k] ? OT_TYPES[k].label : 'Custom OT'),
+      mode: t.mode === 'tiers' ? 'tiers' : 'simple',
+      mult: parseFloat(t.mult) || (OT_TYPES[k] ? OT_TYPES[k].mult : 1.5),
+      incentive: parseFloat(t.incentive) || 0,
+      incentiveMinHours: parseFloat(t.incentiveMinHours) || 0,
+      tiers: (t.tiers || []).map(function(x) {
+        return {
+          from: parseFloat(x.from) || 0,
+          to: (x.to === '' || x.to == null) ? '' : (parseFloat(x.to) || 0),
+          kind: x.kind || 'perhour',
+          amount: parseFloat(x.amount) || 0,
+          rate: parseFloat(x.rate) || 0,
+          mult: parseFloat(x.mult) || 1
+        };
+      })
+    };
+    if (t.isCustom) { entry.isCustom = true; entry.color = t.color || '#22c55e'; entry.sub = 'Custom overtime type'; entry.useEndTime = false; }
+    cfg[k] = entry;
   });
   localStorage.setItem(OT_CONFIG_KEY, JSON.stringify(cfg));
-  var baseRateEl = document.getElementById('cfg_base_rate');
-  if (baseRateEl) localStorage.setItem(OT_RATE_OVERRIDE_KEY, baseRateEl.value);
-  var dailyRateEl = document.getElementById('cfg_daily_rate');
-  if (dailyRateEl) localStorage.setItem(OT_DAILY_RATE_KEY, dailyRateEl.value);
-  // Recalculate existing entries
+  localStorage.setItem(OT_RATE_OVERRIDE_KEY, d.hourly === '' || d.hourly == null ? '' : String(d.hourly));
+  localStorage.setItem(OT_DAILY_RATE_KEY,    d.daily  === '' || d.daily  == null ? '' : String(d.daily));
+
+  // Recalculate existing entries with the new rules
   for (var i = 0; i < localStorage.length; i++) {
     var key = localStorage.key(i);
     if (!key || !key.includes('mft_ot_') || key === OT_CONFIG_KEY || key === OT_RATE_OVERRIDE_KEY || key === OT_DAILY_RATE_KEY) continue;
@@ -7111,7 +7587,7 @@ function saveOtSettings() {
     } catch(err) {}
   }
   closeOtSettings(); renderOtPanel(); renderDashboard();
-  showToast('OT rates saved — existing entries recalculated');
+  showToast('OT settings saved — existing entries recalculated');
 }
 
 // ═══════════════════════════════════════════════════
@@ -7818,6 +8294,62 @@ function renderDebtPanel() {
   el.innerHTML = html;
 }
 
+// The cut-off banner at the top of the OT app: shows the deadline once it's
+// close, and carries the ✓ Submitted tick. Hidden entirely when the next
+// cut-off is still far away, so it only appears when it's actually useful.
+var OTC_BANNER_DAYS = 10;
+// ctx 'ov' renders the Overview copy (no panel side-margins).
+function _otCloseBanner(ctx) {
+  if (!otCloseEnabled()) return '';
+  var today = new Date(); today.setHours(0, 0, 0, 0);
+  var cd = _nextOtClose(today);
+  if (!cd) return '';
+  var days = Math.round((cd - today) / 86400000);
+  if (days > OTC_BANNER_DAYS) return '';
+  var dateTxt = cd.getDate() + ' ' + ALL_MONTHS[cd.getMonth()].slice(0, 3);
+  var cls = 'otc-banner' + (ctx === 'ov' ? ' ov' : '');
+
+  if (isOtSubmitted(cd)) {
+    return '<div class="' + cls + ' done">'
+      + '<span class="otc-banner-ico">✅</span>'
+      + '<div class="otc-banner-txt"><b>OT submitted</b>'
+      + '<span>for the ' + dateTxt + ' cut-off — reminders off</span></div>'
+      + '<button class="otc-banner-btn" onclick="otSubUndo()">Undo</button>'
+      + '</div>';
+  }
+  var place = getOtCloseCfg().place;
+  var when  = days === 0 ? 'Last day to submit your OT'
+            : days === 1 ? 'OT submission closes tomorrow'
+            : 'OT submission closes in ' + days + ' days';
+  return '<div class="' + cls + (days <= 1 ? ' urgent' : '') + '">'
+    + '<span class="otc-banner-ico">⏰</span>'
+    + '<div class="otc-banner-txt"><b>' + when + '</b>'
+    + '<span>' + dateTxt + ' by ' + _otCloseTimeLabel()
+    + (place ? ' · upload to ' + escHtml(place) : '') + '</span></div>'
+    + '<button class="otc-banner-btn go" onclick="otSubMark()">✓ Submitted</button>'
+    + '</div>';
+}
+function _otSubRefresh() {
+  try { renderOtPanel(); } catch (e) {}
+  try { renderOverview(); } catch (e) {} // the Overview carries the same banner
+  _calRefresh();
+  try { _syncPushSubscription(); } catch (e) {} // add/drop this month's queued nags
+}
+function otSubMark() {
+  var cd = _nextOtClose(new Date());
+  if (!cd) return;
+  markOtSubmitted(cd, true);
+  _otSubRefresh();
+  showToast('✅ Marked as submitted — reminders off for this cut-off');
+}
+function otSubUndo() {
+  var cd = _nextOtClose(new Date());
+  if (!cd) return;
+  markOtSubmitted(cd, false);
+  _otSubRefresh();
+  showToast('Reminders back on for this cut-off');
+}
+
 function renderOtPanel() {
   var otList   = loadOTView();
   var el       = document.getElementById('otBody');
@@ -7840,6 +8372,8 @@ function renderOtPanel() {
     '<span class="ot-nav-label">' + viewLabel + (isPast ? ' <span class="ot-past-badge">Past</span>' : '') + '</span>' +
     '<button class="ot-nav-btn"' + nextDisabled + ' onclick="otNextMonth()">&#8250;</button>' +
     '</div>';
+
+  html += _otCloseBanner();
 
   html += '<div class="ot-summary-row">';
   Object.keys(allTypes).forEach(function(k) {
@@ -8161,7 +8695,9 @@ function renderOverview() {
   try { renderShortcuts(); } catch (e) {}
   var el = document.getElementById('overviewExtra');
   if (!el) return;
-  el.innerHTML = _ovPaydayHtml() + _ovHighlightsHtml() + _ovUpcomingHtml() + _ovRecentHtml();
+  // OT cut-off sits right under payday — both are "a date that costs you money".
+  el.innerHTML = _ovPaydayHtml() + _otCloseBanner('ov')
+               + _ovHighlightsHtml() + _ovUpcomingHtml() + _ovRecentHtml();
 }
 
 // ── Customizable quick-add shortcuts ──
@@ -8219,14 +8755,36 @@ var STREAK_KEY  = profilePrefix + 'mft_streak';
 var GAME_HI_KEY = profilePrefix + 'mft_game_hi';
 function loadStreak() { try { return JSON.parse(localStorage.getItem(STREAK_KEY)) || {}; } catch (e) { return {}; } }
 function _parseFunYmd(str) { var p = (str || '').split('-'); if (p.length !== 3) return null; var d = new Date(+p[0], +p[1] - 1, +p[2]); d.setHours(0, 0, 0, 0); return d; }
-function _streakCardHtml() {
-  var s = loadStreak();
-  var count = s.count || 0, best = s.best || 0;
+
+// The streak as it is RIGHT NOW — never read s.count straight out of storage.
+// The stored count is only a snapshot of how things stood on `s.last`, and
+// _updateStreak() only runs on page load, so an app left open (desktop tab, or
+// a PWA the phone never evicts) would otherwise sit there showing a streak that
+// died days ago. Deriving it from the date is the only way it can't lie.
+function liveStreak() {
+  var s     = loadStreak();
+  var count = s.count || 0;
+  var best  = s.best  || 0;
+  var last  = s.last ? _parseFunYmd(s.last) : null;
+  var base  = { count: 0, best: best, last: last, alive: false, openedToday: false, everStarted: !!last };
+  if (!last || count <= 0) return base;
+
   var today = new Date(); today.setHours(0, 0, 0, 0);
-  var lastD = s.last ? _parseFunYmd(s.last) : null;
-  var loggedToday = (s.last === _funYmd(today));
+  var gap   = Math.round((today - last) / 86400000);
+  if (gap < 0)   return { count: count, best: best, last: last, alive: true,  openedToday: false, everStarted: true }; // clock moved back
+  if (gap === 0) return { count: count, best: best, last: last, alive: true,  openedToday: true,  everStarted: true };
+  // Last seen yesterday: not lost yet — opening today still extends it.
+  if (gap === 1) return { count: count, best: best, last: last, alive: true,  openedToday: false, everStarted: true };
+  return base; // two or more days missed — the streak is gone, whatever count says
+}
+function _streakCardHtml() {
+  var s = liveStreak();
+  var count = s.count, best = s.best;
+  var today = new Date(); today.setHours(0, 0, 0, 0);
+  var lastD = s.last;
+  var loggedToday = s.openedToday;
   var activeStart = null;
-  if (lastD && count > 0) { activeStart = new Date(lastD); activeStart.setDate(activeStart.getDate() - (count - 1)); }
+  if (s.alive && lastD && count > 0) { activeStart = new Date(lastD); activeStart.setDate(activeStart.getDate() - (count - 1)); }
   var DOW = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
   var dots = '';
   for (var i = 6; i >= 0; i--) {
@@ -8241,9 +8799,10 @@ function _streakCardHtml() {
   var milestones = [3, 7, 14, 30, 60, 100];
   var next = null; for (var k = 0; k < milestones.length; k++) { if (milestones[k] > count) { next = milestones[k]; break; } }
   var msg;
-  if (count === 0) msg = '👋 Open the app today to start your streak!';
+  if (count === 0 && !s.everStarted) msg = '👋 Open the app today to start your streak!';
+  else if (count === 0) msg = '💔 Your streak ended — open the app today to start a new one!';
   else if (loggedToday) msg = next ? ('✅ Logged today! ' + (next - count) + ' more day' + ((next - count) === 1 ? '' : 's') + ' to your ' + next + '-day badge 🎯') : '🏆 Legendary streak — keep it going!';
-  else msg = '🔥 Open the app today to keep your streak alive!';
+  else msg = '🔥 Last chance — open the app today to keep your ' + count + '-day streak alive!';
   return '<div class="streak-card">'
     + '<div class="streak-head"><span class="streak-flame">🔥</span>'
     + '<div class="streak-headtxt"><div class="streak-num">' + count + '</div><div class="streak-lbl">day' + (count === 1 ? '' : 's') + ' streak</div></div>'
@@ -8252,6 +8811,7 @@ function _streakCardHtml() {
     + '<div class="streak-msg">' + msg + '</div></div>';
 }
 function _updateStreak() {
+  if (!activeProfileId) return loadStreak(); // don't write a streak to no-one
   var data = loadStreak();
   var today = _funYmd(new Date());
   if (data.last === today) return data;
@@ -8262,6 +8822,23 @@ function _updateStreak() {
   localStorage.setItem(STREAK_KEY, JSON.stringify(data));
   return data;
 }
+
+// _updateStreak() only runs at boot, but plenty of people never close the app —
+// so when it comes back into view, roll the day over. Without this, a tab left
+// open all week keeps counting a streak that ended on Monday.
+(function () {
+  var seenDay = null;
+  function rollover() {
+    if (document.hidden || !activeProfileId) return;
+    var t = _funYmd(new Date());
+    if (t === seenDay) return;
+    seenDay = t;
+    try { _updateStreak(); } catch (e) {}
+    try { renderFunPanel(); } catch (e) {}
+  }
+  document.addEventListener('visibilitychange', rollover);
+  window.addEventListener('focus', rollover);
+})();
 function _hasAnyExpense() {
   var pre = profilePrefix + 'mft_expenses_';
   for (var i = 0; i < localStorage.length; i++) {
@@ -10260,8 +10837,8 @@ function _ovUpcomingHtml() {
   var soon = all.filter(function(x) { return x.daysLeft <= 14; }).slice(0, 4);
   if (!soon.length) return '';
   var rows = soon.map(function(it) {
-    var when = it.daysLeft === 0 ? 'Today' : it.daysLeft === 1 ? 'Tomorrow' : 'in ' + it.daysLeft + 'd';
-    var col = it.daysLeft <= 1 ? '#f87171' : it.daysLeft <= 3 ? '#fb923c' : '#94a3b8';
+    var when = it.overdue ? ('⚠ ' + it.overdueBy + 'd late') : it.daysLeft === 0 ? 'Today' : it.daysLeft === 1 ? 'Tomorrow' : 'in ' + it.daysLeft + 'd';
+    var col = it.overdue ? '#ef4444' : it.daysLeft <= 1 ? '#f87171' : it.daysLeft <= 3 ? '#fb923c' : '#94a3b8';
     return '<div class="ov-row"><span class="ov-dot" style="background:' + (it.color || '#f87171') + '"></span>'
       + '<span class="ov-row-name">' + escHtml(it.name) + '</span>'
       + '<span class="ov-row-when" style="color:' + col + '">' + when + '</span>'
@@ -11396,6 +11973,298 @@ function openEditExpense(sortedIdx) {
 function closeAddExpense() {
   _editExpenseTarget = null;
   document.getElementById('addExpenseModal').classList.remove('open');
+}
+
+// ═══════════════════════════════════════════════════
+// RECEIPT SCANNER
+// ═══════════════════════════════════════════════════
+// Reads a bank-app receipt on the phone itself (Tesseract.js, fetched on first
+// use) and prefills Add Expense. Every bank lays its receipt out differently,
+// so the parser hunts for the SHAPE of each value rather than a fixed position.
+// Whatever it finds is always handed to the user to confirm — never auto-saved.
+
+var TESSERACT_URL = 'https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js';
+
+function _rcpNum(s) { return parseFloat(String(s).replace(/,/g, '')) || 0; }
+
+function _rcpLines(text) {
+  return String(text || '').split('\n')
+    .map(function(l) { return l.replace(/\s+/g, ' ').trim(); })
+    .filter(function(l) { return l.length > 0; });
+}
+
+// Lines that quote a number we must never mistake for the amount paid.
+var _RCP_NOT_AMOUNT = /(balance|baki|available|limit|fee|charge|cukai|tax|gst|sst|caj|points|reward)/i;
+// Lines that are almost certainly the amount paid.
+var _RCP_IS_AMOUNT  = /(total|amount|jumlah|transfer|paid|payment|debit)/i;
+
+// Every "RM 1,234.56" in the text, tagged with the line it came from.
+function _rcpMoneyHits(lines) {
+  var hits = [];
+  lines.forEach(function(line, i) {
+    var re = /(?:RM|MYR)\s*([0-9][0-9,]*(?:\.[0-9]{2})?)/gi;
+    var m;
+    while ((m = re.exec(line)) !== null) hits.push({ i: i, line: line, value: _rcpNum(m[1]) });
+  });
+  return hits;
+}
+
+// Which number on the receipt is the one the user actually spent.
+function _rcpAmount(lines) {
+  var hits = _rcpMoneyHits(lines).filter(function(h) { return h.value > 0; });
+  if (!hits.length) return 0;
+  var clean = hits.filter(function(h) { return !_RCP_NOT_AMOUNT.test(h.line); });
+  var pool  = clean.length ? clean : hits;
+  // A line that names itself ("Total RM50.00") beats guessing.
+  var named = pool.filter(function(h) { return _RCP_IS_AMOUNT.test(h.line); });
+  if (named.length) {
+    return named.reduce(function(a, b) { return b.value > a.value ? b : a; }).value;
+  }
+  return pool.reduce(function(a, b) { return b.value > a.value ? b : a; }).value;
+}
+
+var _RCP_MONTHS = { jan:1, feb:2, mar:3, apr:4, may:5, jun:6,
+                    jul:7, aug:8, sep:9, oct:10, nov:11, dec:12 };
+
+function _rcpValidDate(d) {
+  if (!d) return null;
+  if (d.m < 1 || d.m > 12 || d.d < 1 || d.d > 31) return null;
+  if (d.y < 2000 || d.y > 2100) return null;
+  if (d.d > new Date(d.y, d.m, 0).getDate()) return null;
+  return d;
+}
+
+// Malaysian receipts are day-first; every branch here honours that.
+function _rcpDate(text) {
+  var m;
+  // 05 Jul 2026 · 5 July 2026
+  m = text.match(/\b(\d{1,2})\s+([A-Za-z]{3,9})\.?,?\s+(\d{4})\b/);
+  if (m && _RCP_MONTHS[m[2].slice(0, 3).toLowerCase()]) {
+    var r1 = _rcpValidDate({ d:+m[1], m:_RCP_MONTHS[m[2].slice(0,3).toLowerCase()], y:+m[3] });
+    if (r1) return r1;
+  }
+  // Jul 05, 2026
+  m = text.match(/\b([A-Za-z]{3,9})\.?\s+(\d{1,2}),?\s+(\d{4})\b/);
+  if (m && _RCP_MONTHS[m[1].slice(0, 3).toLowerCase()]) {
+    var r2 = _rcpValidDate({ d:+m[2], m:_RCP_MONTHS[m[1].slice(0,3).toLowerCase()], y:+m[3] });
+    if (r2) return r2;
+  }
+  // 2026-07-05
+  m = text.match(/\b(\d{4})[-/](\d{1,2})[-/](\d{1,2})\b/);
+  if (m) { var r3 = _rcpValidDate({ d:+m[3], m:+m[2], y:+m[1] }); if (r3) return r3; }
+  // 05/07/2026 · 05-07-26
+  m = text.match(/\b(\d{1,2})[-/.](\d{1,2})[-/.](\d{2,4})\b/);
+  if (m) {
+    var y = +m[3]; if (y < 100) y += 2000;
+    var r4 = _rcpValidDate({ d:+m[1], m:+m[2], y:y }); if (r4) return r4;
+  }
+  return null;
+}
+
+function _rcpRef(text) {
+  var m = text.match(/(?:reference|ref|transaction|txn|receipt)\s*(?:no|number|id)?\.?\s*[:\-#]?\s*([A-Z0-9][A-Z0-9\-]{5,})/i);
+  return m ? m[1] : '';
+}
+
+// Trailing account numbers and bank names ride along with the payee — drop them.
+function _rcpClean(s) {
+  return String(s || '')
+    .replace(/\b\d{6,}\b/g, ' ')
+    .replace(/[|•·*]+/g, ' ')
+    .replace(/\s{2,}/g, ' ')
+    .replace(/^[\s:\-]+|[\s:\-]+$/g, '')
+    .slice(0, 40)
+    .trim();
+}
+
+// Banks pad the label with a qualifier ("Beneficiary Name:", "Recipient Details")
+// which must be swallowed by the label, not returned as part of the name.
+var _RCP_PAYEE_LBL = /^(?:to|recipient|beneficiary|kepada|penerima|transfer to|paid to|merchant|payee)\b(?:\s+(?:name|nama|acc(?:ount)?(?:\s*(?:no\.?|number))?|details?))?\s*[:\-]?\s*(.*)$/i;
+// "Beneficiary Bank: MAYBANK" names the bank, not the person being paid.
+var _RCP_PAYEE_BANK = /^(?:to|recipient|beneficiary|kepada|penerima|transfer to|paid to|payee)\s+bank\b/i;
+
+function _rcpPayee(lines) {
+  for (var i = 0; i < lines.length; i++) {
+    // "Recipient Reference" is a reference field, not the payee.
+    if (/reference|ref\b/i.test(lines[i])) continue;
+    if (_RCP_PAYEE_BANK.test(lines[i])) continue;
+    var m = lines[i].match(_RCP_PAYEE_LBL);
+    if (!m) continue;
+    var v = _rcpClean(m[1]);
+    if (v.length >= 2) return v;
+    // Label sat on its own line — the value is the next non-empty one.
+    for (var j = i + 1; j < lines.length; j++) {
+      var nx = _rcpClean(lines[j]);
+      if (nx.length >= 2 && !/^(?:rm|myr)\b/i.test(nx)) return nx;
+    }
+  }
+  return '';
+}
+
+// Best-effort category from the payee name. Wrong guesses cost one tap.
+var _RCP_CAT_HINTS = [
+  { cat:'food',          re:/(restoran|restaurant|cafe|kopitiam|mamak|food|makan|grabfood|foodpanda|starbucks|mcdonald|kfc|pizza|bakery|roti)/i },
+  { cat:'transport',     re:/(grab|touch ?'?n ?go|tng|petronas|shell|petron|caltex|bhp|parking|toll|plus |mrt|lrt|rapid|teksi|taxi)/i },
+  { cat:'bills',         re:/(tnb|tenaga|syabas|air |indah water|unifi|maxis|celcom|digi|umobile|astro|telekom|tm |bill|insurance|takaful)/i },
+  { cat:'shopping',      re:/(shopee|lazada|zalora|uniqlo|padini|aeon|tesco|lotus|mydin|giant|99 ?speedmart|watson|guardian|ikea|shop)/i },
+  { cat:'entertainment', re:/(gsc|tgv|cinema|netflix|spotify|steam|youtube|game|karaoke)/i },
+  { cat:'health',        re:/(clinic|klinik|hospital|pharmacy|farmasi|dental|doctor|medical)/i },
+  { cat:'education',     re:/(school|sekolah|university|universiti|college|kolej|tuition|course|book)/i }
+];
+function _rcpCategory(payee) {
+  if (!payee) return 'others';
+  for (var i = 0; i < _RCP_CAT_HINTS.length; i++) {
+    if (_RCP_CAT_HINTS[i].re.test(payee)) return _RCP_CAT_HINTS[i].cat;
+  }
+  return 'others';
+}
+
+// The whole parse: raw OCR text in, Add-Expense-shaped fields out.
+function parseReceipt(text) {
+  var lines = _rcpLines(text);
+  var payee = _rcpPayee(lines);
+  return {
+    amount:   _rcpAmount(lines),
+    date:     _rcpDate(lines.join('\n')),
+    ref:      _rcpRef(lines.join('\n')),
+    payee:    payee,
+    category: _rcpCategory(payee),
+    raw:      text
+  };
+}
+
+// ── Running the reader ─────────────────────────────
+var _rcpBusy = false;
+var _rcpUrl  = null;
+
+// Tesseract is ~3MB, so it is only fetched the first time someone scans, and
+// then cached by the browser for good.
+function _rcpLoadEngine(cb) {
+  if (window.Tesseract) { cb(true); return; }
+  var s = document.createElement('script');
+  s.src = TESSERACT_URL;
+  s.async = true;
+  s.onload  = function() { cb(!!window.Tesseract); };
+  s.onerror = function() { cb(false); };
+  document.head.appendChild(s);
+}
+
+function _rcpStatus(msg, pct, isErr) {
+  var t = document.getElementById('rcpStatus');
+  var f = document.getElementById('rcpBarFill');
+  if (t) { t.textContent = msg; t.style.color = isErr ? '#f87171' : '#64748b'; }
+  if (f) f.style.width = Math.max(0, Math.min(100, pct || 0)) + '%';
+}
+
+function openReceiptScan() {
+  if (_rcpBusy) return;
+  var img = document.getElementById('rcpPreview');
+  if (img) { img.style.display = 'none'; img.src = ''; }
+  var inp = document.getElementById('rcpFile'); if (inp) inp.value = '';
+  document.getElementById('rcpBarWrap').style.display = 'none';
+  _rcpStatus('Share or upload the receipt from your banking app.', 0);
+  document.getElementById('receiptModal').classList.add('open');
+}
+function closeReceiptScan() {
+  if (_rcpBusy) { showToast('Still reading — hang on a second'); return; }
+  _rcpCleanup();
+  document.getElementById('receiptModal').classList.remove('open');
+}
+function _rcpCleanup() {
+  if (_rcpUrl) { try { URL.revokeObjectURL(_rcpUrl); } catch (e) {} _rcpUrl = null; }
+}
+function rcpPick() { document.getElementById('rcpFile').click(); }
+function rcpFileChosen(input) {
+  var f = input.files && input.files[0];
+  if (f) scanReceiptFile(f);
+}
+
+function scanReceiptFile(file) {
+  if (_rcpBusy) return;
+  if (!file || !/^image\//.test(file.type || '')) {
+    showToast('That file is not an image');
+    return;
+  }
+  _rcpBusy = true;
+  document.getElementById('receiptModal').classList.add('open');
+
+  _rcpCleanup();
+  _rcpUrl = URL.createObjectURL(file);
+  var img = document.getElementById('rcpPreview');
+  if (img) { img.src = _rcpUrl; img.style.display = 'block'; }
+  document.getElementById('rcpBarWrap').style.display = 'block';
+  _rcpStatus('Getting the reader ready…', 6);
+
+  _rcpLoadEngine(function(ok) {
+    if (!ok) {
+      _rcpBusy = false;
+      _rcpStatus('Could not load the reader — check your internet and try again.', 0, true);
+      return;
+    }
+    _rcpStatus('Reading your receipt…', 12);
+    window.Tesseract.recognize(file, 'eng', {
+      logger: function(m) {
+        if (m && m.status === 'recognizing text') {
+          _rcpStatus('Reading your receipt…', 12 + Math.round((m.progress || 0) * 84));
+        }
+      }
+    }).then(function(res) {
+      _rcpBusy = false;
+      _rcpApply(parseReceipt(res && res.data ? res.data.text : ''));
+    }).catch(function() {
+      _rcpBusy = false;
+      _rcpStatus('Could not read that image. Try a clearer screenshot.', 0, true);
+    });
+  });
+}
+
+// Hand the result to the user to confirm. An OCR guess never saves itself.
+function _rcpApply(r) {
+  var found = [];
+  if (r.amount > 0) found.push(fmt(r.amount));
+  if (r.date)       found.push(r.date.d + '/' + r.date.m + '/' + r.date.y);
+  if (r.payee)      found.push(r.payee);
+
+  if (!found.length) {
+    _rcpStatus('Nothing readable found. Try a clearer screenshot, or just type it in.', 0, true);
+    return;
+  }
+
+  _rcpStatus('Done!', 100);
+  _rcpCleanup();
+  document.getElementById('receiptModal').classList.remove('open');
+
+  openAddExpense(); // resets the form to blank/today first
+  if (r.amount > 0) document.getElementById('expAmt').value = r.amount.toFixed(2);
+  if (r.date) {
+    document.getElementById('expDay').value   = r.date.d;
+    document.getElementById('expMonth').value = r.date.m;
+    document.getElementById('expYear').value  = r.date.y;
+  }
+  if (r.payee) document.getElementById('expDesc').value = r.payee;
+  if (r.category) { selectedCat = r.category; renderCatGrid('catGrid', selectedCat); }
+  showToast('📷 Found ' + found.join(' · ') + ' — check it, then save');
+}
+
+// Android share sheet: the service worker parks the shared image in a cache and
+// bounces the app back here with ?shared=receipt.
+function _rcpCheckShared() {
+  try {
+    if (!activeProfileId || !window.caches) return;
+    var params = new URLSearchParams(window.location.search);
+    if (params.get('shared') !== 'receipt') return;
+    // Drop the flag so a refresh doesn't re-open the scanner.
+    try { history.replaceState({}, '', window.location.pathname); } catch (e) {}
+    caches.open('mft-shared-receipt').then(function(c) {
+      return c.match('shared-receipt-file').then(function(res) {
+        if (!res) return;
+        return res.blob().then(function(blob) {
+          c.delete('shared-receipt-file');
+          if (blob && blob.size) setTimeout(function() { scanReceiptFile(blob); }, 400);
+        });
+      });
+    }).catch(function() {});
+  } catch (e) {}
 }
 
 function renderCatGrid(gridId, activeCat) {
@@ -15192,11 +16061,32 @@ function deleteSpSubject(groupId) {
 
 // ── Mobile panel switching ──
 var _MOBILE_PANELS = ["expenses", "goals", "commit", "ot", "debt", "budget", "wedding", "study"];
+// Which tab the user is on. Persisted per profile so that when a phone browser
+// evicts the page and silently reloads it, the user lands back where they were
+// instead of on the Overview. Deliberately NOT an "mft_" key: this is a
+// per-device UI position, and syncing it would let the phone yank the tab on
+// the desktop mid-use.
+var MPANEL_KEY = 'opmus_active_panel_' + profilePrefix;
+
 // In Tab mode the app opens on the Overview; in Canvas mode it starts on Expenses.
-var _activeMPanel  = (getLayoutMode() === 'tabs') ? 'overview' : 'expenses';
+function _defaultMPanel() { return (getLayoutMode() === 'tabs') ? 'overview' : 'expenses'; }
+var _mpanelSaved = null;   // null on a first-ever load — nothing to restore
+function _loadActiveMPanel() {
+  try {
+    var saved = localStorage.getItem(MPANEL_KEY);
+    if (saved === 'overview' || saved === 'fun' || _MOBILE_PANELS.indexOf(saved) >= 0) {
+      _mpanelSaved = saved;
+      return saved;
+    }
+  } catch (e) {}
+  return _defaultMPanel();
+}
+var _activeMPanel  = _loadActiveMPanel();
+var _mpanelBooted  = false;
 
 function switchMPanel(name) {
   _activeMPanel = name;
+  try { localStorage.setItem(MPANEL_KEY, name); } catch (e) {}
   if (name === 'fun') { try { renderFunPanel(); } catch (e) {} }
   else {
     // Leaving the Fun tab — stop any running game so it doesn't run in the background.
@@ -15229,6 +16119,13 @@ function _initMobilePanels() {
     if (_activeMPanel !== 'overview' && _activeModules.indexOf(_activeMPanel) < 0) _activeMPanel = 'overview';
     var showOverview = (_activeMPanel === 'overview');
     if (showOverview) { try { renderOverview(); } catch (e) {} }
+    // A tab restored from storage never went through switchMPanel(), so hand
+    // Fun the render it would normally get on switch. Once only — re-rendering
+    // on every call would wipe a game in progress.
+    if (!_mpanelBooted) {
+      _mpanelBooted = true;
+      if (_activeMPanel === 'fun') { try { renderFunPanel(); } catch (e) {} }
+    }
     cluster.forEach(function(el) { if (el) el.style.display = showOverview ? '' : 'none'; });
     document.querySelectorAll('[data-panel]').forEach(function(el) {
       var p = el.dataset.panel;
@@ -15253,6 +16150,18 @@ function _initMobilePanels() {
       grp.style.display = vis ? '' : 'none';
       grp.classList.toggle('active', p === _activeMPanel);
     });
+    // Panels are stacked, so a reload lands at the top of the page. Drop back to
+    // the one the user was last on — but only if they actually picked it, never
+    // on a first-ever load where the dashboard should greet them.
+    if (!_mpanelBooted) {
+      _mpanelBooted = true;
+      if (_mpanelSaved && _mpanelSaved !== 'overview' && _activeModules.indexOf(_mpanelSaved) >= 0) {
+        var back = document.querySelector('[data-panel="' + _mpanelSaved + '"]');
+        if (back) setTimeout(function() {
+          try { back.scrollIntoView({ block: 'start' }); } catch (e) {}
+        }, 80);
+      }
+    }
   }
 }
 
@@ -15541,7 +16450,199 @@ function getTodayStatus() {
   else if (rt === 'restday') badges.push({ label: 'Rest Day', color: '#a855f7', bg: 'rgba(168,85,247,0.12)' });
   else if (rt === 'work')    badges.push({ label: 'Work Day', color: '#94a3b8', bg: 'rgba(148,163,184,0.08)' });
   if (day === salDay)  badges.push({ label: '💰 Salary Day!', color: '#22c55e', bg: 'rgba(34,197,94,0.12)' });
+  if (otCloseEnabled() && _otCloseDay(year, month) === day) {
+    badges.push({ label: '⏰ Last day to submit OT (' + _otCloseTimeLabel() + ')',
+                  color: '#38bdf8', bg: 'rgba(56,189,248,0.12)' });
+  }
   return badges;
+}
+
+// ── Calendar layers ───────────────────────────────
+// Everything the calendar can draw on a day is a "layer" the user can switch
+// off. Keys are deliberately NOT "mft_ot_..." — several places scan localStorage
+// for that substring and treat every hit as a list of OT entries.
+var CAL_LAYERS_KEY = profilePrefix + 'mft_cal_layers';
+var CAL_LAYERS = [
+  { id:'salary',  label:'Pay Day',        icon:'💰', color:'#22c55e' },
+  { id:'close',   label:'OT Closing',     icon:'⏰', color:'#38bdf8' },
+  { id:'ot',      label:'OT Logged',      icon:'🕒', color:'#3b82f6' },
+  { id:'ph',      label:'Public Holiday', icon:'🎉', color:'#fb923c' },
+  { id:'offday',  label:'Off Day',        icon:'🌴', color:'#06b6d4' },
+  { id:'restday', label:'Rest Day',       icon:'😴', color:'#a855f7' }
+];
+function loadCalLayers() {
+  try { return JSON.parse(localStorage.getItem(CAL_LAYERS_KEY)) || {}; } catch (e) { return {}; }
+}
+function calLayerOn(id) { return loadCalLayers()[id] !== 0; } // on unless switched off
+function toggleCalLayer(id) {
+  var l = loadCalLayers();
+  l[id] = calLayerOn(id) ? 0 : 1;
+  localStorage.setItem(CAL_LAYERS_KEY, JSON.stringify(l));
+  _calRefresh();
+}
+function _calRefresh() {
+  try { renderCalendarPopup(); } catch (e) {}
+  try {
+    if (document.getElementById('calExpandModal').classList.contains('open')) renderExpandedCal();
+  } catch (e) {}
+  try { renderCalLayers(); } catch (e) {}
+}
+
+// ── OT closing date ───────────────────────────────
+// The deadline for SUBMITTING an overtime claim — get the form signed off by
+// your manager/foreman, upload it to the company's system, done. It is only a
+// deadline: the app has no idea what period a given claim covers, and must
+// never imply it does.
+//
+// Companies differ wildly — some use a fixed day each month, others (like the
+// payroll calendar this was built from) shift it every month with no rule behind
+// it — so there is a default day PLUS per-month overrides. Off by default: not
+// every buyer's employer has a cut-off at all.
+var OTCLOSE_KEY = profilePrefix + 'mft_otclose_cfg';
+function getOtCloseCfg() {
+  var c = {};
+  try { c = JSON.parse(localStorage.getItem(OTCLOSE_KEY)) || {}; } catch (e) { c = {}; }
+  return {
+    on:   c.on === 1,
+    // 12 is only the suggestion for a fresh config. An explicit 0 means "no
+    // default day" — months then rely purely on their override, and months
+    // without one simply have no cut-off rather than inheriting a made-up 12th.
+    day:  (c.day == null ? 12 : (parseInt(c.day, 10) || 0)),
+    hour: (c.hour == null ? 21 : parseInt(c.hour, 10)),
+    // Where the signed form goes (e.g. "Pulsera"). Blank = generic wording,
+    // since every company has its own system.
+    place: String(c.place || '').slice(0, 30),
+    ovr:  c.ovr || {}
+  };
+}
+function saveOtCloseCfg(c) {
+  localStorage.setItem(OTCLOSE_KEY, JSON.stringify({
+    on: c.on ? 1 : 0, day: c.day, hour: c.hour,
+    place: String(c.place || '').slice(0, 30), ovr: c.ovr || {}
+  }));
+}
+function otCloseEnabled() { return getOtCloseCfg().on; }
+function _otCloseOvrKey(year, monthIdx) { return year + '-' + (monthIdx + 1); }
+
+// The closing DAY for one month: the month's override, else the default day,
+// clamped so "31" can't fall off the end of a short month.
+function _otCloseDay(year, monthIdx) {
+  var c = getOtCloseCfg();
+  var raw = c.ovr[_otCloseOvrKey(year, monthIdx)];
+  var day = parseInt(raw, 10) || c.day;
+  if (!day || day < 1) return 0;
+  return Math.min(day, new Date(year, monthIdx + 1, 0).getDate());
+}
+function _otCloseDate(year, monthIdx) {
+  var d = _otCloseDay(year, monthIdx);
+  if (!d) return null;
+  var dt = new Date(year, monthIdx, d); dt.setHours(0, 0, 0, 0);
+  return dt;
+}
+// The next cut-off at or after `from`, looking a few months ahead.
+function _nextOtClose(from) {
+  var d = new Date(from || new Date()); d.setHours(0, 0, 0, 0);
+  for (var i = 0; i < 4; i++) {
+    var ref = new Date(d.getFullYear(), d.getMonth() + i, 1);
+    var cd  = _otCloseDate(ref.getFullYear(), ref.getMonth());
+    if (cd && cd >= d) return cd;
+  }
+  return null;
+}
+function _otCloseTimeLabel() {
+  var h = getOtCloseCfg().hour;
+  if (h == null || isNaN(h)) return '9:00 PM';
+  var ampm = h >= 12 ? 'PM' : 'AM';
+  var h12  = h % 12; if (h12 === 0) h12 = 12;
+  return h12 + ':00 ' + ampm;
+}
+
+// ── "I've submitted it" ───────────────────────────
+// The app cannot see the company's system, so whether a claim is actually in is
+// something only the user knows. This tick is that answer — and it's what stops
+// the reminders, exactly like ✓ Done on an unpaid bill.
+// Key avoids the "mft_ot_" substring that other code scans for.
+var OTSUB_KEY = profilePrefix + 'mft_otsub_done';
+function loadOtSubmitted() {
+  try { return JSON.parse(localStorage.getItem(OTSUB_KEY)) || {}; } catch (e) { return {}; }
+}
+function _otSubKey(closeDate) { return closeDate.getFullYear() + '-' + (closeDate.getMonth() + 1); }
+function isOtSubmitted(closeDate) {
+  return !!(closeDate && loadOtSubmitted()[_otSubKey(closeDate)]);
+}
+function markOtSubmitted(closeDate, on) {
+  if (!closeDate) return;
+  var m = loadOtSubmitted();
+  if (on) m[_otSubKey(closeDate)] = 1; else delete m[_otSubKey(closeDate)];
+  localStorage.setItem(OTSUB_KEY, JSON.stringify(m));
+}
+
+// Body text for a closing reminder. Deliberately says nothing about how many
+// hours are logged in the app: logging OT here is a personal record, while the
+// deadline is about getting a SIGNED form into the company's system. Implying
+// the two are the same could cost someone their claim.
+function _otCloseBody() {
+  var place = getOtCloseCfg().place;
+  var where = place
+    ? 'Get your OT form signed off and uploaded to ' + place
+    : 'Get your OT form signed off and submitted';
+  return where + ' before ' + _otCloseTimeLabel() + '. Tap ✓ Submitted in the app once it\'s in.';
+}
+
+// Short codes for the day tags — long labels don't fit a calendar cell.
+var OT_CAL_ABBR = { ot1:'OT', offday:'OFF', rd:'RD', ot2:'OT2', ph:'PH', ot3:'PH+' };
+function _otAbbr(key, label) {
+  if (OT_CAL_ABBR[key]) return OT_CAL_ABBR[key];
+  var words = String(label || 'OT').trim().split(/\s+/);
+  if (words.length === 1) return words[0].slice(0, 3).toUpperCase();
+  return words.map(function(w) { return w.charAt(0); }).join('').slice(0, 3).toUpperCase();
+}
+function _otHrTxt(h) {
+  var n = Math.round((parseFloat(h) || 0) * 10) / 10;
+  return (n % 1 === 0 ? n : n.toFixed(1)) + 'h';
+}
+
+// OT entries for one calendar month, grouped by day-of-month.
+function _otByDay(year, monthIdx) {
+  var out = {};
+  if (!calLayerOn('ot')) return out;
+  try {
+    var key   = profilePrefix + 'mft_ot_' + ALL_MONTHS[monthIdx].toLowerCase() + '_' + year;
+    var list  = JSON.parse(localStorage.getItem(key)) || [];
+    var types = getAllOtTypes();
+    list.forEach(function(e) {
+      if (!e || !e.date) return;
+      var p = String(e.date).split('/');
+      if (p.length !== 3) return;
+      // The month key should already guarantee this, but entries edited across
+      // months have been known to linger — trust the date, not the filename.
+      if (parseInt(p[1], 10) !== monthIdx + 1 || parseInt(p[2], 10) !== year) return;
+      var d = parseInt(p[0], 10);
+      if (!d) return;
+      var t = types[e.type] || {};
+      (out[d] = out[d] || []).push({
+        abbr:  _otAbbr(e.type, t.label),
+        label: t.label || 'OT',
+        color: t.color || '#3b82f6',
+        hours: parseFloat(e.hours) || 0,
+        pay:   parseFloat(e.pay) || 0
+      });
+    });
+  } catch (e) {}
+  return out;
+}
+
+// The tag text for one day: "RD 5h", or "2 OT" when more than one was logged.
+function _otDayTag(entries) {
+  if (!entries || !entries.length) return '';
+  if (entries.length > 1) return entries.length + ' OT';
+  return entries[0].abbr + ' ' + _otHrTxt(entries[0].hours);
+}
+function _otDayTitle(entries) {
+  if (!entries || !entries.length) return '';
+  return entries.map(function(o) {
+    return o.label + ' — ' + _otHrTxt(o.hours) + ' · ' + fmt(o.pay);
+  }).join('\n');
 }
 
 // ── Compact popup calendar ────────────────────────
@@ -15578,33 +16679,63 @@ function renderCalendarPopup() {
   html += '<div class="cal-month-label">' + ALL_MONTHS[month] + ' ' + year + '</div>';
   html += '<button class="cal-expand-btn" onclick="openExpandedCal();event.stopPropagation();" title="Expand">⛶</button>';
   html += '</div>';
+  const otDays  = _otByDay(year, month);
+  const closeD  = (calLayerOn('close') && otCloseEnabled()) ? _otCloseDay(year, month) : 0;
   html += '<div class="cal-grid">';
   DAY_LABELS.forEach(function(l) { html += '<div class="cal-hdr">' + l + '</div>'; });
   for (var i = 0; i < firstDay; i++) html += '<div class="cal-cell"></div>';
   for (var n = 1; n <= daysInMonth; n++) {
     var cls = 'cal-cell';
     const ds = year + '-' + String(month+1).padStart(2,'0') + '-' + String(n).padStart(2,'0');
-    const phName = MY_PH[getPHKey(year, month, n)];
-    if (isLeaveDate(ds)) cls += ' cal-offday-sm';
+    const phName = calLayerOn('ph') ? MY_PH[getPHKey(year, month, n)] : null;
+    if (isLeaveDate(ds)) { if (calLayerOn('offday')) cls += ' cal-offday-sm'; }
     else {
       const rt = getRosterType(year, month, n);
-      if (rt === 'offday')  cls += ' cal-offday-sm';
-      if (rt === 'restday') cls += ' cal-restday-sm';
+      if (rt === 'offday'  && calLayerOn('offday'))  cls += ' cal-offday-sm';
+      if (rt === 'restday' && calLayerOn('restday')) cls += ' cal-restday-sm';
     }
-    if (phName)       cls += ' cal-ph-sm';
-    if (n === salDay) cls += ' cal-salary-sm';
-    if (n === today)  cls += ' cal-today';
-    html += '<div class="' + cls + '" title="' + (phName || '') + '">' + n + '</div>';
+    if (phName)         cls += ' cal-ph-sm';
+    if (n === closeD)   cls += ' cal-close-sm';
+    if (n === salDay && calLayerOn('salary')) cls += ' cal-salary-sm';
+    if (n === today)    cls += ' cal-today';
+    // Too small for a text tag — a dot in the type's colour, details on hover.
+    var otDot = otDays[n] ? '<span class="cal-ot-dot" style="background:' + otDays[n][0].color + ';"></span>' : '';
+    var tip   = [phName || '', (n === closeD ? 'Last day to submit your OT — by ' + _otCloseTimeLabel() : ''),
+                 _otDayTitle(otDays[n])].filter(Boolean).join('\n');
+    html += '<div class="' + cls + '" title="' + escHtml(tip) + '">' + n + otDot + '</div>';
   }
   html += '</div>';
   html += '<div class="cal-legend" style="margin-top:0.55rem;flex-wrap:wrap;gap:0.3rem 0.7rem;">';
   html += '<div class="cal-legend-item"><div class="cal-legend-dot" style="background:#ef4444;"></div>Today</div>';
-  html += '<div class="cal-legend-item"><div class="cal-legend-dot" style="outline:2px solid #22c55e;outline-offset:-2px;border-radius:3px;"></div>Salary</div>';
-  html += '<div class="cal-legend-item"><div class="cal-legend-dot" style="background:#fb923c;"></div>Holiday</div>';
+  if (calLayerOn('salary')) html += '<div class="cal-legend-item"><div class="cal-legend-dot" style="background:linear-gradient(160deg,#22c55e,#10b981);box-shadow:0 0 6px rgba(34,197,94,0.55);"></div>💰 Salary Day</div>';
+  if (closeD)               html += '<div class="cal-legend-item"><div class="cal-legend-dot" style="background:#38bdf8;"></div>⏰ OT Closing</div>';
+  if (calLayerOn('ph'))     html += '<div class="cal-legend-item"><div class="cal-legend-dot" style="background:#fb923c;"></div>Holiday</div>';
   if (localStorage.getItem(ROSTER_START_KEY)) {
-    html += '<div class="cal-legend-item"><div class="cal-legend-dot" style="background:#06b6d4;"></div>Off/Leave</div>';
-    html += '<div class="cal-legend-item"><div class="cal-legend-dot" style="background:#a855f7;"></div>Rest Day</div>';
+    if (calLayerOn('offday'))  html += '<div class="cal-legend-item"><div class="cal-legend-dot" style="background:#06b6d4;"></div>Off/Leave</div>';
+    if (calLayerOn('restday')) html += '<div class="cal-legend-item"><div class="cal-legend-dot" style="background:#a855f7;"></div>Rest Day</div>';
   }
+  if (Object.keys(otDays).length) {
+    html += '<div class="cal-legend-item"><div class="cal-legend-dot" style="background:#3b82f6;border-radius:50%;"></div>OT logged</div>';
+  }
+  html += '</div>';
+  el.innerHTML = html;
+}
+
+// Tap-to-toggle chips for what the calendar draws. Switching a layer off hides
+// its days AND drops it from the legend, so the calendar only ever explains
+// what it's actually showing.
+function renderCalLayers() {
+  var el = document.getElementById('calLayers');
+  if (!el) return;
+  var html = '<div class="cal-layers-lbl">Show on calendar</div><div class="cal-layers-row">';
+  CAL_LAYERS.forEach(function(L) {
+    // The OT-closing chip is pointless until a cut-off date has been set up.
+    if (L.id === 'close' && !otCloseEnabled()) return;
+    var on = calLayerOn(L.id);
+    html += '<button class="cal-layer-chip' + (on ? ' on' : '') + '" onclick="toggleCalLayer(\'' + L.id + '\')"'
+         +  (on ? ' style="border-color:' + L.color + '66;background:' + L.color + '1f;color:' + L.color + ';"' : '')
+         +  '><span class="cal-layer-ico">' + L.icon + '</span>' + escHtml(L.label) + '</button>';
+  });
   html += '</div>';
   el.innerHTML = html;
 }
@@ -15628,20 +16759,35 @@ function renderExpandedCal() {
 
   document.getElementById('calExpandTitle').textContent = ALL_MONTHS[month] + ' ' + year;
 
+  const otDays = _otByDay(year, month);
+  const closeD = (calLayerOn('close') && otCloseEnabled()) ? _otCloseDay(year, month) : 0;
   let grid = '';
   DAY_LABELS.forEach(function(l) { grid += '<div class="cal-big-hdr">' + l + '</div>'; });
   for (var i = 0; i < firstDay; i++) grid += '<div class="cal-big-cell"></div>';
   for (var n = 1; n <= daysInMonth; n++) {
     var cls = 'cal-big-cell';
     const rt = getRosterType(year, month, n);
-    const phName = MY_PH[getPHKey(year, month, n)];
+    const phName = calLayerOn('ph') ? MY_PH[getPHKey(year, month, n)] : null;
     if (rt === 'work')    cls += ' cal-work';
-    if (rt === 'offday')  cls += ' cal-offday-day';
-    if (rt === 'restday') cls += ' cal-restday-day';
+    if (rt === 'offday'  && calLayerOn('offday'))  cls += ' cal-offday-day';
+    if (rt === 'restday' && calLayerOn('restday')) cls += ' cal-restday-day';
     if (phName)       cls += ' cal-ph-day';
-    if (n === salDay) cls += ' cal-salary';
+    if (n === closeD) cls += ' cal-close-day';
+    if (n === salDay && calLayerOn('salary')) cls += ' cal-salary';
     if (isCurrentMonth && n === todayD) cls += ' cal-today';
-    grid += '<div class="' + cls + '">' + n + (phName ? '<span class="cal-ph-tip">' + escHtml(phName) + '</span>' : '') + '</div>';
+    // The cell fits one line under the number, so the tags compete. Order of
+    // usefulness: what you did (OT) > what you must do (closing) > what the day
+    // is (holiday). Whatever loses is still in the tooltip, and the holiday is
+    // still obvious from the orange cell.
+    var ot  = otDays[n];
+    var tip = '';
+    if (ot)                 tip = '<span class="cal-ot-tag" style="color:' + ot[0].color + ';">' + escHtml(_otDayTag(ot)) + '</span>';
+    else if (n === closeD)  tip = '<span class="cal-close-tag">OT CUT-OFF</span>';
+    else if (phName)        tip = '<span class="cal-ph-tip">' + escHtml(phName) + '</span>';
+    var titleTxt = [phName || '',
+                    (n === closeD ? 'Last day to submit your OT — by ' + _otCloseTimeLabel() : ''),
+                    _otDayTitle(ot)].filter(Boolean).join('\n');
+    grid += '<div class="' + cls + '"' + (titleTxt ? ' title="' + escHtml(titleTxt) + '"' : '') + '>' + n + tip + '</div>';
   }
   var trailingCells = 42 - firstDay - daysInMonth;
   for (var t = 0; t < trailingCells; t++) grid += '<div class="cal-big-cell"></div>';
@@ -15651,13 +16797,18 @@ function renderExpandedCal() {
   // Legend
   const rs = localStorage.getItem(ROSTER_START_KEY);
   let leg = '<div class="cal-legend-item"><div class="cal-legend-dot" style="background:#ef4444;"></div>Today</div>';
-  leg += '<div class="cal-legend-item"><div class="cal-legend-dot" style="outline:2px solid #22c55e;outline-offset:-2px;border-radius:3px;"></div>Salary</div>';
-  leg += '<div class="cal-legend-item"><div class="cal-legend-dot" style="background:#fb923c;"></div>Public Holiday</div>';
+  if (calLayerOn('salary')) leg += '<div class="cal-legend-item"><div class="cal-legend-dot" style="background:linear-gradient(160deg,#22c55e,#10b981);box-shadow:0 0 6px rgba(34,197,94,0.55);"></div>💰 Salary Day</div>';
+  if (closeD)               leg += '<div class="cal-legend-item"><div class="cal-legend-dot" style="background:#38bdf8;box-shadow:0 0 6px rgba(56,189,248,0.55);"></div>⏰ OT Closing</div>';
+  if (calLayerOn('ph'))     leg += '<div class="cal-legend-item"><div class="cal-legend-dot" style="background:#fb923c;"></div>Public Holiday</div>';
   if (rs) {
-    leg += '<div class="cal-legend-item"><div class="cal-legend-dot" style="background:#06b6d4;"></div>Off Day</div>';
-    leg += '<div class="cal-legend-item"><div class="cal-legend-dot" style="background:#a855f7;"></div>Rest Day</div>';
+    if (calLayerOn('offday'))  leg += '<div class="cal-legend-item"><div class="cal-legend-dot" style="background:#06b6d4;"></div>Off Day</div>';
+    if (calLayerOn('restday')) leg += '<div class="cal-legend-item"><div class="cal-legend-dot" style="background:#a855f7;"></div>Rest Day</div>';
+  }
+  if (Object.keys(otDays).length) {
+    leg += '<div class="cal-legend-item"><div class="cal-legend-dot" style="background:#3b82f6;border-radius:50%;"></div>OT logged</div>';
   }
   document.getElementById('calExpandLegend').innerHTML = leg;
+  renderCalLayers();
 
   const rsi = document.getElementById('rosterStartInput');
   if (rsi && rs) rsi.value = rs;
@@ -15690,7 +16841,112 @@ function openExpandedCal() {
 function closeExpandedCal() {
   document.getElementById('calExpandModal').classList.remove('open');
 }
+// ── OT closing config (draft-based: edits stage here, Save commits) ──
+var _otcYear  = new Date().getFullYear();
+var _otcDraft = null;
+
+function _otcDraftInit() {
+  var c = getOtCloseCfg();
+  _otcDraft = { on: c.on, day: c.day, hour: c.hour, place: c.place,
+                ovr: JSON.parse(JSON.stringify(c.ovr || {})) };
+  _otcYear  = new Date().getFullYear();
+}
+function otcToggleEnable() {
+  if (!_otcDraft) _otcDraftInit();
+  _otcDraft.on = !_otcDraft.on;
+  renderOtcAll();
+}
+function otcSetDay(v)  { if (_otcDraft) { _otcDraft.day  = parseInt(v, 10) || 0; renderOtcGrid(); renderOtcPreview(); } }
+function otcSetHour(v) { if (_otcDraft) { _otcDraft.hour = parseInt(v, 10); renderOtcPreview(); } }
+function otcSetPlace(v) { if (_otcDraft) { _otcDraft.place = String(v || '').slice(0, 30); renderOtcPreview(); } }
+function otcShiftYear(d) { _otcYear += d; renderOtcGrid(); renderOtcPreview(); }
+function otcClearYear() {
+  if (!_otcDraft) return;
+  for (var m = 0; m < 12; m++) delete _otcDraft.ovr[_otcYear + '-' + (m + 1)];
+  renderOtcGrid(); renderOtcPreview();
+  showToast('Cleared ' + _otcYear + ' — every month now uses day ' + (_otcDraft.day || '—'));
+}
+function otcSetOvr(m, v) {
+  if (!_otcDraft) return;
+  var k = _otcYear + '-' + (m + 1);
+  var n = parseInt(v, 10);
+  if (!n || n < 1 || n > 31) delete _otcDraft.ovr[k];
+  else _otcDraft.ovr[k] = n;
+  renderOtcPreview();
+}
+function renderOtcAll() {
+  var btn  = document.getElementById('otcEnable');
+  var body = document.getElementById('otcBody');
+  if (!btn || !_otcDraft) return;
+  var on = _otcDraft.on;
+  btn.classList.toggle('on', on);
+  btn.innerHTML = '<span style="font-size:0.9rem;">⏰</span><span>Remind me before OT closes</span>'
+    + '<span class="otc-pill">' + (on ? 'ON' : 'OFF') + '</span>';
+  body.style.display = on ? 'block' : 'none';
+  if (!on) return;
+
+  var di = document.getElementById('otcDayInput');
+  if (di) di.value = _otcDraft.day || '';
+  var pi = document.getElementById('otcPlaceInput');
+  if (pi) pi.value = _otcDraft.place || '';
+  var hs = document.getElementById('otcHourInput');
+  if (hs && !hs.options.length) {
+    var h = '';
+    for (var i = 6; i <= 23; i++) {
+      var ap = i >= 12 ? 'PM' : 'AM', h12 = i % 12; if (h12 === 0) h12 = 12;
+      h += '<option value="' + i + '">' + h12 + ':00 ' + ap + '</option>';
+    }
+    hs.innerHTML = h;
+  }
+  if (hs) hs.value = String(_otcDraft.hour);
+  renderOtcGrid();
+  renderOtcPreview();
+}
+function renderOtcGrid() {
+  var el = document.getElementById('otcGrid');
+  if (!el || !_otcDraft) return;
+  var lbl = document.getElementById('otcYearLbl');
+  if (lbl) lbl.textContent = _otcYear;
+  var def = _otcDraft.day || '—';
+  var html = '';
+  for (var m = 0; m < 12; m++) {
+    var ovr = _otcDraft.ovr[_otcYear + '-' + (m + 1)];
+    html += '<div class="otc-cell' + (ovr != null ? ' set' : '') + '">'
+         +  '<div class="otc-mon">' + ALL_MONTHS[m].slice(0, 3) + '</div>'
+         +  '<input type="number" min="1" max="31" class="otc-inp" value="' + (ovr != null ? ovr : '')
+         +  '" placeholder="' + def + '" oninput="otcSetOvr(' + m + ',this.value)" />'
+         +  '</div>';
+  }
+  el.innerHTML = html;
+}
+function renderOtcPreview() {
+  var el = document.getElementById('otcPreview');
+  if (!el || !_otcDraft) return;
+  var n = 0;
+  for (var m = 0; m < 12; m++) if (_otcDraft.ovr[_otcYear + '-' + (m + 1)] != null) n++;
+  if (!_otcDraft.day && !n) {
+    el.textContent = 'Set a closing day above, or fill in the months individually.';
+    return;
+  }
+  var ap = _otcDraft.hour >= 12 ? 'PM' : 'AM', h12 = _otcDraft.hour % 12; if (h12 === 0) h12 = 12;
+  el.textContent = n
+    ? n + ' of 12 months in ' + _otcYear + ' set individually · the rest close on the '
+      + _otcDraft.day + 'th, by ' + h12 + ':00 ' + ap
+    : 'Every month closes on the ' + _otcDraft.day + 'th, by ' + h12 + ':00 ' + ap;
+}
+function saveOtCloseSettings() {
+  if (!_otcDraft) return;
+  if (_otcDraft.on && !_otcDraft.day) { showToast('Set a closing day first'); return; }
+  saveOtCloseCfg(_otcDraft);
+  _calRefresh();
+  try { checkReminders(); } catch (e) {}
+  try { _syncPushSubscription(); } catch (e) {} // the cut-off changed — re-upload the schedule
+  showToast(_otcDraft.on ? '⏰ OT closing reminders on' : 'OT closing reminders off');
+}
+
 function openCalCfg() {
+  _otcDraftInit();
+  renderOtcAll();
   var p = getRosterPattern();
   var wi = document.getElementById('rosterWork');
   var oi = document.getElementById('rosterOff');
@@ -15852,6 +17108,7 @@ function clearDueItem(id) {
   localStorage.setItem(_dueClearedKey(), JSON.stringify(cleared));
   updateDueAlert();
   renderCommitments();
+  try { _syncPushSubscription(); } catch (e) {} // drop any queued overdue chasers
   toggleDueAlert(); toggleDueAlert(); // refresh popup
 }
 function markCommitPaid(id, actualAmt) {
@@ -15877,6 +17134,7 @@ function markCommitPaid(id, actualAmt) {
   updateDueAlert();
   renderCommitments();
   renderDashboard();
+  try { _syncPushSubscription(); } catch (e) {} // drop any queued overdue chasers
 }
 function unmarkCommitPaid(id) {
   // Restore debt remaining if this was a debt-linked commitment
@@ -15901,6 +17159,7 @@ function unmarkCommitPaid(id) {
   updateDueAlert();
   renderCommitments();
   renderDashboard();
+  try { _syncPushSubscription(); } catch (e) {} // un-paying re-arms the reminders
 }
 
 var _varAmtTarget = null;
@@ -15931,24 +17190,36 @@ function saveVarAmt() {
   closeVarAmtModal();
 }
 
+// Which calendar date does a monthly due-day fall on inside the CURRENT pay
+// cycle? A cycle can straddle two months (e.g. 25 Jun – 24 Jul), so a due-day
+// smaller than the pay day belongs to the month AFTER the cycle's start month.
+function _dueDateInCycle(day) {
+  var y = periodYear, m = periodMonthIdx;
+  if (day < _cfgDay) { m++; if (m > 11) { m = 0; y++; } }
+  var maxD = new Date(y, m + 1, 0).getDate(); // clamp e.g. day 31 in a 30-day month
+  return new Date(y, m, Math.min(day, maxD));
+}
+// Unpaid due-items for this cycle. daysLeft is NEGATIVE once the due date has
+// passed (i.e. overdue) — previously a passed due-day silently rolled over to
+// next month, which is why overdue bills stopped reminding entirely.
 function _allDueItems() {
-  var today   = new Date();
-  var todayD  = today.getDate();
-  var daysInMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0).getDate();
+  var today = new Date(); today.setHours(0, 0, 0, 0);
   var cleared = _getDueCleared();
   var items   = [];
   loadCommitments().forEach(function(c) {
     var day = parseInt(c.dueDay) || 0;
     if (!day) return;
-    if (cleared.indexOf(c.id) !== -1) return;
-    var daysLeft = day >= todayD ? (day - todayD) : (daysInMonth - todayD + day);
+    if (cleared.indexOf(c.id) !== -1) return; // marked paid → stop nagging this cycle
+    var due = _dueDateInCycle(day);
+    var daysLeft = Math.round((due - today) / 86400000);
     items.push({
       id: c.id, name: c.name, amount: parseFloat(c.amount) || 0,
-      dueDay: day, daysLeft: daysLeft,
+      dueDay: day, daysLeft: daysLeft, dueDate: due,
+      overdue: daysLeft < 0, overdueBy: daysLeft < 0 ? -daysLeft : 0,
       color: c.debtColor || '#f87171', isDebt: !!c.debtId, variable: !!c.variable
     });
   });
-  items.sort(function(a, b) { return a.daysLeft - b.daysLeft; });
+  items.sort(function(a, b) { return a.daysLeft - b.daysLeft; }); // most overdue first
   return items;
 }
 
@@ -15992,9 +17263,10 @@ function toggleDueAlert() {
 
   function renderItem(item, forceLabel) {
     var urgency, urgencyColor;
-    if (forceLabel) {
+    if (forceLabel && !item.overdue) {
       urgency = forceLabel; urgencyColor = '#64748b';
-    } else if (item.daysLeft === 0)     { urgency = 'Today';       urgencyColor = '#ef4444'; }
+    } else if (item.overdue)            { urgency = '⚠ ' + item.overdueBy + (item.overdueBy === 1 ? ' day late' : ' days late'); urgencyColor = '#ef4444'; }
+    else if (item.daysLeft === 0)       { urgency = 'Today';       urgencyColor = '#ef4444'; }
     else if (item.daysLeft === 1)       { urgency = 'Tomorrow';    urgencyColor = '#f97316'; }
     else if (item.daysLeft <= 3)        { urgency = 'In ' + item.daysLeft + ' days'; urgencyColor = '#f97316'; }
     else                                { urgency = 'In ' + item.daysLeft + ' days'; urgencyColor = '#94a3b8'; }
@@ -16077,6 +17349,16 @@ function _todayStr() {
   return d.getFullYear() + "-" + (d.getMonth() + 1) + "-" + d.getDate();
 }
 
+// Zero-padded YYYY-MM-DD. Notification TAGS must use this, never _todayStr():
+// a push and an in-app reminder for the same thing are meant to share a tag so
+// the phone shows one notification instead of two, and _todayStr()'s unpadded
+// "2026-7-13" silently fails to match the push side's "2026-07-13".
+function _ymdStr(d) {
+  return d.getFullYear() + "-" +
+    String(d.getMonth() + 1).padStart(2, "0") + "-" +
+    String(d.getDate()).padStart(2, "0");
+}
+
 function _notifiedToday() {
   try { return JSON.parse(localStorage.getItem("opmus_notified_" + _todayStr())) || []; } catch(e) { return []; }
 }
@@ -16142,8 +17424,18 @@ function checkReminders() {
     fired = true;
   }
 
+  // Overdue bills keep reminding EVERY day (a fresh tag per day, so each day's
+  // reminder shows even if an older one is still sitting in the tray) until the
+  // item is ticked ✓ Done — at which point _allDueItems() drops it entirely.
   _allDueItems().forEach(function(item) {
-    if (item.daysLeft === 1)      fire("due-" + item.id, "💰 " + item.name + " is due tomorrow", "Amount: " + fmt(item.amount));
+    if (item.overdue) {
+      // Padded date + same shape as _buildPushSchedule's tag, so the push that
+      // already fired this morning and this in-app one are ONE notification.
+      fire("overdue-" + item.id + "-" + _ymdStr(new Date()),
+        "⚠️ " + item.name + " is " + item.overdueBy + (item.overdueBy === 1 ? " day" : " days") + " late",
+        fmt(item.amount) + " still unpaid. Open the app and tap ✓ Done once you've paid it.");
+    }
+    else if (item.daysLeft === 1) fire("due-" + item.id, "💰 " + item.name + " is due tomorrow", "Amount: " + fmt(item.amount));
     else if (item.daysLeft === 0) fire("due-" + item.id, "💰 " + item.name + " is due today",    "Amount: " + fmt(item.amount));
   });
 
@@ -16169,6 +17461,23 @@ function checkReminders() {
   var salDay = getSalaryDate(tomorrow.getFullYear(), tomorrow.getMonth());
   if (salDay === tomorrow.getDate()) {
     fire("salary", "💵 Salary day is tomorrow", "Payday is tomorrow — check your budget!");
+  }
+
+  // OT submission cut-off — the deadline to get a signed form into the company's
+  // system. Goes quiet the moment they tick ✓ Submitted.
+  if (otCloseEnabled()) {
+    var t0 = new Date(); t0.setHours(0, 0, 0, 0);
+    var cd = _nextOtClose(t0);
+    if (cd && !isOtSubmitted(cd)) {
+      var dl   = Math.round((cd - t0) / 86400000);
+      var body = _otCloseBody();
+      // Keyed by the CLOSING date (not today), matching _buildPushSchedule's
+      // tag — so the day's push and this in-app nudge collapse into one.
+      var tag  = "otclose-" + _ymdStr(cd);
+      if (dl === 0)      fire(tag, "⏰ LAST DAY to submit your OT — closes " + _otCloseTimeLabel(), body);
+      else if (dl === 1) fire(tag, "⏰ OT submission closes tomorrow", body);
+      else if (dl === 3) fire(tag, "⏰ OT submission closes in 3 days", body);
+    }
   }
 
   if (fired) _lsSet("opmus_notified_" + _todayStr(), JSON.stringify(notified));
@@ -16219,15 +17528,41 @@ function _buildPushSchedule() {
   var HORIZON = 60;
   var today = new Date(); today.setHours(0, 0, 0, 0);
 
-  function ymd(d) {
-    return d.getFullYear() + "-" +
-      String(d.getMonth() + 1).padStart(2, "0") + "-" +
-      String(d.getDate()).padStart(2, "0");
+  // Shared with checkReminders() so the two sides' tags can't drift apart.
+  var ymd = _ymdStr;
+  // Three send times a day — morning, lunch break, evening. Chosen so a
+  // reminder lands when people actually look at their phone, and never at an
+  // unsociable hour. The Cloud Function runs at exactly these times and fires
+  // the entries whose `hour` matches.
+  //   09:00 — start of the day    13:00 — lunch break    20:00 — evening at home
+  var PUSH_SLOTS = [9, 13, 20];
+  // Spread ordinary reminders across the 3 slots instead of always 8am. Seeded
+  // off the schedule key so a reminder keeps its slot across re-uploads rather
+  // than jumping around.
+  function slotFor(seed) {
+    var h = 0;
+    for (var i = 0; i < seed.length; i++) { h = ((h << 5) - h + seed.charCodeAt(i)) | 0; }
+    return PUSH_SLOTS[Math.abs(h) % PUSH_SLOTS.length];
   }
+  function _inRange(fireDate) {
+    if (fireDate < today) return false;
+    return Math.round((fireDate - today) / 86400000) <= HORIZON;
+  }
+  // One reminder that day, at one of the 3 slots.
   function add(fireDate, tag, title, body) {
-    if (fireDate < today) return;
-    if (Math.round((fireDate - today) / 86400000) > HORIZON) return;
-    sched[tag + "__" + ymd(fireDate)] = { date: ymd(fireDate), tag: tag, title: title, body: body };
+    if (!_inRange(fireDate)) return;
+    var key = tag + "__" + ymd(fireDate);
+    sched[key] = { date: ymd(fireDate), tag: tag, title: title, body: body, hour: slotFor(key) };
+  }
+  // Reminds at ALL 3 slots that day (used for overdue bills, so they get three
+  // chances to notice). They share one `tag`, so the phone updates the same
+  // notification instead of stacking three — three nudges, one clean entry.
+  function addAllSlots(fireDate, tag, title, body) {
+    if (!_inRange(fireDate)) return;
+    var base = ymd(fireDate);
+    PUSH_SLOTS.forEach(function(hr) {
+      sched[tag + "__" + base + "__" + hr] = { date: base, tag: tag, title: title, body: body, hour: hr };
+    });
   }
   var L = _profileLabel();
   function schedDue(dueDate, tag, name, body, emoji) {
@@ -16247,6 +17582,19 @@ function _buildPushSchedule() {
       var occ = new Date(today.getFullYear(), today.getMonth() + m, day);
       if (occ.getDate() !== day) occ = new Date(today.getFullYear(), today.getMonth() + m + 1, 0); // clamp short months
       schedDue(occ, "due-" + c.id, c.name, "Amount: " + fmt(amt), "💰");
+    }
+    // 1b) Overdue chasers — once THIS cycle's due date has passed and the bill
+    // still isn't ticked ✓ Done, chase it 3x a day (morning / lunch / evening)
+    // so it can't be quietly forgotten. Each day gets its own tag, so a new
+    // reminder appears rather than silently replacing yesterday's.
+    // Paying it re-uploads the schedule (see clearDueItem), which wipes these.
+    var dueThis = _dueDateInCycle(day);
+    for (var od = 1; od <= 21; od++) {
+      var chase = new Date(dueThis); chase.setDate(chase.getDate() + od);
+      if (chase < today) continue;
+      addAllSlots(chase, "overdue-" + c.id + "-" + ymd(chase),
+        L + "⚠️ " + c.name + " is " + od + (od === 1 ? " day" : " days") + " late",
+        fmt(amt) + " still unpaid. Open the app and tap ✓ Done once you've paid it.");
     }
   });
 
@@ -16275,6 +17623,36 @@ function _buildPushSchedule() {
       var salDate = new Date(ref.getFullYear(), ref.getMonth(), sDay);
       var before = new Date(salDate); before.setDate(before.getDate() - 1);
       add(before, "salary", L + "💵 Salary day is tomorrow", "Payday is tomorrow — check your budget!");
+    }
+  }
+
+  // 4b) OT submission cut-off — 3 days out, the day before, then on the day at
+  //     every slot that still lands BEFORE the cut-off hour. Missing this one
+  //     means the claim doesn't get paid, so the last day is chased hard.
+  //     Ticking ✓ Submitted re-uploads the schedule (see otSubMark), which wipes
+  //     that month's nags.
+  if (otCloseEnabled()) {
+    var closeHr = getOtCloseCfg().hour;
+    var cBody   = _otCloseBody();
+    for (var cm = 0; cm < 3; cm++) {
+      var cref = new Date(today.getFullYear(), today.getMonth() + cm, 1);
+      var cdt  = _otCloseDate(cref.getFullYear(), cref.getMonth());
+      if (!cdt) continue;
+      if (isOtSubmitted(cdt)) continue; // already in — don't nag
+      var cTag = "otclose-" + ymd(cdt);
+      var c3 = new Date(cdt); c3.setDate(c3.getDate() - 3);
+      var c1 = new Date(cdt); c1.setDate(c1.getDate() - 1);
+      add(c3, cTag, L + "⏰ OT submission closes in 3 days", cBody);
+      add(c1, cTag, L + "⏰ OT submission closes tomorrow",  cBody);
+      if (_inRange(cdt)) {
+        var cBase  = ymd(cdt);
+        var cTitle = L + "⏰ LAST DAY to submit your OT — closes " + _otCloseTimeLabel();
+        PUSH_SLOTS.forEach(function(hr) {
+          if (hr >= closeHr) return; // a nudge after the cut-off helps nobody
+          sched[cTag + "__" + cBase + "__" + hr] =
+            { date: cBase, tag: cTag, title: cTitle, body: cBody, hour: hr };
+        });
+      }
     }
   }
 
@@ -16926,6 +18304,8 @@ function applyProfileToUI(profile) {
   // Apply this profile's saved theme and style
   loadTheme();
   loadStyle();
+  loadFontSize();
+  loadFontFamily();
   // Record presence immediately so this user's name shows in the admin Users tab
   // right away, instead of waiting for the next 60s heartbeat.
   try { recordPresence(); } catch(e) {}
@@ -16938,6 +18318,10 @@ var STYLES = {
   navy:     { name: "Navy",     body: "#05101e", modal: "#0b1830", card: "rgba(255,255,255,0.05)" },
   amoled:   { name: "AMOLED",  body: "#000000", modal: "#0d0d0d", card: "rgba(255,255,255,0.035)" },
   charcoal: { name: "Charcoal", body: "#0c0c0d", modal: "#161618", card: "rgba(255,255,255,0.045)" },
+  ocean:    { name: "Deep Sea", body: "#04121c", modal: "#08202f", card: "rgba(255,255,255,0.05)"  },
+  forest:   { name: "Forest",   body: "#06120d", modal: "#0b2018", card: "rgba(255,255,255,0.05)"  },
+  plum:     { name: "Plum",     body: "#120a17", modal: "#1d0f26", card: "rgba(255,255,255,0.05)"  },
+  coffee:   { name: "Coffee",   body: "#110f0d", modal: "#1c1815", card: "rgba(255,255,255,0.045)" },
 };
 
 function _buildStyleCSS(key) {
@@ -16991,6 +18375,83 @@ function renderStyleSelector(activeKey) {
     html += "</div>";
   });
   grid.innerHTML = html;
+}
+
+// ── Text Size ─────────────────────────────────────────────
+// 96% of this app's font sizes are rem, so moving the ROOT font size scales the
+// whole thing in one go. Steps are deliberately gentle — this is a dense
+// dashboard, and a jump to 20px+ starts pushing numbers out of their cards.
+var FONTSIZE_KEY = profilePrefix + "mft_font_size";
+var FONT_SIZES = {
+  sm: { name: "Small",   px: 15,   sample: "Aa" },
+  md: { name: "Normal",  px: 16,   sample: "Aa" },
+  lg: { name: "Large",   px: 17.5, sample: "Aa" },
+  xl: { name: "Bigger",  px: 19,   sample: "Aa" }
+};
+function applyFontSize(key) {
+  var f = FONT_SIZES[key] || FONT_SIZES.md;
+  document.documentElement.style.fontSize = f.px + "px";
+}
+function saveFontSize(key) {
+  localStorage.setItem(FONTSIZE_KEY, key);
+  applyFontSize(key);
+  renderFontSizeSelector(key);
+}
+function loadFontSize() { applyFontSize(localStorage.getItem(FONTSIZE_KEY) || "md"); }
+function renderFontSizeSelector(activeKey) {
+  var el = document.getElementById("fontSizeGrid");
+  if (!el) return;
+  var cur = activeKey || localStorage.getItem(FONTSIZE_KEY) || "md";
+  var html = "";
+  Object.keys(FONT_SIZES).forEach(function (k) {
+    var f = FONT_SIZES[k];
+    html += '<button class="fs-card' + (k === cur ? " active" : "") + '" onclick="saveFontSize(\'' + k + '\')">'
+         +  '<span class="fs-sample" style="font-size:' + (f.px * 0.82) + 'px;">' + f.sample + '</span>'
+         +  '<span class="fs-name">' + f.name + '</span></button>';
+  });
+  el.innerHTML = html;
+}
+
+// ── Font Style ────────────────────────────────────────────
+// System stacks only — no web-font CDN, so the app keeps working offline and
+// doesn't gain a render-blocking download just to change personality.
+var FONTFAM_KEY = profilePrefix + "mft_font_family";
+var FONTS = {
+  default: { name: "Default", stack: "'Inter','Segoe UI',system-ui,sans-serif" },
+  rounded: { name: "Rounded", stack: "ui-rounded,'SF Pro Rounded','Segoe UI Variable Display',Nunito,'Trebuchet MS',system-ui,sans-serif" },
+  classic: { name: "Classic", stack: "Georgia,'Times New Roman',serif" },
+  mono:    { name: "Mono",    stack: "'SF Mono',Consolas,'Courier New',monospace" }
+};
+// These rules hardcode Inter, so a plain `body` override loses to them on
+// specificity. Sync keys / PINs / codes are deliberately left monospace.
+var FONT_SELECTORS = "body,.mpanel-tab,.mpanel-tab-lbl,.mpanel-tab-add,#profileOverlay,.prof-btn,.prof-setup-input,.ft-tab";
+function _buildFontCSS(key) {
+  var f = FONTS[key] || FONTS.default;
+  return FONT_SELECTORS + "{font-family:" + f.stack + ";}";
+}
+function applyFontFamily(key) {
+  var el = document.getElementById("font-overrides");
+  if (!el) { el = document.createElement("style"); el.id = "font-overrides"; document.head.appendChild(el); }
+  el.textContent = _buildFontCSS(key);
+}
+function saveFontFamily(key) {
+  localStorage.setItem(FONTFAM_KEY, key);
+  applyFontFamily(key);
+  renderFontSelector(key);
+}
+function loadFontFamily() { applyFontFamily(localStorage.getItem(FONTFAM_KEY) || "default"); }
+function renderFontSelector(activeKey) {
+  var el = document.getElementById("fontFamGrid");
+  if (!el) return;
+  var cur = activeKey || localStorage.getItem(FONTFAM_KEY) || "default";
+  var html = "";
+  Object.keys(FONTS).forEach(function (k) {
+    var f = FONTS[k];
+    html += '<button class="ff-card' + (k === cur ? " active" : "") + '" onclick="saveFontFamily(\'' + k + '\')"'
+         +  ' style="font-family:' + f.stack + ';">'
+         +  '<span class="ff-sample">Ag</span><span class="ff-name">' + f.name + '</span></button>';
+  });
+  el.innerHTML = html;
 }
 
 // ── Theme System ──────────────────────────────────────────
@@ -17059,6 +18520,12 @@ var THEMES = {
   violet:  { name:'Violet',  accent:'#8b5cf6', dim:'#7c3aed', dark:'#4c1d95', light:'#c4b5fd', r:139, g:92,  b:246 },
   amber:   { name:'Amber',   accent:'#f59e0b', dim:'#d97706', dark:'#78350f', light:'#fcd34d', r:245, g:158, b:11  },
   rose:    { name:'Rose',    accent:'#ec4899', dim:'#db2777', dark:'#831843', light:'#f9a8d4', r:236, g:72,  b:153 },
+  teal:    { name:'Teal',    accent:'#14b8a6', dim:'#0d9488', dark:'#134e4a', light:'#5eead4', r:20,  g:184, b:166 },
+  indigo:  { name:'Indigo',  accent:'#6366f1', dim:'#4f46e5', dark:'#312e81', light:'#a5b4fc', r:99,  g:102, b:241 },
+  lime:    { name:'Lime',    accent:'#84cc16', dim:'#65a30d', dark:'#365314', light:'#bef264', r:132, g:204, b:22  },
+  orange:  { name:'Orange',  accent:'#f97316', dim:'#ea580c', dark:'#7c2d12', light:'#fdba74', r:249, g:115, b:22  },
+  cyan:    { name:'Cyan',    accent:'#06b6d4', dim:'#0891b2', dark:'#164e63', light:'#67e8f9', r:6,   g:182, b:212 },
+  fuchsia: { name:'Fuchsia', accent:'#d946ef', dim:'#c026d3', dark:'#701a75', light:'#f0abfc', r:217, g:70,  b:239 },
 };
 
 function _buildThemeCSS(t) {
@@ -17139,6 +18606,8 @@ function openThemeModal() {
   _thCpH = hsl.h; _thCpS = hsl.s; _thCpL = hsl.l;
   renderThemeModal(saved);
   renderStyleSelector(localStorage.getItem(STYLE_KEY) || "default");
+  renderFontSizeSelector(localStorage.getItem(FONTSIZE_KEY) || "md");
+  renderFontSelector(localStorage.getItem(FONTFAM_KEY) || "default");
   document.getElementById("themeOverlay").classList.add("open");
   setTimeout(_thCpUpdateUI, 30);
 }
@@ -17147,6 +18616,8 @@ function closeThemeModal() {
   document.getElementById("themeOverlay").classList.remove("open");
   loadTheme();
   loadStyle();
+  loadFontSize();
+  loadFontFamily();
 }
 
 function themeOverlayClick(e) {
@@ -18577,6 +20048,7 @@ _syncKey = getSyncKey();
   initDrag();
   initResize();
   applyFinVisibility();
+  try { _rcpCheckShared(); } catch (e) {}
   // Re-apply layout on orientation/resize so mobile ↔ desktop works
   window.addEventListener('resize', function() { applyLayoutMode(); });
 })();
@@ -18620,6 +20092,10 @@ _syncKey = getSyncKey();
     </div>
     <div class="theme-section-lbl">Base Style</div>
     <div class="style-grid" id="styleGrid"></div>
+    <div class="theme-section-lbl">Text Size</div>
+    <div class="fs-grid" id="fontSizeGrid"></div>
+    <div class="theme-section-lbl">Font Style</div>
+    <div class="ff-grid" id="fontFamGrid"></div>
     <button class="theme-done-btn" onclick="closeThemeModal()">Done</button>
   </div>
 </div>

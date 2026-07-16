@@ -13,6 +13,10 @@
 importScripts('https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js');
 importScripts('https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging-compat.js');
 
+// Receipt share target. Both this worker and sw.js register at the same scope,
+// so whichever won the race must be able to accept a shared receipt.
+importScripts('./share-target-sw.js');
+
 firebase.initializeApp({
   apiKey:            "AIzaSyCgy7j7u1dO-c-_NUBpX5-OweQA2YxlG24",
   authDomain:        "my-financial-tracker-b473e.firebaseapp.com",
