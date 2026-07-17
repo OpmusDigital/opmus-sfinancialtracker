@@ -127,6 +127,17 @@
     padding:3px 7px; border-radius:5px; color:#d9a441; background:rgba(7,9,6,.82);
     font-size:9px; font-weight:900; letter-spacing:1px; }
 
+  /* ---------- game mode picker ---------- */
+  #modePicker { pointer-events:auto; display:flex; align-items:stretch; justify-content:center; gap:8px; margin:4px 0 2px; }
+  .modeChoice { width:146px; min-height:42px; padding:6px 9px; border-radius:8px; cursor:pointer;
+    border:1px solid #6b8e23; background:rgba(15,20,12,.92); color:#b9c2ae; font-family:inherit;
+    transition:transform .08s,border-color .08s,background .08s,color .08s; }
+  .modeChoice:hover, .modeChoice:active { transform:translateY(-1px); border-color:#9ADE00; }
+  .modeChoice.selected { color:#0b0e0a; background:#9ADE00; border-color:#9ADE00; }
+  .modeChoice:disabled { cursor:not-allowed; transform:none; opacity:.5; }
+  .modeChoice .modeTitle { display:block; font-size:11px; line-height:1; font-weight:900; letter-spacing:1.4px; }
+  .modeChoice .modeDesc { display:block; margin-top:4px; font-size:9px; line-height:1.15; font-weight:700; opacity:.72; letter-spacing:.25px; }
+
   /* ---------- multiplayer lobby ---------- */
   .btn2 { background:transparent; color:#9ADE00; border:2px solid #9ADE00; box-shadow:none; }
   /* compact start-menu controls; gameplay buttons keep their original size */
@@ -180,6 +191,10 @@
     #charControls { grid-template-columns:28px minmax(0,1fr) 28px; gap:4px; }
     #charSelect, .charNav { min-height:28px; font-size:9px; }
     .charChoice { padding:6px 8px; font-size:10px; }
+    #modePicker { gap:6px; margin:2px 0 1px; }
+    .modeChoice { width:128px; min-height:36px; padding:5px 7px; }
+    .modeChoice .modeTitle { font-size:10px; }
+    .modeChoice .modeDesc { font-size:8px; margin-top:3px; }
     .card { width:136px; padding:14px 10px; }
     .card .ico { font-size:26px; }
   }
@@ -235,6 +250,14 @@
       <div id="charCount">1 / 21</div>
     </div>
   </div>
+  <div id="modePicker" aria-label="Choose game mode">
+    <button class="modeChoice" data-mode="campaign">
+      <span class="modeTitle">CAMPAIGN</span><span class="modeDesc">Clear Wave 25 to win</span>
+    </button>
+    <button class="modeChoice" data-mode="endless">
+      <span class="modeTitle">ENDLESS</span><span class="modeDesc">Survive unlimited waves</span>
+    </button>
+  </div>
   <p id="controlsHint"></p>
   <p style="opacity:.6;font-size:13px;">Kills drop XP — walk over it. Level up to choose an upgrade.</p>
   <button class="btn btn2" id="aimBtn" style="display:none;margin-bottom:12px;">🎯 AIM: AUTO-SHOOT</button>
@@ -261,8 +284,10 @@
 </div>
 
 <div class="overlay hidden" id="gameOverlay">
-  <h2 style="color:#e05545;">YOU DIED</h2>
+  <h2 id="resultTitle" style="color:#e05545;">YOU DIED</h2>
+  <p id="resultSubtitle" style="display:none;max-width:460px;"></p>
   <div class="stats">
+    <div class="k">Mode</div><div class="v" id="sMode">ENDLESS</div>
     <div class="k">Time survived</div><div class="v" id="sTime">0:00</div>
     <div class="k">Kills</div><div class="v" id="sKills">0</div>
     <div class="k">Wave reached</div><div class="v" id="sWave">1</div>
@@ -290,6 +315,32 @@ const ASSET_PATHS = Object.freeze({
   rifle: './assets/guns/Assault Rifle.glb',
   shotgun: './assets/guns/Shotgun.glb',
   smg: './assets/guns/Submachine Gun.glb',
+});
+
+// Decorative street clutter. Each key doubles as its POOLS[] name — see
+// "infinite world: prop pools" below for how these get scattered into chunks.
+// Purely cosmetic: a prop that fails to load just never appears, nothing else breaks.
+const CITY_PROP_DEFS = Object.freeze({
+  bench:           { path: './assets/city_props/Bench.glb',             label: 'Bench' },
+  bikeRack:        { path: './assets/city_props/Bike Rack.glb',         label: 'Bike Rack' },
+  bollard:         { path: './assets/city_props/Bollard.glb',           label: 'Bollard' },
+  boxPile:         { path: './assets/city_props/Box Pile.glb',          label: 'Box Pile' },
+  cardboardBox:    { path: './assets/city_props/Cardboard Box.glb',     label: 'Cardboard Box' },
+  concreteBarrier: { path: './assets/city_props/Concrete Barrier.glb',  label: 'Concrete Barrier' },
+  fallenLeaves:    { path: './assets/city_props/Fallen Leaves.glb',     label: 'Fallen Leaves' },
+  fireHydrant:     { path: './assets/city_props/Fire Hydrant.glb',      label: 'Fire Hydrant' },
+  floorTrash:      { path: './assets/city_props/Floor Trash.glb',       label: 'Floor Trash' },
+  longBush:        { path: './assets/city_props/Long Bush.glb',         label: 'Long Bush' },
+  manhole:         { path: './assets/city_props/Manhole.glb',           label: 'Manhole' },
+  smallBush:       { path: './assets/city_props/Small Bush.glb',        label: 'Small Bush' },
+  stopSign:        { path: './assets/city_props/Stop Sign.glb',         label: 'Stop Sign' },
+  streetLight:     { path: './assets/city_props/Street Light.glb',      label: 'Street Light' },
+  trafficCone:     { path: './assets/city_props/Traffic Cone.glb',      label: 'Traffic Cone' },
+  trafficLight:    { path: './assets/city_props/Traffic Light.glb',     label: 'Traffic Light' },
+  trashBag:        { path: './assets/city_props/Trash Bag.glb',         label: 'Trash Bag' },
+  trashCan:        { path: './assets/city_props/Trash Can.glb',         label: 'Trash Can' },
+  treeLong:        { path: './assets/city_props/Tree Long.glb',         label: 'Tree Long' },
+  treeCity:        { path: './assets/city_props/Tree.glb',              label: 'City Tree' },
 });
 
 // Character models are loaded only when selected or seen in multiplayer.
@@ -397,8 +448,38 @@ let enhancedAssets = {
 const IS_TOUCH = matchMedia('(pointer: coarse)').matches || ('ontouchstart' in window && navigator.maxTouchPoints > 0);
 const MAXZ  = IS_TOUCH ? 34 : 48;       // concurrent zombie cap (3D is GPU-heavy; tablets get fewer)
 const WAVE_LEN = 25;                    // seconds per wave
+const CAMPAIGN_FINAL_WAVE = 25;
 const XP_NEED  = lv => 20 + lv * 15;
 const AUTO_AIM_FOV = 175; // total horizontal peripheral cone: ±87.5° from camera forward
+
+const GAME_MODES = Object.freeze({
+  campaign: { name: 'CAMPAIGN', description: `Clear Wave ${CAMPAIGN_FINAL_WAVE} to win.` },
+  endless:  { name: 'ENDLESS',  description: 'Survive unlimited waves.' },
+});
+function validGameMode(mode) { return GAME_MODES[mode] ? mode : 'endless'; }
+let preferredGameMode = 'endless';
+try { preferredGameMode = validGameMode(localStorage.getItem('dz_game_mode') || 'endless'); } catch (_) {}
+let selectedGameMode = preferredGameMode;
+let gameModeSelectionLocked = false;
+
+// Campaign difficulty overrides will go here when the final wave plan is ready.
+// Example: 5: { normalHp: 80, spawnDelay: 0.7, maxAlive: 22 }
+const CAMPAIGN_WAVE_RULES = Object.freeze({});
+function getWaveRules(wv) {
+  const base = {
+    bruteChance: wv >= 3 ? Math.min(0.08 + (wv - 3) * 0.03, 0.3) : 0,
+    bruteHp: 80 + wv * 20,
+    bruteSpeed: 1.5,
+    bruteDamage: 18,
+    normalHp: 26 + wv * 6,
+    normalSpeedBonus: Math.min(wv * 0.05, 1.2),
+    normalDamage: 8,
+    maxAlive: Math.min(4 + wv * 3, mpOn() ? 40 : MAXZ),
+    spawnDelay: Math.max(0.3, 1.4 - wv * 0.06) * (mpOn() ? 0.8 : 1),
+  };
+  if (selectedGameMode !== 'campaign') return base;
+  return Object.assign(base, CAMPAIGN_WAVE_RULES[wv] || {});
+}
 
 /* ================= renderer / scene ================= */
 const renderer = new THREE.WebGLRenderer({ antialias: !IS_TOUCH, powerPreference: 'high-performance' });
@@ -464,6 +545,7 @@ scene.add(moon);
 // 36×36 "chunks" around the player, generated deterministically from the chunk
 // coords — walk away and back, and the same wreck is still there.
 const obstacles = []; // rebuilt from active chunks — {x, z, r}
+const cityMapObstacles = []; // permanent building colliders for the city-map landmark, see loadCityMap()
 const CHUNK = 36;
 
 function mulberry32(a) {
@@ -478,13 +560,17 @@ function mulberry32(a) {
 const POOLS = {};
 {
   const MOB = IS_TOUCH; // tablets get fewer props
-  const add = (name, n, build, r, rotY = true) => {
+  // h = standable height for the jump-and-land-on-top feature (0 = not
+  // climbable, just a horizontal blocker like before). Picked from each
+  // shape's own geometry above, not measured — retune per-prop if a jump
+  // lands short or floats.
+  const add = (name, n, build, r, rotY = true, h = 0) => {
     POOLS[name] = [];
     for (let i = 0; i < n; i++) {
       const o = build(i);
       o.visible = false;
       scene.add(o);
-      POOLS[name].push({ o, r: typeof r === 'function' ? r(o) : r, rotY, used: false, x: 0, z: 0 });
+      POOLS[name].push({ o, r: typeof r === 'function' ? r(o) : r, rotY, h, used: false, x: 0, z: 0 });
     }
   };
 
@@ -517,13 +603,13 @@ const POOLS = {};
     const m = new THREE.Mesh(crateGeo, i % 2 ? crateMat : crateMat2);
     m.position.y = 0.85;
     return m;
-  }, 1.7);
+  }, 1.7, true, 1.7);
 
   add('barrier', MOB ? 5 : 8, () => {
     const m = new THREE.Mesh(barrierGeo, barrierMat);
     m.position.y = 0.5;
     return m;
-  }, 1.5);
+  }, 1.5, true, 1.0);
 
   add('rock', MOB ? 6 : 10, () => {
     const s = 1 + Math.random() * 1.3;
@@ -547,7 +633,7 @@ const POOLS = {};
     return g;
   }, 0.7);
 
-  add('wreck', MOB ? 2 : 4, () => {   // abandoned car
+  add('wreck', MOB ? 2 : 4, () => {   // abandoned car — climbable up onto the hood/roof
     const g = new THREE.Group();
     const mat = rustMats[Math.floor(Math.random() * 3)];
     const body = new THREE.Mesh(new THREE.BoxGeometry(3.8, 0.85, 1.7), mat); body.position.y = 0.75; g.add(body);
@@ -559,7 +645,7 @@ const POOLS = {};
       wheels.rotation.x = Math.PI / 2; wheels.position.set(ax, 0.32, 0); g.add(wheels);
     }
     return g;
-  }, 2.3);
+  }, 2.3, true, 1.2); // body top ~1.2 — cabin roof is taller than the boosted jump reaches
 
   add('ruin', MOB ? 3 : 5, () => {    // crumbled L-shaped wall
     const g = new THREE.Group();
@@ -595,6 +681,35 @@ const POOLS = {};
     m.scale.setScalar(1.5 + Math.random() * 2.5);
     return m;
   }, 0, false);
+
+  // City prop pools start as empty groups — invisible until their GLB loads
+  // (loadCityProps), then setupCityProp() fills every slot with a clone.
+  // Radii are estimates since these can't be visually measured from here;
+  // nudge them if a prop blocks movement oddly or lets zombies clip through.
+  const cityGroup = () => new THREE.Group();
+  // Trailing number = climbable standing height (0 = horizontal blocker only,
+  // same as before) — set on the flat-topped/boxy props, skipped on thin
+  // poles, tall signage and vegetation where "standing on it" wouldn't read.
+  add('bench',           MOB ? 2 : 3, cityGroup, 1.0, true, 0.5);
+  add('bikeRack',        MOB ? 1 : 2, cityGroup, 0.8);
+  add('bollard',         MOB ? 3 : 5, cityGroup, 0.28, true, 0.75);
+  add('boxPile',         MOB ? 2 : 3, cityGroup, 0.7, true, 1.0);
+  add('cardboardBox',    MOB ? 2 : 4, cityGroup, 0.4, true, 0.5);
+  add('concreteBarrier', MOB ? 3 : 5, cityGroup, 1.5, true, 0.8);
+  add('fallenLeaves',    MOB ? 3 : 5, cityGroup, 0, false);
+  add('fireHydrant',     MOB ? 2 : 3, cityGroup, 0.3, true, 0.55);
+  add('floorTrash',      MOB ? 4 : 6, cityGroup, 0, false);
+  add('longBush',        MOB ? 2 : 4, cityGroup, 0.8);
+  add('manhole',         MOB ? 3 : 5, cityGroup, 0, false);
+  add('smallBush',       MOB ? 4 : 6, cityGroup, 0.45);
+  add('stopSign',        MOB ? 2 : 3, cityGroup, 0.22);
+  add('streetLight',     MOB ? 3 : 4, cityGroup, 0.28);
+  add('trafficCone',     MOB ? 3 : 5, cityGroup, 0.22, true, 0.45);
+  add('trafficLight',    MOB ? 1 : 2, cityGroup, 0.28);
+  add('trashBag',        MOB ? 3 : 4, cityGroup, 0.3, true, 0.5);
+  add('trashCan',        MOB ? 3 : 5, cityGroup, 0.35, true, 0.9);
+  add('treeCity',        MOB ? 4 : 6, cityGroup, 0.65);
+  add('treeLong',        MOB ? 2 : 4, cityGroup, 0.65);
 }
 
 const activeChunks = new Map();
@@ -637,6 +752,30 @@ function genChunk(cx, cz, key) {
     for (let i = 0; i < n; i++) placeAt('grave', gx + (rng() - 0.5) * 4, gz + (rng() - 0.5) * 4);
   }
   else if (roll < 0.76) place('lamp');
+
+  // urban street clutter — independent rolls; pool exhaustion (small on
+  // mobile) just skips placement silently, same as the pools above
+  if (rng() < 0.65) place('trashCan');
+  if (rng() < 0.5) place('trashBag');
+  if (rng() < 0.55) place('floorTrash');
+  if (rng() < 0.35) place('cardboardBox');
+  if (rng() < 0.3) place('boxPile');
+  if (rng() < 0.4) place('fallenLeaves');
+  if (rng() < 0.3) place('manhole');
+  if (rng() < 0.45) place('trafficCone');
+  if (rng() < 0.22) place('bollard');
+  if (rng() < 0.18) place('fireHydrant');
+  if (rng() < 0.16) place('stopSign');
+  if (rng() < 0.14) place('bench');
+  if (rng() < 0.1) place('bikeRack');
+  if (rng() < 0.5) place('smallBush');
+  if (rng() < 0.3) place('longBush');
+  if (rng() < 0.55) place('treeCity');
+  if (rng() < 0.25) place('treeLong');
+  if (rng() < 0.28) place('streetLight');
+  if (rng() < 0.12) place('trafficLight');
+  if (rng() < 0.14) place('concreteBarrier');
+
   activeChunks.set(key, props);
 }
 
@@ -658,7 +797,8 @@ function updateChunks(force) {
     }
   obstacles.length = 0;
   for (const props of activeChunks.values())
-    for (const p of props) if (p.r > 0) obstacles.push({ x: p.x, z: p.z, r: p.r });
+    for (const p of props) if (p.r > 0) obstacles.push({ x: p.x, z: p.z, r: p.r, h: p.h || 0 });
+  for (const o of cityMapObstacles) obstacles.push(o); // permanent, survives every chunk rebuild
 }
 
 /* ================= shared geometry / materials ================= */
@@ -909,6 +1049,108 @@ function prepareImportedModel(root, cloneMaterials = false) {
     }
   });
   return mats;
+}
+// City props are static (no bones), so unlike prepareImportedModel they keep
+// frustum culling on — cheap free wins across a wide open world — and share
+// one geometry/material per prop type instead of cloning per instance.
+function prepareCityPropModel(root) {
+  root.traverse(o => {
+    if (!o.isMesh) return;
+    const list = Array.isArray(o.material) ? o.material : [o.material];
+    for (const m of list) { if (m && m.map) m.map.colorSpace = THREE.SRGBColorSpace; }
+  });
+}
+function setupCityProp(name, gltf) {
+  const pool = POOLS[name];
+  if (!pool) return;
+  for (const slot of pool) {
+    const root = gltf.scene.clone(true);
+    prepareCityPropModel(root);
+    slot.o.add(root);
+  }
+}
+async function loadCityProps() {
+  await Promise.allSettled(Object.entries(CITY_PROP_DEFS).map(([key, def]) =>
+    loadGlb(def.path, def.label)
+      .then(gltf => setupCityProp(key, gltf))
+      .catch(err => console.warn(`City prop "${def.label}" failed to load:`, err && err.message ? err.message : err))
+  ));
+}
+
+// One-off scenic landmark (a full city scene, ~25MB, ~135x147 unit footprint,
+// ~38 tall) placed a short walk from spawn. It is NOT part of the
+// pooled/chunked prop system: it loads once, is added directly to the scene,
+// and stays there permanently regardless of player position — same treatment
+// as the ground and moon.
+// Scale/position come from the file's own baked node transforms (measured by
+// parsing the glTF directly, not by rendering it), so this should already be
+// close to correct city-block proportions — but retune if it still looks off.
+// Fun fact: the file also bundles two bonus rigged character models
+// ("Zombie_mine" and a Shrek rig) mixed in with the city geometry — they load
+// and render along with everything else, static/unanimated, wherever their
+// skeleton places them.
+const CITY_MAP_PATH = './assets/maps/city1.glb';
+const CITY_MAP_SCALE = 1;
+const CITY_MAP_POSITION = { x: 0, y: 19.28, z: -90 }; // footprint centered on (0, -90); Y gets corrected below
+async function loadCityMap() {
+  try {
+    const gltf = await loadGlb(CITY_MAP_PATH, 'City Map');
+    const root = gltf.scene;
+    prepareCityPropModel(root);
+    root.scale.setScalar(CITY_MAP_SCALE);
+    root.position.set(CITY_MAP_POSITION.x, CITY_MAP_POSITION.y, CITY_MAP_POSITION.z);
+    scene.add(root);
+    root.updateMatrixWorld(true);
+
+    // The file's per-node layout is: a chain of single-child wrapper nodes
+    // (axis/unit-correction, an .fbx import node, "RootNode") down to one
+    // node that fans out into every individually placed prop instance. Find
+    // it structurally instead of hard-coding node names, since those come
+    // straight from whatever exported this file.
+    let container = root;
+    while (container.children.length === 1) container = container.children[0];
+
+    // Snap the whole map so the road surface sits on y=0. Using the model's
+    // overall bounding box for this (like the first version of this code
+    // did) was wrong — two bone-rigged character meshes hidden among the
+    // props ("Zombie_mine", a Shrek rig) report huge nonsense bounds because
+    // their vertex data lives in bind-pose space, not world space. Roads are
+    // flat, static, unrigged, and there are many of them, so their top
+    // surface is a much more reliable "this is the ground" reference.
+    const roadBox = new THREE.Box3();
+    let sawRoad = false;
+    for (const child of container.children) {
+      if (/^Road_/i.test(child.name || '')) { roadBox.expandByObject(child); sawRoad = true; }
+    }
+    if (sawRoad) {
+      root.position.y -= roadBox.max.y;
+      root.updateMatrixWorld(true);
+    }
+
+    // Give the map "body": one axis-aligned box collider per building/fence
+    // instance, sized from its own live (post-scale/position) footprint.
+    // The first version used a single circle per building (radius = half the
+    // longer side) — fine for roughly square shapes, but Bank_01 is a
+    // 72x128 rectangle, so a circumscribing circle blocked a huge extra
+    // stripe of open street next to it. An axis-aligned box hugs the real
+    // footprint instead, at the cost of not handling rotated buildings
+    // perfectly (their true footprint may be a rotated rectangle; this
+    // collider is always axis-aligned, so an angled building's box will
+    // slightly over-cover its corners — acceptable, still far tighter than
+    // a circle).
+    const box = new THREE.Box3();
+    for (const child of container.children) {
+      if (!/^(House|Bank|Fence)_/i.test(child.name || '')) continue;
+      box.setFromObject(child);
+      const hx = (box.max.x - box.min.x) / 2, hz = (box.max.z - box.min.z) / 2;
+      if (hx > 0.15 && hz > 0.15) {
+        cityMapObstacles.push({ x: (box.min.x + box.max.x) / 2, z: (box.min.z + box.max.z) / 2, hx, hz });
+      }
+    }
+    updateChunks(true); // fold the new colliders into `obstacles` right away
+  } catch (err) {
+    console.warn('City map failed to load:', err && err.message ? err.message : err);
+  }
 }
 function clipBySuffix(clips, suffix, fallback = null) {
   return clips.find(c => c.name.endsWith('|' + suffix)) ||
@@ -1213,7 +1455,9 @@ function updateCharacterUI() {
 }
 function setCharacterLocked(locked) {
   characterSelectionLocked = !!locked;
+  gameModeSelectionLocked = !!locked;
   updateCharacterUI();
+  updateGameModeUI();
 }
 function chooseCharacter(id) {
   if (characterSelectionLocked) return;
@@ -1349,6 +1593,8 @@ async function loadEnhancedAssets() {
   }
 }
 loadEnhancedAssets();
+loadCityProps(); // decorative world clutter — loads independently, never blocks the "assets ready" status
+loadCityMap(); // 25MB one-off landmark — same independent, non-blocking loading
 
 /* ================= XP orbs ================= */
 const orbs = [];
@@ -1583,10 +1829,80 @@ function throwBomb() {
 
 /* ================= jump ================= */
 function doJump() {
-  if (state !== 'playing' || player.jumpY > 0 || downed || choosing) return;
-  player.jumpV = 7.4;
-  player.jumpY = 0.001;
+  // jumpY > 0 alone isn't "still airborne" anymore — resting on top of a
+  // climbable obstacle also leaves jumpY > 0 (equal to its height). Only
+  // jumpV !== 0 means actually mid-flight (rising or falling); block the
+  // jump then, but allow it whenever at rest, ground or platform alike —
+  // otherwise mounting anything permanently locks out jumping again.
+  if (state !== 'playing' || (player.jumpY > 0 && player.jumpV !== 0) || downed || choosing) return;
+  // Mantle only triggers from the ground — jumping while already resting on
+  // top of something (jumpY > 0, jumpV === 0) does a normal hop off of it
+  // instead, otherwise standing on any box would re-mantle onto the same
+  // box every time and you could never actually jump up/away from it.
+  if (player.jumpY === 0) {
+    // Mantle: jumping while right next to a climbable obstacle lifts you
+    // straight onto it. The earlier version relied on pure vertical physics —
+    // jump up, drift sideways mid-air, land if the timing lined up — which
+    // needed frame-perfect timing to ever actually catch since horizontal
+    // push-out only released at the exact instant jumpY crossed the object's
+    // height. This is a deliberate "mount" action instead: reliable, not
+    // physically simulated, same trick every 3rd-person game with climbable
+    // props uses instead of real capsule-vs-mesh sweeps.
+    for (const o of obstacles) {
+      if (!(o.h > 0)) continue;
+      const margin = o.hx !== undefined ? 0.6 : o.r * 0.35 + 0.5; // how close counts as "touching"
+      const cx = o.hx !== undefined ? Math.max(o.x - o.hx, Math.min(player.pos.x, o.x + o.hx)) : o.x;
+      const cz = o.hx !== undefined ? Math.max(o.z - o.hz, Math.min(player.pos.z, o.z + o.hz)) : o.z;
+      const dx = player.pos.x - cx, dz = player.pos.z - cz, d = Math.hypot(dx, dz);
+      if (d > margin) continue;
+      // stand at the nearest point on the footprint to where the player is,
+      // inset slightly so they don't hover right on the rim
+      if (o.hx !== undefined) {
+        player.pos.x = Math.max(o.x - o.hx + 0.2, Math.min(player.pos.x, o.x + o.hx - 0.2));
+        player.pos.z = Math.max(o.z - o.hz + 0.2, Math.min(player.pos.z, o.z + o.hz - 0.2));
+      } else if (d > 0.001) {
+        const inset = Math.min(o.r * 0.6, d);
+        player.pos.x = o.x + dx / d * inset;
+        player.pos.z = o.z + dz / d * inset;
+      }
+      player.jumpY = o.h;
+      player.jumpV = 2.0; // small hop on landing, settles instantly via the normal fall/snap logic below
+      SFX.jump();
+      return;
+    }
+  }
+  // normal hop — from the ground, or up off whatever platform is currently
+  // stood on (starts from the existing jumpY, not reset to 0)
+  player.jumpV = 9.2; // apex ~2.1 above the current standing height
+  player.jumpY = Math.max(player.jumpY, 0.001);
   SFX.jump();
+}
+// Tallest climbable-height obstacle currently under (x, z); 0 = bare ground.
+function standingSurfaceHeight(x, z) {
+  let best = 0;
+  for (const o of obstacles) {
+    if (!(o.h > 0)) continue;
+    const inside = o.hx !== undefined
+      ? Math.abs(x - o.x) < o.hx && Math.abs(z - o.z) < o.hz
+      : Math.hypot(x - o.x, z - o.z) < o.r;
+    if (inside) best = Math.max(best, o.h);
+  }
+  return best;
+}
+// Push-out target for a rectangular (axis-aligned box) obstacle — used for
+// city-map buildings/fences, which hug their real footprint far better than
+// a single encircling radius would for anything long and thin. Returns null
+// if (px, pz) isn't inside the margin-expanded box.
+function boxPushPoint(px, pz, o, margin) {
+  const minX = o.x - o.hx - margin, maxX = o.x + o.hx + margin;
+  const minZ = o.z - o.hz - margin, maxZ = o.z + o.hz + margin;
+  if (px <= minX || px >= maxX || pz <= minZ || pz >= maxZ) return null;
+  const dLeft = px - minX, dRight = maxX - px, dNear = pz - minZ, dFar = maxZ - pz;
+  const m = Math.min(dLeft, dRight, dNear, dFar);
+  if (m === dLeft) return [minX, pz];
+  if (m === dRight) return [maxX, pz];
+  if (m === dNear) return [px, minZ];
+  return [px, maxZ];
 }
 
 /* ================= audio (WebAudio synth only) ================= */
@@ -1624,7 +1940,7 @@ const SFX = {
 };
 
 /* ================= game state ================= */
-let state = 'menu';   // menu | playing | levelup | paused | gameover
+let state = 'menu';   // menu | playing | levelup | paused | gameover | victory
 let yaw = 0, pitch = 0.42;
 let time = 0, wave = 1, waveTimer = 0, spawnTimer = 0, kills = 0;
 let firing = false, pendingLevels = 0, damageFlashT = 0;
@@ -1654,6 +1970,38 @@ const ui = {
   chT: $('chT'), chB: $('chB'), chL: $('chL'), chR: $('chR'), hitMarker: $('hitMarker'),
   wepText: $('wepText'), bombHud: $('bombHud'), btnBomb: $('btnBomb'),
 };
+function updateWaveHud() {
+  ui.waveText.textContent = selectedGameMode === 'campaign'
+    ? `WAVE ${wave} / ${CAMPAIGN_FINAL_WAVE}`
+    : `WAVE ${wave}`;
+}
+function updateGameModeUI() {
+  document.querySelectorAll('.modeChoice').forEach(btn => {
+    const active = btn.dataset.mode === selectedGameMode;
+    btn.classList.toggle('selected', active);
+    btn.disabled = gameModeSelectionLocked;
+    btn.setAttribute('aria-pressed', active ? 'true' : 'false');
+  });
+}
+function applyGameMode(mode, persist = false) {
+  selectedGameMode = validGameMode(mode);
+  if (persist) {
+    preferredGameMode = selectedGameMode;
+    try { localStorage.setItem('dz_game_mode', preferredGameMode); } catch (_) {}
+  }
+  updateGameModeUI();
+  updateWaveHud();
+}
+function chooseGameMode(mode) {
+  if (gameModeSelectionLocked) return;
+  applyGameMode(mode, true);
+  SFX.click();
+}
+document.querySelectorAll('.modeChoice').forEach(btn =>
+  btn.addEventListener('click', () => chooseGameMode(btn.dataset.mode))
+);
+updateGameModeUI();
+updateWaveHud();
 /* aim mode (mobile): AUTO locks the nearest zombie and fires for you;
    MANUAL shows the crosshair + a 🔥 button and you aim by swiping, like PC */
 let autoAim = true;
@@ -1748,7 +2096,7 @@ addEventListener('mousemove', e => {
   if (document.pointerLockElement !== canvas) return;
   yaw   -= e.movementX * 0.0022;
   pitch += e.movementY * 0.0018;
-  pitch = Math.max(-0.05, Math.min(1.15, pitch));
+  pitch = Math.max(-0.9, Math.min(1.15, pitch)); // was -0.05 — barely allowed looking up at all
 });
 addEventListener('contextmenu', e => e.preventDefault());
 
@@ -1775,7 +2123,7 @@ $('resumeBtn').addEventListener('click', () => {
 function lookDrag(t) {
   yaw   -= (t.clientX - look.lx) * 0.005;
   pitch += (t.clientY - look.ly) * 0.004;
-  pitch = Math.max(-0.05, Math.min(1.15, pitch));
+  pitch = Math.max(-0.9, Math.min(1.15, pitch)); // was -0.05 — barely allowed looking up at all
   look.lx = t.clientX; look.ly = t.clientY;
 }
 canvas.addEventListener('touchstart', e => {
@@ -1847,17 +2195,18 @@ function aliveCount() { return zombies.reduce((n, z) => n + (z.alive ? 1 : 0), 0
 function spawnZombie() {
   const z = zombies.find(z => !z.alive && !z.dying);
   if (!z) return;
-  const brute = wave >= 3 && Math.random() < Math.min(0.08 + (wave - 3) * 0.03, 0.3);
+  const rules = getWaveRules(wave);
+  const brute = Math.random() < rules.bruteChance;
   z.brute = brute;
   if (brute) {
-    z.maxHp = 80 + wave * 20; z.speed = 1.5 + Math.random() * 0.2; z.dmg = 18;
+    z.maxHp = rules.bruteHp; z.speed = rules.bruteSpeed + Math.random() * 0.2; z.dmg = rules.bruteDamage;
     z.radius = 1.0; z.xp = 12;
     z.group.scale.set(1.6, 1.4, 1.5); // wide and heavy, not just uniformly bigger
     setZombieTint(z, true);
   } else {
-    z.maxHp = 26 + wave * 6;
-    z.speed = 2.1 + Math.random() * 0.5 + Math.min(wave * 0.05, 1.2);
-    z.dmg = 8; z.radius = 0.6; z.xp = 4;
+    z.maxHp = rules.normalHp;
+    z.speed = 2.1 + Math.random() * 0.5 + rules.normalSpeedBonus;
+    z.dmg = rules.normalDamage; z.radius = 0.6; z.xp = 4;
     z.group.scale.setScalar(0.95 + Math.random() * 0.13);
     setZombieTint(z, false);
   }
@@ -2145,7 +2494,7 @@ function resetGame() {
   updateChunks(true);
   updateWepHud();
   for (let i = 0; i < 4; i++) spawnZombie();
-  ui.waveText.textContent = 'WAVE 1';
+  updateWaveHud();
 }
 function startGame(fromNetwork = false) {
   initAudio();
@@ -2156,7 +2505,7 @@ function startGame(fromNetwork = false) {
     try { if (document.documentElement.requestFullscreen && !document.fullscreenElement) document.documentElement.requestFullscreen().catch(() => {}); } catch (e) {}
     try { if (screen.orientation && screen.orientation.lock) screen.orientation.lock('landscape').catch(() => {}); } catch (e) {}
   }
-  if (!fromNetwork && mpRole === 'host') send({ a: 'go' }); // host starts/restarts both sides
+  if (!fromNetwork && mpRole === 'host') send({ a: 'go', mode: selectedGameMode }); // host starts/restarts both sides
   const rb = $('retryBtn'); rb.disabled = false; rb.textContent = 'TRY AGAIN';
   resetGame();
   ui.start.classList.add('hidden');
@@ -2164,18 +2513,47 @@ function startGame(fromNetwork = false) {
   state = 'playing';
   if (!IS_TOUCH) lockPointer();
 }
+function fillResultStats() {
+  $('sMode').textContent = GAME_MODES[selectedGameMode].name;
+  $('sTime').textContent = fmtTime(time);
+  $('sKills').textContent = kills;
+  $('sWave').textContent = selectedGameMode === 'campaign'
+    ? `${Math.min(wave, CAMPAIGN_FINAL_WAVE)} / ${CAMPAIGN_FINAL_WAVE}`
+    : wave;
+  $('sLevel').textContent = player.level;
+}
 function gameOver() {
-  if (state === 'gameover') return;
+  if (state === 'gameover' || state === 'victory') return;
   state = 'gameover';
   firing = false; downed = false;
   $('respawnText').style.display = 'none';
   SFX.gameover();
   if (!IS_TOUCH && document.pointerLockElement === canvas) document.exitPointerLock();
-  $('sTime').textContent = fmtTime(time);
-  $('sKills').textContent = kills;
-  $('sWave').textContent = wave;
-  $('sLevel').textContent = player.level;
-  if (mpRole === 'guest') { const rb = $('retryBtn'); rb.disabled = true; rb.textContent = 'WAITING FOR HOST…'; }
+  const title = $('resultTitle');
+  title.textContent = 'YOU DIED'; title.style.color = '#e05545';
+  const subtitle = $('resultSubtitle');
+  subtitle.style.display = 'none'; subtitle.textContent = '';
+  fillResultStats();
+  const rb = $('retryBtn'); rb.disabled = false; rb.textContent = 'TRY AGAIN';
+  if (mpRole === 'guest') { rb.disabled = true; rb.textContent = 'WAITING FOR HOST…'; }
+  ui.over.classList.remove('hidden');
+}
+function campaignVictory(fromNetwork = false) {
+  if (state === 'victory' || state === 'gameover') return;
+  state = 'victory';
+  firing = false; downed = false;
+  $('respawnText').style.display = 'none';
+  if (!fromNetwork && mpRole === 'host') send({ a: 'v' });
+  SFX.levelup();
+  if (!IS_TOUCH && document.pointerLockElement === canvas) document.exitPointerLock();
+  const title = $('resultTitle');
+  title.textContent = 'CAMPAIGN COMPLETE'; title.style.color = '#9ADE00';
+  const subtitle = $('resultSubtitle');
+  subtitle.style.display = 'block';
+  subtitle.textContent = `You survived all ${CAMPAIGN_FINAL_WAVE} waves.`;
+  fillResultStats();
+  const rb = $('retryBtn'); rb.disabled = false; rb.textContent = 'PLAY AGAIN';
+  if (mpRole === 'guest') { rb.disabled = true; rb.textContent = 'WAITING FOR HOST…'; }
   ui.over.classList.remove('hidden');
 }
 $('startBtn').addEventListener('click', () => startGame(false));
@@ -2189,12 +2567,12 @@ $('retryBtn').addEventListener('click', () => startGame(false));
 // This version sends the same compact game packets through an MQTT broker over
 // secure WebSockets. It is not peer-to-peer, but it works through normal HTTPS
 // firewalls and does not need STUN/TURN/NAT traversal.
-const NET_VERSION = 5;
+const NET_VERSION = 6;
 const MQTT_BROKERS = [
   'wss://broker.hivemq.com:8884/mqtt',
   'wss://test.mosquitto.org:8081/mqtt',
 ];
-const MQTT_ROOT = 'dead-zone-browser-game-v6-assets-loader';
+const MQTT_ROOT = 'dead-zone-browser-game-v7-game-modes';
 const mpStatus = t => { $('mpStatus').textContent = t; };
 
 function randCode() {
@@ -2274,7 +2652,10 @@ function killPeer(msg) {
   partnerNetId = ''; sessionId = '';
   partnerLostHandled = false;
   endRelayClient();
-  if (state === 'menu') setCharacterLocked(false);
+  if (state === 'menu') {
+    setCharacterLocked(false);
+    applyGameMode(preferredGameMode, false);
+  }
   if (msg) mpStatus(msg);
 }
 
@@ -2396,9 +2777,9 @@ function hostRoom() {
         lastNetRx = Date.now();
         publishPacket(guestTopic, {
           kind: 'welcome', from: localNetId, sid: sessionId, v: NET_VERSION,
-          char: selectedCharacter, broker: brokerName(url),
+          char: selectedCharacter, mode: selectedGameMode, broker: brokerName(url),
         }, 1);
-        mpStatus('Partner found — completing connection…');
+        mpStatus(`Partner found — ${GAME_MODES[selectedGameMode].name} mode. Completing connection…`);
         clearNetTimer();
         netTimer = setTimeout(() => {
           if (token !== netGeneration || state !== 'menu' || !partnerNetId) return;
@@ -2462,6 +2843,7 @@ function joinRoom() {
         partnerNetId = m.from;
         sessionId = m.sid;
         setRemoteCharacter(m.char);
+        applyGameMode(m.mode || 'endless', false);
         conn = makeRelayConn('guest');
         mpRole = 'guest';
         partnerLostHandled = false;
@@ -2517,6 +2899,7 @@ function onPartnerLost(reason = 'Connection lost.') {
   const rb = $('retryBtn'); rb.disabled = false; rb.textContent = 'TRY AGAIN';
   if (state === 'menu') {
     setCharacterLocked(false);
+    applyGameMode(preferredGameMode, false);
     mpStatus(`${reason} ${role === 'host' ? 'Tap HOST to create a new room.' : 'Enter the code and tap GO again.'}`);
     return;
   }
@@ -2538,7 +2921,7 @@ function onNet(m) {
         setTimeout(() => { try { if (conn) conn.close(); } catch (_) {} }, 250);
         break;
       }
-      send({ a: 'welcome', v: NET_VERSION });
+      send({ a: 'welcome', v: NET_VERSION, mode: selectedGameMode });
       mpStatus('Partner connected! Starting…');
       startGame(false);
       break;
@@ -2551,11 +2934,12 @@ function onNet(m) {
       break;
     case 'ping': send({ a: 'pong' }); break;
     case 'pong': break;
-    case 'go': startGame(true); break;
+    case 'go': applyGameMode(m.mode || selectedGameMode, false); startGame(true); break;
     case 's': { // world snapshot → guest
       time = m.tm; kills = m.k;
+      if (m.gm) applyGameMode(m.gm, false);
       if (m.ch) setRemoteCharacter(m.ch);
-      if (wave !== m.wv) { wave = m.wv; ui.waveText.textContent = 'WAVE ' + wave; }
+      if (wave !== m.wv) { wave = m.wv; updateWaveHud(); }
       remote.x = m.p[0]; remote.z = m.p[1]; remote.ry = m.p[2]; remote.jy = m.p[3];
       const live = new Set();
       for (const e of m.z) {
@@ -2625,11 +3009,12 @@ function onNet(m) {
       wave = m.wv;
       for (let i = 0; i < WEAPONS.length; i++) if (WEAPONS[i].unlockWave === wave) { player.weapon = i; SFX.levelup(); }
       updateWepHud();
-      ui.waveText.textContent = 'WAVE ' + wave;
+      updateWaveHud();
       announce(m.msg);
       SFX.wave();
       break;
     }
+    case 'v': campaignVictory(true); break;
     case 'g': { // partner grenade (host: real; guest: visual)
       const gr = grenades.find(g => !g.alive); if (!gr) break;
       gr.mesh.position.set(m.x, m.y || 1.3, m.z);
@@ -2663,7 +3048,12 @@ function update(dt) {
   if (mpRole !== 'guest') {
     waveTimer += dt;
     if (waveTimer >= WAVE_LEN) {
-      waveTimer = 0; wave++;
+      waveTimer = 0;
+      if (selectedGameMode === 'campaign' && wave >= CAMPAIGN_FINAL_WAVE) {
+        campaignVictory(false);
+        return;
+      }
+      wave++;
       let msg = 'WAVE ' + wave;
       for (let i = 0; i < WEAPONS.length; i++) {
         if (WEAPONS[i].unlockWave === wave) {
@@ -2679,16 +3069,16 @@ function update(dt) {
           bl.alive = true; bl.fuse = -1; bl.mesh.visible = true; bl.mesh.scale.setScalar(1);
         }
       }
-      ui.waveText.textContent = 'WAVE ' + wave;
+      updateWaveHud();
       announce(msg);
       SFX.wave();
       if (mpRole === 'host') send({ a: 'w', wv: wave, msg });
     }
     spawnTimer -= dt;
-    const cap = Math.min(4 + wave * 3, mpOn() ? 40 : MAXZ);
-    if (spawnTimer <= 0 && aliveCount() < cap) {
+    const waveRules = getWaveRules(wave);
+    if (spawnTimer <= 0 && aliveCount() < waveRules.maxAlive) {
       spawnZombie();
-      spawnTimer = Math.max(0.3, 1.4 - wave * 0.06) * (mpOn() ? 0.8 : 1); // two guns → a bit more pressure
+      spawnTimer = waveRules.spawnDelay; // campaign rules can override this per wave later
     }
   }
 
@@ -2719,6 +3109,12 @@ function update(dt) {
   }
   // obstacle push-out (open world — no arena walls)
   for (const o of obstacles) {
+    if (o.h > 0 && player.jumpY >= o.h) continue; // cleared it — stand/walk on top instead of bumping the side
+    if (o.hx !== undefined) {
+      const p = boxPushPoint(player.pos.x, player.pos.z, o, 0.45);
+      if (p) { player.pos.x = p[0]; player.pos.z = p[1]; }
+      continue;
+    }
     const dx = player.pos.x - o.x, dz = player.pos.z - o.z;
     const d = Math.hypot(dx, dz), min = o.r + 0.45;
     if (d < min && d > 0.001) {
@@ -2755,11 +3151,16 @@ function update(dt) {
     if (player.modelAction) player.modelAction.timeScale = moving ? 1.15 : 1;
     player.modelMixer.update(dt);
   }
-  // jump physics
+  // jump physics — lands on the ground (0) or, if it cleared one along the
+  // way, on top of a climbable obstacle instead of falling through it
   if (player.jumpY > 0) {
+    const prevY = player.jumpY;
     player.jumpV -= 20 * dt;
     player.jumpY += player.jumpV * dt;
-    if (player.jumpY <= 0) { player.jumpY = 0; player.jumpV = 0; }
+    const standH = standingSurfaceHeight(player.pos.x, player.pos.z);
+    if (player.jumpV <= 0 && prevY >= standH && player.jumpY <= standH) {
+      player.jumpY = standH; player.jumpV = 0;
+    }
   }
   const bob = (moving && player.jumpY === 0) ? Math.abs(Math.sin(player.walkPhase)) * 0.05 : 0;
   player.group.position.y = player.jumpY + bob;
@@ -2786,19 +3187,26 @@ function update(dt) {
   const ck = 1 - Math.exp(-10 * dt);
   camTarget.x += (player.pos.x - camTarget.x) * ck;
   camTarget.z += (player.pos.z - camTarget.z) * ck;
-  const camDist = 5.6, effPitch = Math.max(-0.08, pitch - pitchKick);
+  // Close over-the-shoulder 3rd-person framing, raised above head height for
+  // a more commanding look-down angle (distance 4.0, pivot height 2.1 —
+  // confirmed good). The camera position is now derived FROM the aim
+  // direction (pivot - forward*camDist), instead of the old approach of
+  // swinging the camera around a fixed-height lookAt point — that trick
+  // silently capped how far you could look up, because raising the pivot
+  // meant the camera could never get low enough relative to a fixed target
+  // to produce an upward-pointing ray. Deriving position from direction
+  // means pitch always maps directly to where the crosshair actually points.
+  const camDist = 4.0, effPitch = Math.max(-0.9, pitch - pitchKick);
   const cp = Math.cos(effPitch), sp = Math.sin(effPitch);
   // over-the-shoulder offset (desktop): shifts camera + target screen-left so the
   // character sits right of center and the head no longer blocks the crosshair
   const shoulder = (IS_TOUCH && autoAim) ? 0 : 0.9; // manual aim needs the head out of the crosshair
   const sox = Math.cos(yaw) * shoulder, soz = -Math.sin(yaw) * shoulder;
-  camera.position.set(
-    camTarget.x - Math.sin(yaw) * cp * camDist + sox,
-    1.2 + sp * camDist,
-    camTarget.z - Math.cos(yaw) * cp * camDist + soz
-  );
+  const pivotX = camTarget.x + sox, pivotY = 2.1, pivotZ = camTarget.z + soz;
+  const fwdX = Math.sin(yaw) * cp, fwdY = -sp, fwdZ = Math.cos(yaw) * cp; // positive pitch (mouse down) looks down
+  camera.position.set(pivotX - fwdX * camDist, pivotY - fwdY * camDist, pivotZ - fwdZ * camDist);
   if (camera.position.y < 0.5) camera.position.y = 0.5; // never clip below the ground
-  camera.lookAt(camTarget.x + sox, 1.5, camTarget.z + soz);
+  camera.lookAt(pivotX, pivotY, pivotZ);
   // subtle FOV widen while running — sells the speed
   camera.fov += ((moving ? 74 : 70) - camera.fov) * (1 - Math.exp(-6 * dt));
   camera.updateProjectionMatrix();
@@ -2872,7 +3280,7 @@ function update(dt) {
         for (const o of orbs) if (o.alive) oArr.push([r1(o.mesh.position.x), r1(o.mesh.position.z)]);
         const bArr = barrels.map(bl => [r1(bl.x), r1(bl.z), bl.alive ? 1 : 0]);
         send({
-          a: 's', tm: r1(time), wv: wave, k: kills, ch: selectedCharacter,
+          a: 's', tm: r1(time), wv: wave, k: kills, ch: selectedCharacter, gm: selectedGameMode,
           p: [r1(player.pos.x), r1(player.pos.z), r2(player.group.rotation.y), r2(player.jumpY)],
           z: zArr, o: oArr, b: bArr,
         });
@@ -3009,6 +3417,11 @@ function update(dt) {
 
     // obstacle push-out
     for (const o of obstacles) {
+      if (o.hx !== undefined) {
+        const p = boxPushPoint(z.group.position.x, z.group.position.z, o, z.radius * 0.6);
+        if (p) { z.group.position.x = p[0]; z.group.position.z = p[1]; }
+        continue;
+      }
       const ox = z.group.position.x - o.x, oz = z.group.position.z - o.z;
       const od = Math.hypot(ox, oz), min = o.r + z.radius * 0.6;
       if (od < min && od > 0.001) {
