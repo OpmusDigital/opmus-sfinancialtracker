@@ -1406,13 +1406,13 @@ function resetGame() {
   for (let i = 0; i < 4; i++) spawnZombie();
   ui.waveText.textContent = 'WAVE 1';
 }
-function startGame() {
+function startGame(fromNetwork = false) {
   initAudio();
   if (IS_TOUCH) { // mobile: go fullscreen landscape for the play session
     try { if (document.documentElement.requestFullscreen && !document.fullscreenElement) document.documentElement.requestFullscreen().catch(() => {}); } catch (e) {}
     try { if (screen.orientation && screen.orientation.lock) screen.orientation.lock('landscape').catch(() => {}); } catch (e) {}
   }
-  if (mpRole === 'host') send({ a: 'go' }); // host starts/restarts both sides
+  if (!fromNetwork && mpRole === 'host') send({ a: 'go' }); // host starts/restarts both sides
   const rb = $('retryBtn'); rb.disabled = false; rb.textContent = 'TRY AGAIN';
   resetGame();
   ui.start.classList.add('hidden');
@@ -1438,96 +1438,261 @@ $('startBtn').addEventListener('click', startGame);
 $('retryBtn').addEventListener('click', startGame);
 
 /* ================= co-op networking (PeerJS / WebRTC) ================= */
-// Host runs the real simulation (zombies, waves, orbs, barrels, explosions) and
-// streams snapshots ~12×/s. The guest simulates only itself, renders the
-// snapshots, and sends its position + hit/grenade events back.
+// The host owns the world simulation. A small handshake is completed before
+// either side starts, which prevents the host's first "go" packet from racing
+// the guest's data listener.
+const NET_VERSION = 2;
 const mpStatus = t => { $('mpStatus').textContent = t; };
 function randCode() {
   const c = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
   let s = ''; for (let i = 0; i < 4; i++) s += c[Math.floor(Math.random() * c.length)];
   return s;
 }
-// PeerJS's default config is STUN-only; strict home routers and mobile data
-// often need a TURN relay as fallback or the connection silently never opens.
-const PEER_OPTS = { config: { iceServers: [
-  { urls: ['stun:stun.l.google.com:19302', 'stun:stun1.l.google.com:19302'] },
-  { urls: 'turn:openrelay.metered.ca:80',  username: 'openrelayproject', credential: 'openrelayproject' },
-  { urls: 'turn:openrelay.metered.ca:443', username: 'openrelayproject', credential: 'openrelayproject' },
-  { urls: 'turn:openrelay.metered.ca:443?transport=tcp', username: 'openrelayproject', credential: 'openrelayproject' },
-] } };
+
+// PeerServer is only signalling. STUN tries a direct connection; TURN is the
+// relay fallback for restrictive Wi-Fi/mobile networks.
+const PEER_OPTS = {
+  host: '0.peerjs.com',
+  port: 443,
+  path: '/',
+  secure: true,
+  debug: 1,
+  config: {
+    iceCandidatePoolSize: 4,
+    sdpSemantics: 'unified-plan',
+    iceServers: [
+      { urls: ['stun:stun.l.google.com:19302', 'stun:stun1.l.google.com:19302', 'stun:stun.cloudflare.com:3478'] },
+      { urls: 'turn:openrelay.metered.ca:80', username: 'openrelayproject', credential: 'openrelayproject' },
+      { urls: 'turn:openrelay.metered.ca:443', username: 'openrelayproject', credential: 'openrelayproject' },
+      { urls: 'turn:openrelay.metered.ca:443?transport=tcp', username: 'openrelayproject', credential: 'openrelayproject' },
+    ],
+  },
+};
+
 let netTimer = 0;
-function killPeer(msg) { // tear down a stuck/failed attempt so re-tapping always works
+let netGeneration = 0;
+let roomCode = '';
+let connReady = false;
+let partnerLostHandled = false;
+
+function clearNetTimer() {
   clearTimeout(netTimer);
-  try { if (peer) peer.destroy(); } catch (_) {}
-  peer = null; conn = null;
+  netTimer = 0;
+}
+
+function killPeer(msg) { // tear down a stuck/failed attempt so re-tapping always works
+  netGeneration++;
+  clearNetTimer();
+  const oldConn = conn, oldPeer = peer;
+  conn = null; peer = null; mpRole = null;
+  connReady = false; partnerLostHandled = false;
+  try { if (oldConn) oldConn.close(); } catch (_) {}
+  try { if (oldPeer) oldPeer.destroy(); } catch (_) {}
   if (msg) mpStatus(msg);
 }
+
+function peerErrorText(e, fallback) {
+  const type = e && e.type ? e.type : 'unknown';
+  if (type === 'peer-unavailable') return 'Room not found — make sure the host is still waiting and recheck the code.';
+  if (type === 'network' || type === 'server-error' || type === 'socket-error') return 'Signalling server could not be reached — check both internet connections and retry.';
+  if (type === 'browser-incompatible') return 'This browser does not support WebRTC data connections. Try current Chrome, Edge, Firefox, or Safari.';
+  if (type === 'ssl-unavailable') return 'Secure connection failed. Open the game from HTTPS or localhost.';
+  return `${fallback} (${type}) — retry.`;
+}
+
+function attachPeerRecovery(p, token) {
+  p.on('disconnected', () => {
+    if (token !== netGeneration || peer !== p || p.destroyed) return;
+    try { p.reconnect(); } catch (_) {}
+  });
+}
+
+function setupConn(c, token) {
+  let opened = false;
+  const onOpen = () => {
+    if (opened || token !== netGeneration || conn !== c) return;
+    opened = true;
+    connReady = true;
+    partnerLostHandled = false;
+    clearNetTimer();
+    if (mpRole === 'guest') {
+      mpStatus('Connected — syncing with host…');
+      send({ a: 'hello', v: NET_VERSION });
+      netTimer = setTimeout(() => {
+        if (mpRole === 'guest' && state === 'menu') killPeer('Host did not answer — tap GO to retry.');
+      }, 8000);
+    } else {
+      mpStatus('Partner connected — completing handshake…');
+      netTimer = setTimeout(() => {
+        if (mpRole === 'host' && state === 'menu') {
+          try { c.close(); } catch (_) {}
+          conn = null; mpRole = null; connReady = false;
+          mpStatus(`ROOM CODE: ${roomCode} — handshake timed out. Waiting for another join…`);
+        }
+      }, 8000);
+    }
+  };
+
+  c.on('open', onOpen);
+  c.on('data', m => {
+    if (token !== netGeneration || conn !== c) return;
+    onNet(m);
+  });
+  c.on('close', () => {
+    if (token !== netGeneration || conn !== c) return;
+    onPartnerLost();
+  });
+  c.on('error', () => {
+    if (token !== netGeneration || conn !== c) return;
+    onPartnerLost();
+  });
+  if (c.open) queueMicrotask(onOpen);
+}
+
+function createHostPeer(token, attempt = 0) {
+  if (token !== netGeneration) return;
+  roomCode = randCode();
+  const p = new Peer('dzone-' + roomCode, PEER_OPTS);
+  peer = p;
+  mpStatus('Creating room…');
+  clearNetTimer();
+  netTimer = setTimeout(() => {
+    if (token === netGeneration && peer === p && !p.open) {
+      killPeer('No response from the room server — check your internet and tap HOST again.');
+    }
+  }, 12000);
+
+  p.on('open', () => {
+    if (token !== netGeneration || peer !== p) return;
+    clearNetTimer();
+    mpStatus(`ROOM CODE: ${roomCode} — partner taps JOIN CO-OP and enters it. Waiting…`);
+  });
+  attachPeerRecovery(p, token);
+  p.on('connection', c => {
+    if (token !== netGeneration || peer !== p) { try { c.close(); } catch (_) {} return; }
+    if (conn) { try { c.close(); } catch (_) {} return; } // two players max
+    conn = c;
+    mpRole = 'host';
+    setupConn(c, token);
+  });
+  p.on('error', e => {
+    if (token !== netGeneration || peer !== p) return;
+    if (!mpRole && e && e.type === 'unavailable-id' && attempt < 5) {
+      clearNetTimer();
+      try { p.destroy(); } catch (_) {}
+      createHostPeer(token, attempt + 1); // rare code collision — silently choose another
+      return;
+    }
+    if (!mpRole) killPeer(peerErrorText(e, 'Room error'));
+  });
+}
+
 $('hostBtn').addEventListener('click', () => {
   if (typeof Peer === 'undefined') { mpStatus('Co-op needs internet — PeerJS failed to load.'); return; }
-  if (mpOn()) return;
+  if (mpOn() || peer) return;
   killPeer();
-  mpStatus('Creating room…');
-  const code = randCode();
-  peer = new Peer('dzone-' + code, PEER_OPTS);
-  netTimer = setTimeout(() => { if (peer && !peer.open) killPeer('No response — check your internet and tap HOST again.'); }, 10000);
-  peer.on('open', () => { clearTimeout(netTimer); mpStatus(`ROOM CODE: ${code} — partner taps JOIN CO-OP and enters it. Waiting…`); });
-  peer.on('disconnected', () => { try { if (peer && !peer.destroyed) peer.reconnect(); } catch (_) {} });
-  peer.on('connection', c => {
-    if (conn) { c.close(); return; } // 2 players max
-    conn = c;
-    conn.on('open', () => { mpRole = 'host'; setupConn(); startGame(); });
-    conn.on('error', () => { if (!mpRole) { conn = null; mpStatus(`ROOM CODE: ${code} — partner failed to connect, ask them to retry.`); } });
-  });
-  peer.on('error', e => { if (!mpRole) killPeer('Room error (' + e.type + ') — tap HOST again.'); });
+  const token = netGeneration;
+  createHostPeer(token);
 });
+
 $('joinBtn').addEventListener('click', () => {
   if (typeof Peer === 'undefined') { mpStatus('Co-op needs internet — PeerJS failed to load.'); return; }
   $('joinRow').style.display = 'flex';
   $('joinCode').focus();
 });
-$('joinGo').addEventListener('click', () => {
-  const code = $('joinCode').value.trim().toUpperCase();
-  if (code.length < 4 || mpOn()) return;
+
+function joinRoom() {
+  const code = $('joinCode').value.replace(/[^A-Z0-9]/gi, '').toUpperCase();
+  $('joinCode').value = code;
+  if (code.length !== 4 || mpOn() || peer) {
+    if (code.length !== 4) mpStatus('Enter the 4-character room code.');
+    return;
+  }
   killPeer();
+  const token = netGeneration;
+  roomCode = code;
   mpStatus('Connecting…');
-  peer = new Peer(PEER_OPTS);
-  netTimer = setTimeout(() => { if (!mpRole) killPeer("Couldn't reach room " + code + ' — check the code and that BOTH devices have internet, then tap GO again.'); }, 14000);
-  peer.on('open', () => {
-    conn = peer.connect('dzone-' + code, { reliable: true });
-    conn.on('open', () => { clearTimeout(netTimer); mpRole = 'guest'; setupConn(); mpStatus('Connected! Starting…'); });
-    conn.on('error', () => { if (!mpRole) killPeer('Connection failed — tap GO to retry.'); });
+  const p = new Peer(PEER_OPTS);
+  peer = p;
+  clearNetTimer();
+  netTimer = setTimeout(() => {
+    if (token === netGeneration && state === 'menu') {
+      killPeer(`Couldn't reach room ${code} — check the code and both internet connections, then tap GO again.`);
+    }
+  }, 16000);
+
+  p.on('open', () => {
+    if (token !== netGeneration || peer !== p) return;
+    const c = p.connect('dzone-' + code, {
+      reliable: true,
+      serialization: 'json',
+      metadata: { game: 'dead-zone', version: NET_VERSION },
+    });
+    conn = c;
+    mpRole = 'guest';
+    setupConn(c, token);
   });
-  peer.on('disconnected', () => { try { if (peer && !peer.destroyed) peer.reconnect(); } catch (_) {} });
-  peer.on('error', e => {
-    if (mpRole) return;
-    killPeer(e.type === 'peer-unavailable'
-      ? 'Room ' + code + ' not found — the host must be waiting on the start screen. Check the code and tap GO again.'
-      : 'Could not join (' + e.type + ') — tap GO to retry.');
+  attachPeerRecovery(p, token);
+  p.on('error', e => {
+    if (token !== netGeneration || peer !== p || state !== 'menu') return;
+    killPeer(peerErrorText(e, 'Could not join'));
   });
-});
-function setupConn() {
-  conn.on('data', onNet);
-  conn.on('close', onPartnerLost);
-  conn.on('error', onPartnerLost);
 }
+
+$('joinGo').addEventListener('click', joinRoom);
+$('joinCode').addEventListener('keydown', e => {
+  if (e.key === 'Enter') joinRoom();
+});
+
 function onPartnerLost() {
-  if (!mpRole) return;
+  if (partnerLostHandled || !mpRole) return;
+  partnerLostHandled = true;
+  clearNetTimer();
   const wasDowned = downed;
-  mpRole = null; conn = null;
-  try { if (peer) peer.destroy(); } catch (_) {}
-  peer = null;
+  const role = mpRole;
+  const oldPeer = peer;
+  mpRole = null; conn = null; peer = null; connReady = false;
+  try { if (oldPeer) oldPeer.destroy(); } catch (_) {}
   remote.visible = false; remote.group.visible = false;
   partnerDown = false;
   const rb = $('retryBtn'); rb.disabled = false; rb.textContent = 'TRY AGAIN';
+  if (state === 'menu') {
+    mpStatus(role === 'host'
+      ? 'Partner disconnected — tap HOST to create a new room.'
+      : 'Connection lost — enter the code and tap GO again.');
+    return;
+  }
   mpStatus('');
   if (state === 'playing') {
-    if (wasDowned) { gameOver(); return; } // nobody left to revive you
+    if (wasDowned) { gameOver(); return; }
     announce('PARTNER LEFT — GOING SOLO');
   }
 }
 function onNet(m) {
+  if (!m || typeof m !== 'object') return;
   switch (m.a) {
-    case 'go': startGame(); break;
+    case 'hello':
+      if (mpRole !== 'host') break;
+      clearNetTimer();
+      if (m.v !== NET_VERSION) {
+        send({ a: 'reject', msg: 'Game versions do not match. Both players must use the same HTML file.' });
+        setTimeout(() => { try { if (conn) conn.close(); } catch (_) {} }, 250);
+        break;
+      }
+      send({ a: 'welcome', v: NET_VERSION });
+      mpStatus('Partner connected! Starting…');
+      startGame(false);
+      break;
+    case 'welcome':
+      clearNetTimer();
+      mpStatus('Connected! Starting…');
+      break;
+    case 'reject':
+      killPeer(m.msg || 'The host rejected this connection.');
+      break;
+    case 'ping': send({ a: 'pong' }); break;
+    case 'pong': break;
+    case 'go': startGame(true); break;
     case 's': { // world snapshot → guest
       time = m.tm; kills = m.k;
       if (wave !== m.wv) { wave = m.wv; ui.waveText.textContent = 'WAVE ' + wave; }
