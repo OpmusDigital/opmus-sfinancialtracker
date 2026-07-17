@@ -24,11 +24,14 @@
   #wepText .wep.cur { opacity:1; color:#d9a441; }
   #wepText .wep.lock { opacity:.18; }
   #bombHud { position:absolute; top:86px; left:14px; font-size:13px; font-weight:700; text-shadow:0 1px 3px #000; }
-  #touchBtns { position:fixed; right:18px; bottom:28px; z-index:9; display:none; flex-direction:column; gap:14px; }
+  #touchBtns { position:fixed; right:18px; bottom:52px; z-index:9; display:none; flex-direction:column; gap:14px; }
   .tbtn { width:62px; height:62px; border-radius:50%; background:rgba(20,26,15,.65);
     border:2px solid rgba(217,164,65,.55); display:flex; align-items:center; justify-content:center;
     font-size:26px; pointer-events:auto; }
   .tbtn:active { transform:scale(.92); background:rgba(217,164,65,.25); }
+  #btnFire { position:fixed; right:108px; bottom:60px; width:86px; height:86px; font-size:36px;
+    z-index:9; display:none; border-color:rgba(217,80,50,.75); background:rgba(40,16,10,.6); }
+  #btnFire:active { background:rgba(217,80,50,.35); }
   #topCenter { position:absolute; top:12px; left:50%; transform:translateX(-50%); text-align:center; text-shadow:0 1px 4px #000; }
   #waveText { font-size:22px; font-weight:800; letter-spacing:3px; color:#9ADE00; }
   #timeText { font-size:14px; font-weight:600; opacity:.85; }
@@ -119,7 +122,8 @@
     #killText { top:38px; } #wepText { top:58px; } #bombHud { top:76px; }
     #waveText { font-size:17px; } #timeText { font-size:12px; }
     .tbtn { width:54px; height:54px; font-size:22px; }
-    #touchBtns { right:12px; bottom:20px; gap:10px; }
+    #touchBtns { right:12px; bottom:40px; gap:10px; }
+    #btnFire { right:88px; bottom:44px; width:72px; height:72px; font-size:30px; }
     .overlay h1 { letter-spacing:6px; }
     .overlay p { font-size:13px; }
     .btn { padding:12px 28px; font-size:16px; }
@@ -152,10 +156,11 @@
 <div id="dmgLayer"></div>
 <div id="joyBase"></div><div id="joyKnob"></div>
 <div id="touchBtns">
+  <div class="tbtn" id="btnWep">🔫</div>
   <div class="tbtn" id="btnBomb">💣</div>
   <div class="tbtn" id="btnJump">⬆️</div>
-  <div class="tbtn" id="btnWep">🔫</div>
 </div>
+<div class="tbtn" id="btnFire">🔥</div>
 <div id="btnPause">⏸</div>
 <div id="respawnText">RESPAWN IN 5…</div>
 <div id="rotateHint"><div class="ico">🔄</div>Rotate your device to landscape to play</div>
@@ -165,6 +170,7 @@
   <p style="color:#d9a441;font-weight:700;letter-spacing:2px;">SURVIVE THE HORDE</p>
   <p id="controlsHint"></p>
   <p style="opacity:.6;font-size:13px;">Kills drop XP — walk over it. Level up to choose an upgrade.</p>
+  <button class="btn btn2" id="aimBtn" style="display:none;margin-bottom:12px;">🎯 AIM: AUTO-SHOOT</button>
   <div id="mpRow">
     <button class="btn" id="startBtn">SOLO</button>
     <button class="btn btn2" id="hostBtn">HOST CO-OP</button>
@@ -918,6 +924,7 @@ const r1 = v => Math.round(v * 10) / 10;
 const r2 = v => Math.round(v * 100) / 100;
 const keys = {};
 const joy = { active: false, id: null, ox: 0, oy: 0, x: 0, y: 0 };
+const look = { active: false, id: null, lx: 0, ly: 0 }; // second finger = camera swipe (Minecraft-style)
 const V = { a: new THREE.Vector3(), b: new THREE.Vector3(), c: new THREE.Vector3() };
 
 /* ================= DOM refs ================= */
@@ -932,13 +939,31 @@ const ui = {
   chT: $('chT'), chB: $('chB'), chL: $('chL'), chR: $('chR'), hitMarker: $('hitMarker'),
   wepText: $('wepText'), bombHud: $('bombHud'), btnBomb: $('btnBomb'),
 };
-ui.crosshair.style.display = IS_TOUCH ? 'none' : 'block';
-$('controlsHint').textContent = IS_TOUCH
-  ? 'Left joystick to move — auto-aim fires for you. Right-side buttons: 💣 bomb, ⬆ jump, 🔫 swap weapon. New guns unlock as waves pass!'
-  : 'WASD move · mouse aim · click fire · SPACE jump · G or right-click bomb · 1-3 / Q swap weapon (new guns unlock as waves pass).';
+/* aim mode (mobile): AUTO locks the nearest zombie and fires for you;
+   MANUAL shows the crosshair + a 🔥 button and you aim by swiping, like PC */
+let autoAim = true;
+try { autoAim = localStorage.getItem('dz_aim') !== 'manual'; } catch (_) {}
+const aimUI = () => !IS_TOUCH || !autoAim; // does this device aim with a crosshair?
+function applyAimMode() {
+  ui.crosshair.style.display = aimUI() ? 'block' : 'none';
+  $('btnFire').style.display = (IS_TOUCH && !autoAim) ? 'flex' : 'none';
+  $('aimBtn').textContent = autoAim ? '🎯 AIM: AUTO-SHOOT' : '🎯 AIM: MANUAL';
+  $('controlsHint').textContent = IS_TOUCH
+    ? (autoAim
+      ? 'Left side: joystick to move. Swipe the right side to look around — auto-aim fires for you. Buttons: 🔫 swap weapon, 💣 bomb, ⬆ jump. New guns unlock as waves pass!'
+      : 'Left side: joystick to move. Swipe the right side to aim, hold 🔥 to fire — drag on 🔥 to aim while firing. Buttons: 🔫 swap weapon, 💣 bomb, ⬆ jump.')
+    : 'WASD move · mouse aim · click fire · SPACE jump · G or right-click bomb · 1-3 / Q swap weapon (new guns unlock as waves pass).';
+}
+applyAimMode();
 if (IS_TOUCH) {
   $('touchBtns').style.display = 'flex';
   $('btnPause').style.display = 'flex';
+  $('aimBtn').style.display = 'inline-block';
+  $('aimBtn').addEventListener('click', () => {
+    autoAim = !autoAim;
+    try { localStorage.setItem('dz_aim', autoAim ? 'auto' : 'manual'); } catch (_) {}
+    applyAimMode();
+  });
   const bind = (id, fn) => $(id).addEventListener('touchstart', e => { e.preventDefault(); fn(); }, { passive: false });
   bind('btnBomb', throwBomb);
   bind('btnJump', doJump);
@@ -947,6 +972,25 @@ if (IS_TOUCH) {
     if (mpOn() || state !== 'playing') return; // no pausing a shared world
     state = 'paused'; ui.pause.classList.remove('hidden');
   });
+  // 🔥 manual-aim fire button: hold to shoot, and dragging on the button
+  // itself also swings the aim — so one thumb can aim and fire together
+  const bf = $('btnFire');
+  bf.addEventListener('touchstart', e => {
+    e.preventDefault();
+    firing = true;
+    const t = e.changedTouches[0];
+    if (!look.active) { look.active = true; look.id = t.identifier; look.lx = t.clientX; look.ly = t.clientY; }
+  }, { passive: false });
+  bf.addEventListener('touchmove', e => {
+    for (const t of e.changedTouches) if (look.active && t.identifier === look.id) lookDrag(t);
+    e.preventDefault();
+  }, { passive: false });
+  const bfEnd = e => {
+    firing = false;
+    for (const t of e.changedTouches) if (look.active && t.identifier === look.id) look.active = false;
+  };
+  bf.addEventListener('touchend', bfEnd);
+  bf.addEventListener('touchcancel', bfEnd);
 }
 
 /* ================= upgrades ================= */
@@ -1012,11 +1056,17 @@ $('resumeBtn').addEventListener('click', () => {
   else lockPointer();
 });
 
-/* ================= input: touch joystick ================= */
+/* ================= input: touch joystick + swipe look ================= */
+function lookDrag(t) {
+  yaw   -= (t.clientX - look.lx) * 0.005;
+  pitch += (t.clientY - look.ly) * 0.004;
+  pitch = Math.max(-0.05, Math.min(1.15, pitch));
+  look.lx = t.clientX; look.ly = t.clientY;
+}
 canvas.addEventListener('touchstart', e => {
   if (state !== 'playing') return;
   for (const t of e.changedTouches) {
-    if (!joy.active && t.clientX < innerWidth * 0.6) {
+    if (!joy.active && t.clientX < innerWidth * 0.45) { // left side = move
       joy.active = true; joy.id = t.identifier;
       joy.ox = t.clientX; joy.oy = t.clientY; joy.x = 0; joy.y = 0;
       ui.joyBase.style.display = ui.joyKnob.style.display = 'block';
@@ -1024,6 +1074,9 @@ canvas.addEventListener('touchstart', e => {
       ui.joyBase.style.top  = (t.clientY - 60) + 'px';
       ui.joyKnob.style.left = (t.clientX - 26) + 'px';
       ui.joyKnob.style.top  = (t.clientY - 26) + 'px';
+    } else if (!look.active) { // everywhere else = swipe to look
+      look.active = true; look.id = t.identifier;
+      look.lx = t.clientX; look.ly = t.clientY;
     }
   }
   e.preventDefault();
@@ -1037,6 +1090,8 @@ canvas.addEventListener('touchmove', e => {
       joy.x = dx / R; joy.y = dy / R;
       ui.joyKnob.style.left = (joy.ox + dx - 26) + 'px';
       ui.joyKnob.style.top  = (joy.oy + dy - 26) + 'px';
+    } else if (look.active && t.identifier === look.id) {
+      lookDrag(t);
     }
   }
   e.preventDefault();
@@ -1047,6 +1102,7 @@ function endTouch(e) {
       joy.active = false; joy.x = 0; joy.y = 0;
       ui.joyBase.style.display = ui.joyKnob.style.display = 'none';
     }
+    if (look.active && t.identifier === look.id) look.active = false;
   }
 }
 canvas.addEventListener('touchend', endTouch);
@@ -1124,7 +1180,7 @@ function damageZombie(z, dmg, dir, fromPartner = false) {
   if (dir) { z.group.position.x += dir.x * 0.18; z.group.position.z += dir.z * 0.18; }
   SFX.hit();
   showDmg(z, Math.round(dmg), z.hp <= 0 ? '#d9a441' : '#fff');
-  if (!IS_TOUCH && !fromPartner) { hmT = Math.max(hmT, 0.16); ui.hitMarker.style.color = '#fff'; }
+  if (aimUI() && !fromPartner) { hmT = Math.max(hmT, 0.16); ui.hitMarker.style.color = '#fff'; }
   if (z.hp <= 0) killZombie(z);
 }
 function killZombie(z) {
@@ -1134,7 +1190,7 @@ function killZombie(z) {
   SFX.die();
   burst(z.group.position, z.brute ? (IS_TOUCH ? 6 : 10) : (IS_TOUCH ? 3 : 6));
   shakeAmp = Math.max(shakeAmp, z.brute ? 0.22 : 0.05);
-  if (!IS_TOUCH) { hmT = 0.25; ui.hitMarker.style.color = '#9ADE00'; }
+  if (aimUI()) { hmT = 0.25; ui.hitMarker.style.color = '#9ADE00'; }
   if (mpRole === 'host') send({ a: 'k', i: z.idx });
   const n = z.brute ? 3 : 1;
   for (let i = 0; i < n; i++) spawnOrb(z.group.position, z.xp / n);
@@ -1147,7 +1203,7 @@ function applyHit(z, dmg, dx, dz) {
     send({ a: 'h', i: z.idx, d: Math.round(dmg), dx: r2(dx), dz: r2(dz) });
     z.flashT = 0.08; z.mat.emissive.setHex(0x993322);
     showDmg(z, Math.round(dmg), '#fff');
-    if (!IS_TOUCH) { hmT = Math.max(hmT, 0.16); ui.hitMarker.style.color = '#fff'; }
+    if (aimUI()) { hmT = Math.max(hmT, 0.16); ui.hitMarker.style.color = '#fff'; }
     SFX.hit();
   } else {
     damageZombie(z, dmg, { x: dx, z: dz });
@@ -1391,19 +1447,38 @@ function randCode() {
   let s = ''; for (let i = 0; i < 4; i++) s += c[Math.floor(Math.random() * c.length)];
   return s;
 }
+// PeerJS's default config is STUN-only; strict home routers and mobile data
+// often need a TURN relay as fallback or the connection silently never opens.
+const PEER_OPTS = { config: { iceServers: [
+  { urls: ['stun:stun.l.google.com:19302', 'stun:stun1.l.google.com:19302'] },
+  { urls: 'turn:openrelay.metered.ca:80',  username: 'openrelayproject', credential: 'openrelayproject' },
+  { urls: 'turn:openrelay.metered.ca:443', username: 'openrelayproject', credential: 'openrelayproject' },
+  { urls: 'turn:openrelay.metered.ca:443?transport=tcp', username: 'openrelayproject', credential: 'openrelayproject' },
+] } };
+let netTimer = 0;
+function killPeer(msg) { // tear down a stuck/failed attempt so re-tapping always works
+  clearTimeout(netTimer);
+  try { if (peer) peer.destroy(); } catch (_) {}
+  peer = null; conn = null;
+  if (msg) mpStatus(msg);
+}
 $('hostBtn').addEventListener('click', () => {
   if (typeof Peer === 'undefined') { mpStatus('Co-op needs internet — PeerJS failed to load.'); return; }
-  if (peer) return;
+  if (mpOn()) return;
+  killPeer();
   mpStatus('Creating room…');
   const code = randCode();
-  peer = new Peer('dzone-' + code);
-  peer.on('open', () => mpStatus(`ROOM CODE: ${code} — partner taps JOIN CO-OP and enters it. Waiting…`));
+  peer = new Peer('dzone-' + code, PEER_OPTS);
+  netTimer = setTimeout(() => { if (peer && !peer.open) killPeer('No response — check your internet and tap HOST again.'); }, 10000);
+  peer.on('open', () => { clearTimeout(netTimer); mpStatus(`ROOM CODE: ${code} — partner taps JOIN CO-OP and enters it. Waiting…`); });
+  peer.on('disconnected', () => { try { if (peer && !peer.destroyed) peer.reconnect(); } catch (_) {} });
   peer.on('connection', c => {
     if (conn) { c.close(); return; } // 2 players max
     conn = c;
     conn.on('open', () => { mpRole = 'host'; setupConn(); startGame(); });
+    conn.on('error', () => { if (!mpRole) { conn = null; mpStatus(`ROOM CODE: ${code} — partner failed to connect, ask them to retry.`); } });
   });
-  peer.on('error', e => { mpStatus('Room error (' + e.type + ') — try again.'); try { peer.destroy(); } catch (_) {} peer = null; });
+  peer.on('error', e => { if (!mpRole) killPeer('Room error (' + e.type + ') — tap HOST again.'); });
 });
 $('joinBtn').addEventListener('click', () => {
   if (typeof Peer === 'undefined') { mpStatus('Co-op needs internet — PeerJS failed to load.'); return; }
@@ -1412,14 +1487,23 @@ $('joinBtn').addEventListener('click', () => {
 });
 $('joinGo').addEventListener('click', () => {
   const code = $('joinCode').value.trim().toUpperCase();
-  if (code.length < 4 || peer) return;
+  if (code.length < 4 || mpOn()) return;
+  killPeer();
   mpStatus('Connecting…');
-  peer = new Peer();
+  peer = new Peer(PEER_OPTS);
+  netTimer = setTimeout(() => { if (!mpRole) killPeer("Couldn't reach room " + code + ' — check the code and that BOTH devices have internet, then tap GO again.'); }, 14000);
   peer.on('open', () => {
     conn = peer.connect('dzone-' + code, { reliable: true });
-    conn.on('open', () => { mpRole = 'guest'; setupConn(); mpStatus('Connected! Starting…'); });
+    conn.on('open', () => { clearTimeout(netTimer); mpRole = 'guest'; setupConn(); mpStatus('Connected! Starting…'); });
+    conn.on('error', () => { if (!mpRole) killPeer('Connection failed — tap GO to retry.'); });
   });
-  peer.on('error', e => { mpStatus('Could not join (' + e.type + ') — check the code.'); try { peer.destroy(); } catch (_) {} peer = null; conn = null; });
+  peer.on('disconnected', () => { try { if (peer && !peer.destroyed) peer.reconnect(); } catch (_) {} });
+  peer.on('error', e => {
+    if (mpRole) return;
+    killPeer(e.type === 'peer-unavailable'
+      ? 'Room ' + code + ' not found — the host must be waiting on the start screen. Check the code and tap GO again.'
+      : 'Could not join (' + e.type + ') — tap GO to retry.');
+  });
 });
 function setupConn() {
   conn.on('data', onNet);
@@ -1648,10 +1732,10 @@ function update(dt) {
 
   /* ---- camera + facing ---- */
   let target = null;
-  if (IS_TOUCH) {
+  if (IS_TOUCH && autoAim) {
+    // camera yaw/pitch come only from swipe-look (Minecraft-style) —
+    // the joystick moves the character but never turns the camera
     target = nearestZombie(15 * player.rangeMul);
-    if (moving) yaw = lerpAngle(yaw, Math.atan2(mx, mz), 1 - Math.exp(-3.5 * dt));
-    pitch = 0.5;
     if (target) {
       const ty = Math.atan2(target.group.position.x - player.pos.x, target.group.position.z - player.pos.z);
       player.group.rotation.y = lerpAngle(player.group.rotation.y, ty, 1 - Math.exp(-12 * dt));
@@ -1659,7 +1743,7 @@ function update(dt) {
       player.group.rotation.y = lerpAngle(player.group.rotation.y, Math.atan2(mx, mz), 1 - Math.exp(-10 * dt));
     }
   } else {
-    player.group.rotation.y = yaw;
+    player.group.rotation.y = yaw; // manual aim (touch or PC): face where the camera looks
   }
   // damped follow: the camera trails the player slightly instead of being bolted on
   const ck = 1 - Math.exp(-10 * dt);
@@ -1669,7 +1753,7 @@ function update(dt) {
   const cp = Math.cos(effPitch), sp = Math.sin(effPitch);
   // over-the-shoulder offset (desktop): shifts camera + target screen-left so the
   // character sits right of center and the head no longer blocks the crosshair
-  const shoulder = IS_TOUCH ? 0 : 0.9;
+  const shoulder = (IS_TOUCH && autoAim) ? 0 : 0.9; // manual aim needs the head out of the crosshair
   const sox = Math.cos(yaw) * shoulder, soz = -Math.sin(yaw) * shoulder;
   camera.position.set(
     camTarget.x - Math.sin(yaw) * cp * camDist + sox,
@@ -1693,7 +1777,7 @@ function update(dt) {
   player.fireCd -= dt;
   const wep = WEAPONS[player.weapon];
   const canFire = !downed && !choosing;
-  if (!IS_TOUCH) {
+  if (aimUI()) { // crosshair aiming: PC mouse or mobile manual mode
     if (firing && canFire && player.fireCd <= 0) {
       shootDesktop();
       player.fireCd = 1 / (wep.rate * player.rateMul);
@@ -1986,7 +2070,7 @@ function update(dt) {
   }
 
   /* ---- crosshair: bloom while firing/moving, hit-marker flash ---- */
-  if (!IS_TOUCH) {
+  if (aimUI()) {
     chSpread *= Math.exp(-9 * dt);
     const g = 5 + chSpread + (moving ? 2 : 0);
     ui.chT.style.transform = `translateY(${-g - 9}px)`;
