@@ -1,0 +1,2032 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>DEAD ZONE — 3rd Person Zombie Survival</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html, body { width:100%; height:100%; overflow:hidden; background:#0b0e0a;
+    touch-action:none; overscroll-behavior:none; user-select:none; -webkit-user-select:none;
+    font-family:'Segoe UI', system-ui, sans-serif; color:#e8e6dc; }
+  canvas { display:block; }
+
+  /* ---------- HUD ---------- */
+  #hud { position:fixed; inset:0; pointer-events:none; z-index:5; }
+  .bar { position:absolute; background:rgba(10,12,9,.65); border:1px solid rgba(154,222,0,.25); border-radius:6px; overflow:hidden; }
+  #hpBar { top:14px; left:14px; width:230px; height:22px; }
+  #hpFill { height:100%; width:100%; background:linear-gradient(90deg,#b8402f,#e05545); transition:width .12s; }
+  #hpText { position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+    font-size:12px; font-weight:700; letter-spacing:1px; text-shadow:0 1px 2px #000; }
+  #killText { position:absolute; top:42px; left:14px; font-size:14px; font-weight:600; text-shadow:0 1px 3px #000; opacity:.9; }
+  #wepText { position:absolute; top:66px; left:14px; font-size:12px; font-weight:700; letter-spacing:1px; text-shadow:0 1px 3px #000; }
+  #wepText .wep { opacity:.4; margin-right:10px; }
+  #wepText .wep.cur { opacity:1; color:#d9a441; }
+  #wepText .wep.lock { opacity:.18; }
+  #bombHud { position:absolute; top:86px; left:14px; font-size:13px; font-weight:700; text-shadow:0 1px 3px #000; }
+  #touchBtns { position:fixed; right:18px; bottom:28px; z-index:9; display:none; flex-direction:column; gap:14px; }
+  .tbtn { width:62px; height:62px; border-radius:50%; background:rgba(20,26,15,.65);
+    border:2px solid rgba(217,164,65,.55); display:flex; align-items:center; justify-content:center;
+    font-size:26px; pointer-events:auto; }
+  .tbtn:active { transform:scale(.92); background:rgba(217,164,65,.25); }
+  #topCenter { position:absolute; top:12px; left:50%; transform:translateX(-50%); text-align:center; text-shadow:0 1px 4px #000; }
+  #waveText { font-size:22px; font-weight:800; letter-spacing:3px; color:#9ADE00; }
+  #timeText { font-size:14px; font-weight:600; opacity:.85; }
+  #xpBar { bottom:0; left:0; width:100%; height:10px; border-radius:0; border:none; border-top:1px solid rgba(154,222,0,.35); }
+  #xpFill { height:100%; width:0%; background:linear-gradient(90deg,#6b8e23,#9ADE00); transition:width .15s; }
+  #levelBadge { position:absolute; bottom:18px; right:14px; background:rgba(10,12,9,.7);
+    border:1px solid #9ADE00; color:#9ADE00; border-radius:8px; padding:5px 12px;
+    font-size:15px; font-weight:800; letter-spacing:1px; text-shadow:0 0 6px rgba(154,222,0,.5); }
+  #crosshair { position:fixed; top:50%; left:50%; z-index:8; pointer-events:none; }
+  .chl { position:absolute; background:#e8e6dc; border-radius:1px;
+    box-shadow:0 0 4px rgba(154,222,0,.55), 0 1px 2px #000; }
+  .chl.v { width:2px; height:9px; left:-1px; top:0; }
+  .chl.h { width:9px; height:2px; top:-1px; left:0; }
+  #chDot { position:absolute; width:3px; height:3px; left:-1.5px; top:-1.5px;
+    border-radius:50%; background:#d9a441; box-shadow:0 0 5px #d9a441; }
+  #hitMarker { position:absolute; left:0; top:0; color:#fff; opacity:0; }
+  #hitMarker i { position:absolute; width:2px; height:9px; left:-1px; top:-4.5px;
+    background:currentColor; box-shadow:0 0 5px currentColor; border-radius:1px; }
+  #hitMarker i:nth-child(1) { transform:translate(-7px,-7px) rotate(-45deg); }
+  #hitMarker i:nth-child(2) { transform:translate( 7px,-7px) rotate( 45deg); }
+  #hitMarker i:nth-child(3) { transform:translate(-7px, 7px) rotate( 45deg); }
+  #hitMarker i:nth-child(4) { transform:translate( 7px, 7px) rotate(-45deg); }
+  .dmgnum { position:fixed; left:0; top:0; z-index:7; pointer-events:none; opacity:0;
+    font-weight:800; font-size:15px; letter-spacing:.5px; will-change:transform;
+    text-shadow:0 1px 3px #000, 0 0 8px rgba(0,0,0,.6); }
+  #waveAnnounce { position:absolute; top:26%; left:50%; transform:translate(-50%,-50%);
+    font-size:min(7vw,44px); white-space:nowrap; font-weight:900; letter-spacing:6px; color:#9ADE00; opacity:0;
+    text-shadow:0 0 18px rgba(154,222,0,.6), 0 2px 4px #000; }
+  #waveAnnounce.show { animation:announce 1.8s ease-out; }
+  @keyframes announce { 0%{opacity:0; transform:translate(-50%,-50%) scale(.7);} 15%{opacity:1; transform:translate(-50%,-50%) scale(1.05);} 75%{opacity:1;} 100%{opacity:0;} }
+  #damageFlash { position:fixed; inset:0; pointer-events:none; z-index:6; opacity:0;
+    background:radial-gradient(ellipse at center, transparent 40%, rgba(200,30,20,.55) 100%); }
+
+  /* ---------- joystick ---------- */
+  #joyBase, #joyKnob { position:fixed; border-radius:50%; pointer-events:none; z-index:7; display:none; }
+  #joyBase { width:120px; height:120px; background:rgba(255,255,255,.06); border:2px solid rgba(232,230,220,.28); }
+  #joyKnob { width:52px; height:52px; background:rgba(217,164,65,.5); border:2px solid rgba(217,164,65,.9); }
+
+  /* ---------- overlays ---------- */
+  .overlay { position:fixed; inset:0; z-index:10; display:flex; flex-direction:column;
+    align-items:center; justify-content:center; background:rgba(6,8,5,.82); text-align:center; padding:20px; }
+  .overlay h1 { font-size:min(11vw,58px); font-weight:900; letter-spacing:10px; color:#9ADE00;
+    text-shadow:0 0 24px rgba(154,222,0,.45); margin-bottom:8px; }
+  .overlay h2 { font-size:26px; font-weight:800; letter-spacing:4px; color:#9ADE00; margin-bottom:18px; }
+  .overlay p { font-size:15px; opacity:.85; margin-bottom:8px; max-width:520px; line-height:1.5; }
+  .btn { pointer-events:auto; cursor:pointer; margin-top:22px; padding:14px 42px; font-size:18px; font-weight:800;
+    letter-spacing:2px; color:#0b0e0a; background:#9ADE00; border:none; border-radius:10px;
+    box-shadow:0 0 18px rgba(154,222,0,.35); font-family:inherit; }
+  .btn:active { transform:scale(.96); }
+  .stats { display:grid; grid-template-columns:auto auto; gap:6px 26px; margin-top:10px; font-size:17px; }
+  .stats .k { opacity:.7; text-align:right; }
+  .stats .v { font-weight:800; color:#d9a441; text-align:left; }
+
+  #cards { display:flex; gap:14px; margin-top:20px; flex-wrap:wrap; justify-content:center; }
+  .card { pointer-events:auto; cursor:pointer; width:170px; padding:18px 14px; border-radius:12px;
+    background:rgba(20,26,15,.95); border:2px solid #6b8e23; transition:transform .08s, border-color .08s; }
+  .card:hover, .card:active { transform:translateY(-4px); border-color:#9ADE00; }
+  .card .ico { font-size:34px; margin-bottom:8px; }
+  .card .nm { font-size:16px; font-weight:800; color:#9ADE00; margin-bottom:6px; letter-spacing:1px; }
+  .card .ds { font-size:13px; opacity:.8; line-height:1.4; }
+  .hidden { display:none !important; }
+
+  /* ---------- multiplayer lobby ---------- */
+  .btn2 { background:transparent; color:#9ADE00; border:2px solid #9ADE00; box-shadow:none; }
+  #mpRow { display:flex; gap:12px; flex-wrap:wrap; justify-content:center; }
+  #joinRow { display:none; margin-top:14px; gap:10px; align-items:center; justify-content:center; }
+  #joinRow input { width:130px; padding:12px; font-size:20px; letter-spacing:5px; text-transform:uppercase;
+    text-align:center; background:rgba(20,26,15,.9); border:2px solid #6b8e23; color:#e8e6dc;
+    border-radius:8px; font-family:inherit; pointer-events:auto; }
+  #joinRow .btn { margin-top:0; padding:12px 24px; }
+  #mpStatus { margin-top:14px; font-size:15px; color:#d9a441; min-height:22px; font-weight:600; }
+  #respawnText { position:fixed; top:40%; left:50%; transform:translate(-50%,-50%); z-index:8; display:none;
+    font-size:26px; font-weight:800; color:#e05545; text-shadow:0 2px 6px #000; letter-spacing:2px; }
+  #btnPause { position:fixed; top:14px; right:14px; z-index:9; width:44px; height:44px; border-radius:10px;
+    background:rgba(20,26,15,.6); border:1px solid rgba(232,230,220,.3); display:none;
+    align-items:center; justify-content:center; font-size:18px; pointer-events:auto; }
+
+  /* ---------- mobile fit ---------- */
+  #rotateHint { display:none; }
+  @media (pointer:coarse) and (orientation:portrait) {
+    #rotateHint { display:flex; position:fixed; inset:0; z-index:50; background:#0b0e0a;
+      flex-direction:column; align-items:center; justify-content:center; gap:14px;
+      font-size:20px; font-weight:700; text-align:center; padding:24px; }
+    #rotateHint .ico { font-size:52px; }
+  }
+  @media (max-width:760px) {
+    #hpBar { width:150px; height:18px; }
+    #killText { top:38px; } #wepText { top:58px; } #bombHud { top:76px; }
+    #waveText { font-size:17px; } #timeText { font-size:12px; }
+    .tbtn { width:54px; height:54px; font-size:22px; }
+    #touchBtns { right:12px; bottom:20px; gap:10px; }
+    .overlay h1 { letter-spacing:6px; }
+    .overlay p { font-size:13px; }
+    .btn { padding:12px 28px; font-size:16px; }
+    .card { width:136px; padding:14px 10px; }
+    .card .ico { font-size:26px; }
+  }
+</style>
+</head>
+<body>
+
+<div id="hud">
+  <div class="bar" id="hpBar"><div id="hpFill"></div><div id="hpText">100 / 100</div></div>
+  <div id="killText">☠ 0</div>
+  <div id="wepText"></div>
+  <div id="bombHud">💣 READY</div>
+  <div id="topCenter"><div id="waveText">WAVE 1</div><div id="timeText">00:00</div></div>
+  <div class="bar" id="xpBar"><div id="xpFill"></div></div>
+  <div id="levelBadge">LV 1</div>
+  <div id="waveAnnounce">WAVE 2</div>
+</div>
+<div id="damageFlash"></div>
+<div id="crosshair">
+  <div class="chl v" id="chT"></div>
+  <div class="chl v" id="chB"></div>
+  <div class="chl h" id="chL"></div>
+  <div class="chl h" id="chR"></div>
+  <div id="chDot"></div>
+  <div id="hitMarker"><i></i><i></i><i></i><i></i></div>
+</div>
+<div id="dmgLayer"></div>
+<div id="joyBase"></div><div id="joyKnob"></div>
+<div id="touchBtns">
+  <div class="tbtn" id="btnBomb">💣</div>
+  <div class="tbtn" id="btnJump">⬆️</div>
+  <div class="tbtn" id="btnWep">🔫</div>
+</div>
+<div id="btnPause">⏸</div>
+<div id="respawnText">RESPAWN IN 5…</div>
+<div id="rotateHint"><div class="ico">🔄</div>Rotate your device to landscape to play</div>
+
+<div class="overlay" id="startOverlay">
+  <h1>DEAD ZONE</h1>
+  <p style="color:#d9a441;font-weight:700;letter-spacing:2px;">SURVIVE THE HORDE</p>
+  <p id="controlsHint"></p>
+  <p style="opacity:.6;font-size:13px;">Kills drop XP — walk over it. Level up to choose an upgrade.</p>
+  <div id="mpRow">
+    <button class="btn" id="startBtn">SOLO</button>
+    <button class="btn btn2" id="hostBtn">HOST CO-OP</button>
+    <button class="btn btn2" id="joinBtn">JOIN CO-OP</button>
+  </div>
+  <div id="joinRow"><input id="joinCode" maxlength="4" placeholder="CODE" autocomplete="off"><button class="btn" id="joinGo">GO</button></div>
+  <div id="mpStatus"></div>
+</div>
+
+<div class="overlay hidden" id="pauseOverlay">
+  <h2>PAUSED</h2>
+  <p>Mouse released. Click resume to re-lock aim.</p>
+  <button class="btn" id="resumeBtn">RESUME</button>
+</div>
+
+<div class="overlay hidden" id="levelOverlay">
+  <h2 id="levelTitle">LEVEL UP!</h2>
+  <p>Choose an upgrade</p>
+  <div id="cards"></div>
+</div>
+
+<div class="overlay hidden" id="gameOverlay">
+  <h2 style="color:#e05545;">YOU DIED</h2>
+  <div class="stats">
+    <div class="k">Time survived</div><div class="v" id="sTime">0:00</div>
+    <div class="k">Kills</div><div class="v" id="sKills">0</div>
+    <div class="k">Wave reached</div><div class="v" id="sWave">1</div>
+    <div class="k">Level reached</div><div class="v" id="sLevel">1</div>
+  </div>
+  <button class="btn" id="retryBtn">TRY AGAIN</button>
+</div>
+
+<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+<script type="importmap">
+{ "imports": { "three": "https://unpkg.com/three@0.160.0/build/three.module.js" } }
+</script>
+
+<script type="module">
+import * as THREE from 'three';
+
+/* ================= device & constants ================= */
+const IS_TOUCH = matchMedia('(pointer: coarse)').matches || ('ontouchstart' in window && navigator.maxTouchPoints > 0);
+const MAXZ  = IS_TOUCH ? 34 : 48;       // concurrent zombie cap (3D is GPU-heavy; tablets get fewer)
+const WAVE_LEN = 25;                    // seconds per wave
+const XP_NEED  = lv => 20 + lv * 15;
+
+/* ================= renderer / scene ================= */
+const renderer = new THREE.WebGLRenderer({ antialias: !IS_TOUCH, powerPreference: 'high-performance' });
+renderer.setPixelRatio(Math.min(devicePixelRatio, IS_TOUCH ? 1.5 : 2));
+renderer.setSize(innerWidth, innerHeight);
+document.body.appendChild(renderer.domElement);
+const canvas = renderer.domElement;
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x0b0e0a);
+scene.fog = new THREE.Fog(0x0b0e0a, IS_TOUCH ? 12 : 16, IS_TOUCH ? 50 : 62); // fog hides where the streamed world ends
+
+const camera = new THREE.PerspectiveCamera(70, innerWidth / innerHeight, 0.1, 200);
+
+scene.add(new THREE.AmbientLight(0x4a5442, 0.9));
+const sun = new THREE.DirectionalLight(0xbfd4c8, 1.0);
+sun.position.set(18, 32, 12);
+scene.add(sun);
+
+addEventListener('resize', () => {
+  camera.aspect = innerWidth / innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth, innerHeight);
+});
+
+/* ================= ground / arena ================= */
+function makeGroundTexture() {
+  const c = document.createElement('canvas'); c.width = c.height = 256;
+  const x = c.getContext('2d');
+  x.fillStyle = '#2a2a24'; x.fillRect(0, 0, 256, 256);
+  for (let i = 0; i < 500; i++) {
+    const s = 2 + Math.random() * 9;
+    x.fillStyle = Math.random() < 0.5 ? 'rgba(0,0,0,0.14)' : 'rgba(120,120,95,0.07)';
+    x.fillRect(Math.random() * 256, Math.random() * 256, s, s);
+  }
+  const t = new THREE.CanvasTexture(c);
+  t.wrapS = t.wrapT = THREE.RepeatWrapping;
+  t.repeat.set(24, 24);
+  return t;
+}
+// "infinite" ground: a big tiled plane that snaps along under the player in
+// whole texture-tile steps (300 / 24 = 12.5), so the seams never show
+const GROUND_TILE = 12.5;
+const ground = new THREE.Mesh(
+  new THREE.PlaneGeometry(300, 300),
+  new THREE.MeshLambertMaterial({ map: makeGroundTexture() })
+);
+ground.rotation.x = -Math.PI / 2;
+scene.add(ground);
+
+// a low moon on the horizon, unaffected by fog
+const moon = new THREE.Sprite(new THREE.SpriteMaterial({
+  map: makeGlowTexture('rgba(215,230,250,1)'), transparent: true, opacity: 0.85,
+  fog: false, depthWrite: false,
+}));
+moon.scale.set(24, 24, 1);
+moon.position.set(90, 65, -120); // inside the camera far plane (200)
+scene.add(moon);
+
+/* ================= infinite world: prop pools + streamed chunks ================= */
+// The world is unbounded. Scenery lives in pooled objects that get placed into
+// 36×36 "chunks" around the player, generated deterministically from the chunk
+// coords — walk away and back, and the same wreck is still there.
+const obstacles = []; // rebuilt from active chunks — {x, z, r}
+const CHUNK = 36;
+
+function mulberry32(a) {
+  return function () {
+    a |= 0; a = a + 0x6D2B79F5 | 0;
+    let t = Math.imul(a ^ a >>> 15, 1 | a);
+    t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+    return ((t ^ t >>> 14) >>> 0) / 4294967296;
+  };
+}
+
+const POOLS = {};
+{
+  const MOB = IS_TOUCH; // tablets get fewer props
+  const add = (name, n, build, r, rotY = true) => {
+    POOLS[name] = [];
+    for (let i = 0; i < n; i++) {
+      const o = build(i);
+      o.visible = false;
+      scene.add(o);
+      POOLS[name].push({ o, r: typeof r === 'function' ? r(o) : r, rotY, used: false, x: 0, z: 0 });
+    }
+  };
+
+  const crateMat   = new THREE.MeshLambertMaterial({ color: 0x4a4436 });
+  const crateMat2  = new THREE.MeshLambertMaterial({ color: 0x554e3c });
+  const barrierMat = new THREE.MeshLambertMaterial({ color: 0x3b3f45 });
+  const rockMat    = new THREE.MeshLambertMaterial({ color: 0x3f423b, flatShading: true });
+  const woodMat    = new THREE.MeshLambertMaterial({ color: 0x2e2a20 });
+  const brickMat   = new THREE.MeshLambertMaterial({ color: 0x4a3a32 });
+  const graveMat   = new THREE.MeshLambertMaterial({ color: 0x565b52 });
+  const poleMat    = new THREE.MeshLambertMaterial({ color: 0x23262b });
+  const tireMat    = new THREE.MeshLambertMaterial({ color: 0x17181c });
+  const lampGlowMat = new THREE.MeshLambertMaterial({ color: 0x775c22, emissive: 0xd9a441, emissiveIntensity: 0.9 });
+  const decalMat   = new THREE.MeshBasicMaterial({ color: 0x14140f, transparent: true, opacity: 0.55 });
+  const rustMats   = [
+    new THREE.MeshLambertMaterial({ color: 0x5a4632 }),
+    new THREE.MeshLambertMaterial({ color: 0x44503e }),
+    new THREE.MeshLambertMaterial({ color: 0x3e4652 }),
+  ];
+
+  const crateGeo   = new THREE.BoxGeometry(2, 1.7, 2);
+  const barrierGeo = new THREE.BoxGeometry(3.2, 1, 0.55);
+  const rockGeo    = new THREE.IcosahedronGeometry(1, 0);
+  const trunkGeo   = new THREE.CylinderGeometry(0.16, 0.32, 4.6, 6);
+  const branchGeo  = new THREE.CylinderGeometry(0.05, 0.11, 2.0, 5);
+  const graveGeo   = new THREE.BoxGeometry(0.6, 1.0, 0.16);
+  const decalGeo   = new THREE.CircleGeometry(1, 10);
+
+  add('crate', MOB ? 8 : 12, i => {
+    const m = new THREE.Mesh(crateGeo, i % 2 ? crateMat : crateMat2);
+    m.position.y = 0.85;
+    return m;
+  }, 1.7);
+
+  add('barrier', MOB ? 5 : 8, () => {
+    const m = new THREE.Mesh(barrierGeo, barrierMat);
+    m.position.y = 0.5;
+    return m;
+  }, 1.5);
+
+  add('rock', MOB ? 6 : 10, () => {
+    const s = 1 + Math.random() * 1.3;
+    const m = new THREE.Mesh(rockGeo, rockMat);
+    m.scale.set(s, s * 0.7, s);
+    m.position.y = s * 0.45;
+    m.rotation.x = Math.random() * 0.4;
+    m.userData.r = s * 0.9;
+    return m;
+  }, o => o.userData.r);
+
+  add('tree', MOB ? 5 : 8, () => {
+    const g = new THREE.Group();
+    const t = new THREE.Mesh(trunkGeo, woodMat);
+    t.position.y = 2.3; t.rotation.z = (Math.random() - 0.5) * 0.12; g.add(t);
+    for (const [ry, rz, h] of [[0.7, 0.9, 3.1], [3.6, -1.1, 2.4]]) {
+      const b = new THREE.Mesh(branchGeo, woodMat);
+      b.position.y = h; b.rotation.set(0, ry, rz); b.translateY(0.8);
+      g.add(b);
+    }
+    return g;
+  }, 0.7);
+
+  add('wreck', MOB ? 2 : 4, () => {   // abandoned car
+    const g = new THREE.Group();
+    const mat = rustMats[Math.floor(Math.random() * 3)];
+    const body = new THREE.Mesh(new THREE.BoxGeometry(3.8, 0.85, 1.7), mat); body.position.y = 0.75; g.add(body);
+    const cabin = new THREE.Mesh(new THREE.BoxGeometry(1.9, 0.7, 1.5), mat);
+    cabin.position.set(-0.3, 1.5, 0); cabin.rotation.z = 0.04; g.add(cabin);
+    const axleGeo = new THREE.CylinderGeometry(0.32, 0.32, 1.9, 8);
+    for (const ax of [-1.25, 1.25]) {
+      const wheels = new THREE.Mesh(axleGeo, tireMat);
+      wheels.rotation.x = Math.PI / 2; wheels.position.set(ax, 0.32, 0); g.add(wheels);
+    }
+    return g;
+  }, 2.3);
+
+  add('ruin', MOB ? 3 : 5, () => {    // crumbled L-shaped wall
+    const g = new THREE.Group();
+    const w1 = new THREE.Mesh(new THREE.BoxGeometry(4.2, 2.2, 0.45), brickMat); w1.position.y = 1.1; g.add(w1);
+    const w2 = new THREE.Mesh(new THREE.BoxGeometry(0.45, 1.6, 3.0), brickMat); w2.position.set(2.05, 0.8, 1.6); g.add(w2);
+    return g;
+  }, 2.6);
+
+  add('grave', MOB ? 10 : 16, () => {
+    const m = new THREE.Mesh(graveGeo, graveMat);
+    m.position.y = 0.45;
+    m.rotation.x = (Math.random() - 0.5) * 0.25;
+    m.scale.setScalar(0.8 + Math.random() * 0.5);
+    return m;
+  }, 0.4);
+
+  add('lamp', MOB ? 4 : 6, () => {    // dead streetlight, faint amber glow
+    const g = new THREE.Group();
+    const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.13, 4.2, 6), poleMat); pole.position.y = 2.1; g.add(pole);
+    const head = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.22, 0.5), lampGlowMat); head.position.y = 4.25; g.add(head);
+    const glow = new THREE.Sprite(new THREE.SpriteMaterial({
+      map: makeGlowTexture('rgba(255,200,110,1)'), transparent: true, opacity: 0.5,
+      blending: THREE.AdditiveBlending, depthWrite: false,
+    }));
+    glow.scale.set(2.4, 2.4, 1); glow.position.y = 4.3; g.add(glow);
+    return g;
+  }, 0.35);
+
+  add('decal', MOB ? 6 : 10, () => {  // scorch marks / stains on the ground
+    const m = new THREE.Mesh(decalGeo, decalMat);
+    m.rotation.x = -Math.PI / 2;
+    m.position.y = 0.015;
+    m.scale.setScalar(1.5 + Math.random() * 2.5);
+    return m;
+  }, 0, false);
+}
+
+const activeChunks = new Map();
+let lastCX = Infinity, lastCZ = Infinity;
+
+function genChunk(cx, cz, key) {
+  const rng = mulberry32((cx * 374761393 ^ cz * 668265263) + 1013904223);
+  const props = [];
+  const ox = cx * CHUNK, oz = cz * CHUNK;
+  const placeAt = (pool, x, z) => {
+    const it = POOLS[pool].find(p => !p.used);
+    if (!it) return;
+    it.used = true; it.x = x; it.z = z;
+    it.o.position.x = x; it.o.position.z = z;
+    if (it.rotY) it.o.rotation.y = rng() * Math.PI * 2;
+    it.o.visible = true;
+    props.push(it);
+  };
+  const place = (pool) => {
+    let x, z;
+    for (let t = 0; ; t++) {
+      x = ox + (rng() - 0.5) * (CHUNK - 5);
+      z = oz + (rng() - 0.5) * (CHUNK - 5);
+      if (t >= 4 || cx !== 0 || cz !== 0 || Math.hypot(x, z) > 6) break; // keep the spawn point clear
+    }
+    placeAt(pool, x, z);
+  };
+  if (rng() < 0.8) place('rock');
+  if (rng() < 0.6) place('tree');
+  if (rng() < 0.7) place('crate');
+  if (rng() < 0.4) place('crate');
+  if (rng() < 0.5) place('barrier');
+  if (rng() < 0.7) place('decal');
+  const roll = rng(); // one landmark per chunk, sometimes
+  if (roll < 0.18) place('wreck');
+  else if (roll < 0.36) place('ruin');
+  else if (roll < 0.56) { // small graveyard cluster
+    const gx = ox + (rng() - 0.5) * (CHUNK - 10), gz = oz + (rng() - 0.5) * (CHUNK - 10);
+    const n = 3 + Math.floor(rng() * 3);
+    for (let i = 0; i < n; i++) placeAt('grave', gx + (rng() - 0.5) * 4, gz + (rng() - 0.5) * 4);
+  }
+  else if (roll < 0.76) place('lamp');
+  activeChunks.set(key, props);
+}
+
+function updateChunks(force) {
+  const cx = Math.round(player.pos.x / CHUNK), cz = Math.round(player.pos.z / CHUNK);
+  if (!force && cx === lastCX && cz === lastCZ) return;
+  lastCX = cx; lastCZ = cz;
+  for (const [key, props] of activeChunks) {
+    const [kx, kz] = key.split(',').map(Number);
+    if (Math.abs(kx - cx) > 1 || Math.abs(kz - cz) > 1) {
+      for (const p of props) { p.used = false; p.o.visible = false; }
+      activeChunks.delete(key);
+    }
+  }
+  for (let ix = cx - 1; ix <= cx + 1; ix++)
+    for (let iz = cz - 1; iz <= cz + 1; iz++) {
+      const key = ix + ',' + iz;
+      if (!activeChunks.has(key)) genChunk(ix, iz, key);
+    }
+  obstacles.length = 0;
+  for (const props of activeChunks.values())
+    for (const p of props) if (p.r > 0) obstacles.push({ x: p.x, z: p.z, r: p.r });
+}
+
+/* ================= shared geometry / materials ================= */
+const GEO = {
+  torso:  new THREE.BoxGeometry(0.6, 0.7, 0.34),
+  head:   new THREE.BoxGeometry(0.36, 0.36, 0.36),
+  limb:   new THREE.BoxGeometry(0.2, 0.62, 0.2),
+  armF:   new THREE.BoxGeometry(0.16, 0.16, 0.62),   // forward-pointing arm
+  eye:    new THREE.BoxGeometry(0.07, 0.07, 0.03),
+  gun:    new THREE.BoxGeometry(0.1, 0.16, 0.55),
+  barrel: new THREE.CylinderGeometry(0.045, 0.045, 0.5, 6),
+  sight:  new THREE.BoxGeometry(0.05, 0.09, 0.14),
+  mag:    new THREE.BoxGeometry(0.07, 0.2, 0.12),
+  visor:  new THREE.BoxGeometry(0.3, 0.09, 0.03),
+  chest:  new THREE.BoxGeometry(0.4, 0.22, 0.05),
+  helmet: new THREE.BoxGeometry(0.42, 0.16, 0.42),
+  pack:   new THREE.BoxGeometry(0.42, 0.48, 0.16),
+  belt:   new THREE.BoxGeometry(0.62, 0.08, 0.36),
+  pad:    new THREE.BoxGeometry(0.18, 0.12, 0.26),
+  boot:   new THREE.BoxGeometry(0.24, 0.16, 0.32),
+  jaw:    new THREE.BoxGeometry(0.26, 0.1, 0.28),
+  hand:   new THREE.BoxGeometry(0.18, 0.18, 0.16),
+  orb:    new THREE.OctahedronGeometry(0.17),
+  shadow: new THREE.CircleGeometry(0.55, 12),
+};
+const MAT = {
+  eye:       new THREE.MeshLambertMaterial({ color: 0x111a05, emissive: 0x9ADE00, emissiveIntensity: 1 }),
+  zLegs:     new THREE.MeshLambertMaterial({ color: 0x3c4a1e }),
+  pBody:     new THREE.MeshLambertMaterial({ color: 0x4a5057 }),
+  pLegs:     new THREE.MeshLambertMaterial({ color: 0x33383d }),
+  pAccent:   new THREE.MeshLambertMaterial({ color: 0xd9a441 }),
+  gun:       new THREE.MeshLambertMaterial({ color: 0x1c1e22 }),
+  orb:       new THREE.MeshLambertMaterial({ color: 0x6b8e23, emissive: 0x9ADE00, emissiveIntensity: 0.7 }),
+  shadow:    new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.32 }),
+  tracer:    new THREE.LineBasicMaterial({ color: 0xffd977, transparent: true, opacity: 1 }),
+};
+
+/* ================= player build ================= */
+const player = {
+  group: new THREE.Group(),
+  pos: new THREE.Vector3(0, 0, 0),
+  hp: 100, maxHp: 100,
+  speed: 5.2, dmgMul: 1, rateMul: 1, pickup: 2.6, rangeMul: 1, explMul: 1,
+  weapon: 0, bombCd: 0, bombCdMul: 1, jumpY: 0, jumpV: 0,
+  level: 1, xp: 0, fireCd: 0, invuln: 0, walkPhase: 0,
+  legL: null, legR: null, armL: null, armR: null, muzzle: null, shadow: null,
+};
+{
+  const g = player.group;
+  g.rotation.order = 'YXZ'; // yaw first, so the walk-lean tilts relative to facing
+  const torso = new THREE.Mesh(GEO.torso, MAT.pBody); torso.position.y = 1.08; g.add(torso);
+  const chest = new THREE.Mesh(GEO.chest, MAT.pAccent); chest.position.set(0, 1.15, 0.19); g.add(chest);
+  const belt = new THREE.Mesh(GEO.belt, MAT.gun); belt.position.y = 0.76; g.add(belt);
+  const pack = new THREE.Mesh(GEO.pack, MAT.pLegs); pack.position.set(0, 1.12, -0.26); g.add(pack);
+  const head = new THREE.Mesh(GEO.head, MAT.pBody); head.position.y = 1.62; g.add(head);
+  const helmet = new THREE.Mesh(GEO.helmet, MAT.pLegs); helmet.position.y = 1.82; g.add(helmet);
+  const visor = new THREE.Mesh(GEO.visor, MAT.pAccent); visor.position.set(0, 1.66, 0.19); g.add(visor);
+
+  for (const side of [-1, 1]) {
+    const pad = new THREE.Mesh(GEO.pad, MAT.pAccent); pad.position.set(side * 0.36, 1.5, 0); g.add(pad);
+    const hip = new THREE.Group(); hip.position.set(side * 0.16, 0.7, 0);
+    const leg = new THREE.Mesh(GEO.limb, MAT.pLegs); leg.position.y = -0.31; hip.add(leg);
+    const boot = new THREE.Mesh(GEO.boot, MAT.gun); boot.position.set(0, -0.63, 0.05); hip.add(boot);
+    g.add(hip);
+    if (side < 0) player.legL = hip; else player.legR = hip;
+  }
+  // left arm hangs, gloved
+  const armL = new THREE.Group(); armL.position.set(-0.42, 1.36, 0);
+  const armLm = new THREE.Mesh(GEO.limb, MAT.pBody); armLm.position.y = -0.28; armLm.scale.set(0.8, 0.9, 0.8); armL.add(armLm);
+  const glove = new THREE.Mesh(GEO.hand, MAT.gun); glove.scale.setScalar(0.8); glove.position.y = -0.58; armL.add(glove);
+  g.add(armL); player.armL = armL;
+  // right arm holds the rifle forward: body + barrel + sight + magazine
+  const armR = new THREE.Group(); armR.position.set(0.42, 1.36, 0);
+  player.armR = armR;
+  const armRm = new THREE.Mesh(GEO.armF, MAT.pBody); armRm.position.z = 0.25; armRm.scale.set(0.9, 0.9, 0.7); armR.add(armRm);
+  const gun = new THREE.Mesh(GEO.gun, MAT.gun); gun.position.set(0, 0, 0.55); armR.add(gun);
+  const barrel = new THREE.Mesh(GEO.barrel, MAT.gun); barrel.rotation.x = Math.PI / 2; barrel.position.set(0, 0.02, 0.95); armR.add(barrel);
+  const sight = new THREE.Mesh(GEO.sight, MAT.pAccent); sight.position.set(0, 0.13, 0.5); armR.add(sight);
+  const mag = new THREE.Mesh(GEO.mag, MAT.gun); mag.position.set(0, -0.16, 0.55); mag.rotation.x = 0.15; armR.add(mag);
+  player.muzzle = new THREE.Object3D(); player.muzzle.position.set(0, 0.02, 1.2); armR.add(player.muzzle);
+  g.add(armR);
+
+  const sh = new THREE.Mesh(GEO.shadow, MAT.shadow); sh.rotation.x = -Math.PI / 2; sh.position.y = 0.02; g.add(sh);
+  player.shadow = sh;
+  scene.add(g);
+}
+
+/* ================= partner avatar (co-op) ================= */
+const remote = {
+  group: null, legL: null, legR: null,
+  x: 2, z: 2, ry: 0, jy: 0, hp: 100, pk: 2.6,
+  walk: 0, speedSm: 0, visible: false, invulnT: 0,
+};
+{
+  const accent = new THREE.MeshLambertMaterial({ color: 0x41b8d9 }); // partner reads as teal
+  const g = new THREE.Group();
+  g.rotation.order = 'YXZ';
+  const torso = new THREE.Mesh(GEO.torso, MAT.pBody); torso.position.y = 1.08; g.add(torso);
+  const chest = new THREE.Mesh(GEO.chest, accent); chest.position.set(0, 1.15, 0.19); g.add(chest);
+  const head = new THREE.Mesh(GEO.head, MAT.pBody); head.position.y = 1.62; g.add(head);
+  const helmet = new THREE.Mesh(GEO.helmet, MAT.pLegs); helmet.position.y = 1.82; g.add(helmet);
+  const visor = new THREE.Mesh(GEO.visor, accent); visor.position.set(0, 1.66, 0.19); g.add(visor);
+  for (const side of [-1, 1]) {
+    const hip = new THREE.Group(); hip.position.set(side * 0.16, 0.7, 0);
+    const leg = new THREE.Mesh(GEO.limb, MAT.pLegs); leg.position.y = -0.31; hip.add(leg);
+    g.add(hip);
+    if (side < 0) remote.legL = hip; else remote.legR = hip;
+  }
+  const armR = new THREE.Group(); armR.position.set(0.42, 1.36, 0);
+  const armRm = new THREE.Mesh(GEO.armF, MAT.pBody); armRm.position.z = 0.25; armRm.scale.set(0.9, 0.9, 0.7); armR.add(armRm);
+  const rgun = new THREE.Mesh(GEO.gun, MAT.gun); rgun.position.set(0, 0, 0.55); armR.add(rgun);
+  g.add(armR);
+  const armL = new THREE.Group(); armL.position.set(-0.42, 1.36, 0);
+  const armLm = new THREE.Mesh(GEO.limb, MAT.pBody); armLm.position.y = -0.28; armLm.scale.set(0.8, 0.9, 0.8); armL.add(armLm);
+  g.add(armL);
+  const rsh = new THREE.Mesh(GEO.shadow, MAT.shadow); rsh.rotation.x = -Math.PI / 2; rsh.position.y = 0.02; g.add(rsh);
+  g.visible = false;
+  scene.add(g);
+  remote.group = g;
+}
+
+/* ================= zombie pool ================= */
+const zombies = [];
+function buildZombie() {
+  const g = new THREE.Group();
+  g.rotation.order = 'YXZ'; // yaw first — death fall & sway happen relative to facing
+  const mat = new THREE.MeshLambertMaterial({ color: 0x6b8e23 }); // per-zombie so it can flash
+  const torso = new THREE.Mesh(GEO.torso, mat); torso.position.y = 1.0; torso.rotation.x = 0.22; g.add(torso); // hunched forward
+  const head = new THREE.Mesh(GEO.head, mat); head.position.set(0, 1.46, 0.18); head.rotation.z = 0.06; g.add(head);
+  for (const side of [-1, 1]) {
+    const eye = new THREE.Mesh(GEO.eye, MAT.eye); eye.position.set(side * 0.09, 0.03, 0.19); head.add(eye);
+  }
+  const jaw = new THREE.Mesh(GEO.jaw, MAT.zLegs); jaw.position.set(0, -0.22, 0.08); jaw.rotation.x = 0.3; head.add(jaw); // slack open mouth
+  const arms = [];
+  for (const side of [-1, 1]) {
+    const sh = new THREE.Group(); sh.position.set(side * 0.38, 1.2 + side * 0.05, 0.1); // uneven shoulders
+    const a = new THREE.Mesh(GEO.armF, mat); a.position.z = 0.3; sh.add(a);
+    const hand = new THREE.Mesh(GEO.hand, MAT.zLegs); hand.scale.setScalar(0.75); hand.position.set(0, -0.05, 0.66); sh.add(hand);
+    sh.rotation.x = -0.15;
+    sh.rotation.z = side * -0.12;
+    g.add(sh); arms.push(sh);
+  }
+  const legs = [];
+  for (const side of [-1, 1]) {
+    const hip = new THREE.Group(); hip.position.set(side * 0.16, 0.64, 0);
+    const l = new THREE.Mesh(GEO.limb, MAT.zLegs); l.position.y = -0.3; hip.add(l);
+    g.add(hip); legs.push(hip);
+  }
+  let shadow = null;
+  if (!IS_TOUCH) { // blob shadows only on desktop — saves ~35 draw calls on tablet
+    shadow = new THREE.Mesh(GEO.shadow, MAT.shadow);
+    shadow.rotation.x = -Math.PI / 2; shadow.position.y = 0.02; g.add(shadow);
+  }
+  g.visible = false;
+  scene.add(g);
+  return {
+    group: g, mat, legs, arms, head,
+    alive: false, dying: false, dieT: 0, spinDir: 1,
+    hp: 1, maxHp: 1, speed: 2, dmg: 8, radius: 0.55, xp: 4, brute: false,
+    phase: Math.random() * 10, flashT: 0,
+  };
+}
+// full 48-slot pool even on mobile — in co-op the guest mirrors the host's pool by index
+for (let i = 0; i < 48; i++) { const z = buildZombie(); z.idx = i; z.netX = 0; z.netZ = 0; z.netRY = 0; zombies.push(z); }
+
+/* ================= XP orbs ================= */
+const orbs = [];
+for (let i = 0; i < 90; i++) {
+  const m = new THREE.Mesh(GEO.orb, MAT.orb);
+  m.visible = false; scene.add(m);
+  orbs.push({ mesh: m, alive: false, value: 4, phase: Math.random() * 10 });
+}
+
+/* ================= tracers & sparks ================= */
+const tracers = [];
+for (let i = 0; i < 18; i++) {
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(6), 3));
+  const line = new THREE.Line(geo, MAT.tracer.clone());
+  line.visible = false; line.frustumCulled = false;
+  scene.add(line);
+  tracers.push({ line, life: 0 });
+}
+function fireTracer(a, b) {
+  const t = tracers.find(t => t.life <= 0) || tracers[0];
+  const p = t.line.geometry.attributes.position;
+  p.setXYZ(0, a.x, a.y, a.z); p.setXYZ(1, b.x, b.y, b.z);
+  p.needsUpdate = true;
+  t.life = 0.07; t.line.visible = true; t.line.material.opacity = 1;
+}
+
+function makeGlowTexture(color) {
+  const c = document.createElement('canvas'); c.width = c.height = 64;
+  const x = c.getContext('2d');
+  const gr = x.createRadialGradient(32, 32, 2, 32, 32, 30);
+  gr.addColorStop(0, color); gr.addColorStop(1, 'rgba(0,0,0,0)');
+  x.fillStyle = gr; x.fillRect(0, 0, 64, 64);
+  return new THREE.CanvasTexture(c);
+}
+const flashTex = makeGlowTexture('rgba(255,220,140,1)');
+const sparkTex = makeGlowTexture('rgba(154,222,0,1)');
+const sparks = [];
+for (let i = 0; i < 12; i++) {
+  const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: sparkTex, blending: THREE.AdditiveBlending, depthWrite: false, transparent: true }));
+  s.visible = false; scene.add(s);
+  sparks.push({ sprite: s, life: 0 });
+}
+function spawnSpark(pos, isMuzzle) {
+  const s = sparks.find(s => s.life <= 0) || sparks[0];
+  s.sprite.material.map = isMuzzle ? flashTex : sparkTex;
+  s.sprite.position.copy(pos);
+  const sz = isMuzzle ? 0.9 : 0.6;
+  s.sprite.scale.set(sz, sz, 1);
+  s.life = 0.06; s.sprite.visible = true; s.sprite.material.opacity = 1;
+}
+
+/* ---- gib particles (zombie death burst) ---- */
+const particles = [];
+{
+  const geo = new THREE.BoxGeometry(0.13, 0.13, 0.13);
+  const mat = new THREE.MeshLambertMaterial({ color: 0x7da62a, emissive: 0x223a05 });
+  for (let i = 0; i < (IS_TOUCH ? 20 : 36); i++) {
+    const m = new THREE.Mesh(geo, mat);
+    m.visible = false; scene.add(m);
+    particles.push({ mesh: m, vel: new THREE.Vector3(), life: 0, max: 1 });
+  }
+}
+function burst(pos, n) {
+  for (let i = 0; i < n; i++) {
+    const p = particles.find(p => p.life <= 0);
+    if (!p) return;
+    p.mesh.position.set(pos.x, 0.9 + Math.random() * 0.6, pos.z);
+    p.vel.set((Math.random() - 0.5) * 5, 2.5 + Math.random() * 3, (Math.random() - 0.5) * 5);
+    p.max = p.life = 0.45 + Math.random() * 0.3;
+    p.mesh.scale.setScalar(1);
+    p.mesh.visible = true;
+  }
+}
+
+/* ---- floating damage numbers ---- */
+const dmgNums = [];
+{
+  const layer = document.getElementById('dmgLayer');
+  for (let i = 0; i < 14; i++) {
+    const el = document.createElement('div');
+    el.className = 'dmgnum';
+    layer.appendChild(el);
+    dmgNums.push({ el, pos: new THREE.Vector3(), life: 0 });
+  }
+}
+function showDmg(z, txt, color) {
+  let d = dmgNums.find(d => d.life <= 0);
+  if (!d) d = dmgNums.reduce((a, b) => (a.life < b.life ? a : b));
+  d.el.textContent = txt;
+  d.el.style.color = color;
+  d.pos.set(
+    z.group.position.x + (Math.random() - 0.5) * 0.6,
+    2.0 * z.group.scale.y,
+    z.group.position.z + (Math.random() - 0.5) * 0.3
+  );
+  d.life = 0.7;
+}
+
+/* ================= weapons ================= */
+const WEAPONS = [
+  { name: 'RIFLE',   dmg: 12,  rate: 3.2, pellets: 1, spread: 0,     kick: 0.011, bloom: 4,   unlockWave: 1, sfx: 'shoot' },
+  { name: 'SHOTGUN', dmg: 7,   rate: 1.1, pellets: 6, spread: 0.085, kick: 0.032, bloom: 10,  unlockWave: 2, sfx: 'shotgun' },
+  { name: 'SMG',     dmg: 5.5, rate: 9,   pellets: 1, spread: 0.03,  kick: 0.005, bloom: 2.5, unlockWave: 4, sfx: 'smg' },
+];
+function switchWeapon(i) {
+  if (!WEAPONS[i] || WEAPONS[i].unlockWave > wave || i === player.weapon) return;
+  player.weapon = i;
+  SFX.click();
+  updateWepHud();
+}
+function cycleWeapon() {
+  for (let k = 1; k <= WEAPONS.length; k++) {
+    const i = (player.weapon + k) % WEAPONS.length;
+    if (WEAPONS[i].unlockWave <= wave) { switchWeapon(i); return; }
+  }
+}
+function updateWepHud() {
+  ui.wepText.innerHTML = WEAPONS.map((w, i) => {
+    const locked = w.unlockWave > wave;
+    const cls = 'wep' + (i === player.weapon ? ' cur' : '') + (locked ? ' lock' : '');
+    const label = locked ? '🔒' : (IS_TOUCH ? w.name : `[${i + 1}] ${w.name}`);
+    return `<span class="${cls}">${label}</span>`;
+  }).join('');
+}
+
+/* ================= explosive barrels ================= */
+const barrels = [];
+function placeBarrel(bl, minD, maxD) {
+  const a = Math.random() * Math.PI * 2;
+  const d = minD + Math.random() * (maxD - minD);
+  bl.x = player.pos.x + Math.cos(a) * d;
+  bl.z = player.pos.z + Math.sin(a) * d;
+  bl.mesh.position.set(bl.x, 0.53, bl.z);
+}
+{
+  const bodyGeo = new THREE.CylinderGeometry(0.45, 0.45, 1.05, 8);
+  const bandGeo = new THREE.CylinderGeometry(0.47, 0.47, 0.12, 8);
+  const bodyMat = new THREE.MeshLambertMaterial({ color: 0xa33327 });
+  const bandMat = new THREE.MeshLambertMaterial({ color: 0xd9a441 });
+  for (let i = 0; i < 8; i++) {
+    const m = new THREE.Mesh(bodyGeo, bodyMat);
+    const band = new THREE.Mesh(bandGeo, bandMat); band.position.y = 0.15; m.add(band);
+    scene.add(m);
+    const bl = { mesh: m, idx: i, x: 0, z: 0, alive: true, fuse: -1 };
+    barrels.push(bl);
+    placeBarrel(bl, 10, 32);
+  }
+}
+
+/* ================= explosions ================= */
+const booms = [];
+{
+  const geo = new THREE.SphereGeometry(1, 12, 8);
+  for (let i = 0; i < 4; i++) {
+    const mat = new THREE.MeshBasicMaterial({ color: 0xffa030, transparent: true, opacity: 0.8, blending: THREE.AdditiveBlending, depthWrite: false });
+    const m = new THREE.Mesh(geo, mat);
+    m.visible = false; scene.add(m);
+    booms.push({ mesh: m, t: 1, r: 1 });
+  }
+}
+function explode(center, radius, dmg) {
+  const b = booms.find(b => b.t >= 1) || booms[0];
+  b.t = 0; b.r = radius;
+  b.mesh.position.copy(center); b.mesh.position.y = Math.max(center.y, 0.5);
+  b.mesh.visible = true;
+  burst(center, IS_TOUCH ? 6 : 10);
+  shakeAmp = Math.max(shakeAmp, 0.4);
+  SFX.boom();
+  for (const z of zombies) {
+    if (!z.alive) continue;
+    const dx = z.group.position.x - center.x, dz = z.group.position.z - center.z;
+    const d = Math.hypot(dx, dz);
+    if (d < radius + z.radius) damageZombie(z, dmg, { x: dx / (d || 1), z: dz / (d || 1) });
+  }
+  for (const bl of barrels) { // chain reaction
+    if (!bl.alive || bl.fuse >= 0) continue;
+    if (Math.hypot(bl.x - center.x, bl.z - center.z) < radius) bl.fuse = 0.15 + Math.random() * 0.1;
+  }
+  if (Math.hypot(player.pos.x - center.x, player.pos.z - center.z) < radius * 0.55) damagePlayer(16);
+  if (mpRole === 'host' && mpOn()) {
+    send({ a: 'x', x: r1(center.x), z: r1(center.z), r: r1(radius) }); // replicate the boom
+    if (!partnerDown && Math.hypot(remote.x - center.x, remote.z - center.z) < radius * 0.55) send({ a: 'd', v: 16 });
+  }
+}
+
+/* ================= grenades ================= */
+const grenades = [];
+{
+  const geo = new THREE.SphereGeometry(0.16, 8, 6);
+  for (let i = 0; i < 3; i++) {
+    const mat = new THREE.MeshLambertMaterial({ color: 0x22252a });
+    const m = new THREE.Mesh(geo, mat);
+    m.visible = false; scene.add(m);
+    grenades.push({ mesh: m, mat, vel: new THREE.Vector3(), fuse: 0, alive: false });
+  }
+}
+function throwBomb() {
+  if (state !== 'playing' || player.bombCd > 0 || downed || choosing) return;
+  const gr = grenades.find(g => !g.alive);
+  if (!gr) return;
+  player.bombCd = 6 * player.bombCdMul;
+  let dx, dy, dz;
+  if (IS_TOUCH) {
+    const t = nearestZombie(22);
+    if (t) {
+      const d = Math.hypot(t.group.position.x - player.pos.x, t.group.position.z - player.pos.z) || 1;
+      dx = (t.group.position.x - player.pos.x) / d; dz = (t.group.position.z - player.pos.z) / d; dy = 0.1;
+    } else {
+      dx = Math.sin(player.group.rotation.y); dz = Math.cos(player.group.rotation.y); dy = 0.1;
+    }
+  } else {
+    camera.getWorldDirection(V.a);
+    dx = V.a.x; dy = V.a.y; dz = V.a.z;
+  }
+  gr.mesh.position.set(player.pos.x, 1.3 + player.jumpY, player.pos.z);
+  gr.vel.set(dx * 9, 4.2 + dy * 6, dz * 9);
+  gr.fuse = 1.1;
+  gr.alive = true; gr.mesh.visible = true;
+  if (mpOn()) send({
+    a: 'g',
+    x: r1(gr.mesh.position.x), y: r1(gr.mesh.position.y), z: r1(gr.mesh.position.z),
+    vx: r1(gr.vel.x), vy: r1(gr.vel.y), vz: r1(gr.vel.z),
+  });
+  SFX.throwB();
+}
+
+/* ================= jump ================= */
+function doJump() {
+  if (state !== 'playing' || player.jumpY > 0 || downed || choosing) return;
+  player.jumpV = 7.4;
+  player.jumpY = 0.001;
+  SFX.jump();
+}
+
+/* ================= audio (WebAudio synth only) ================= */
+let AC = null;
+function initAudio() {
+  if (!AC) { try { AC = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {} }
+  if (AC && AC.state === 'suspended') AC.resume();
+}
+function tone(f0, f1, dur, type, vol, delay = 0) {
+  if (!AC) return;
+  const t0 = AC.currentTime + delay;
+  const o = AC.createOscillator(), g = AC.createGain();
+  o.type = type; o.frequency.setValueAtTime(f0, t0);
+  o.frequency.exponentialRampToValueAtTime(Math.max(f1, 1), t0 + dur);
+  g.gain.setValueAtTime(vol, t0);
+  g.gain.exponentialRampToValueAtTime(0.001, t0 + dur);
+  o.connect(g); g.connect(AC.destination);
+  o.start(t0); o.stop(t0 + dur + 0.02);
+}
+const SFX = {
+  shoot:   () => tone(850, 220, 0.06, 'square', 0.05),
+  shotgun: () => { tone(280, 60, 0.15, 'square', 0.16); tone(140, 40, 0.2, 'sawtooth', 0.12); },
+  smg:     () => tone(950, 350, 0.04, 'square', 0.035),
+  boom:    () => { tone(300, 40, 0.4, 'sawtooth', 0.22); tone(90, 25, 0.6, 'triangle', 0.2); },
+  throwB:  () => tone(520, 300, 0.06, 'sine', 0.07),
+  jump:    () => tone(280, 480, 0.09, 'sine', 0.05),
+  click:   () => tone(700, 700, 0.03, 'square', 0.05),
+  hit:     () => tone(220, 90, 0.05, 'triangle', 0.1),
+  die:     () => tone(160, 40, 0.2, 'sawtooth', 0.12),
+  pickup:  () => tone(900, 1500, 0.07, 'sine', 0.08),
+  hurt:    () => tone(130, 55, 0.16, 'square', 0.16),
+  wave:    () => tone(300, 520, 0.3, 'triangle', 0.1),
+  levelup: () => { tone(523, 523, 0.1, 'square', 0.09); tone(659, 659, 0.1, 'square', 0.09, 0.1); tone(784, 784, 0.16, 'square', 0.09, 0.2); },
+  gameover:() => tone(380, 60, 0.7, 'sawtooth', 0.14),
+};
+
+/* ================= game state ================= */
+let state = 'menu';   // menu | playing | levelup | paused | gameover
+let yaw = 0, pitch = 0.42;
+let time = 0, wave = 1, waveTimer = 0, spawnTimer = 0, kills = 0;
+let firing = false, pendingLevels = 0, damageFlashT = 0;
+let chSpread = 0, hmT = 0, pitchKick = 0, shakeAmp = 0; // game-feel: crosshair bloom, hit marker, recoil, shake
+const camTarget = new THREE.Vector3(); // damped follow point — gives the camera weight
+// multiplayer state
+let peer = null, conn = null, mpRole = null; // 'host' | 'guest' | null (solo)
+let netT = 0, downed = false, partnerDown = false, respawnT = 0, choosing = false;
+const mpOn = () => !!(conn && conn.open && mpRole);
+const send = o => { if (conn && conn.open) conn.send(o); };
+const r1 = v => Math.round(v * 10) / 10;
+const r2 = v => Math.round(v * 100) / 100;
+const keys = {};
+const joy = { active: false, id: null, ox: 0, oy: 0, x: 0, y: 0 };
+const V = { a: new THREE.Vector3(), b: new THREE.Vector3(), c: new THREE.Vector3() };
+
+/* ================= DOM refs ================= */
+const $ = id => document.getElementById(id);
+const ui = {
+  hpFill: $('hpFill'), hpText: $('hpText'), killText: $('killText'),
+  waveText: $('waveText'), timeText: $('timeText'), xpFill: $('xpFill'),
+  levelBadge: $('levelBadge'), crosshair: $('crosshair'), waveAnnounce: $('waveAnnounce'),
+  damageFlash: $('damageFlash'), joyBase: $('joyBase'), joyKnob: $('joyKnob'),
+  start: $('startOverlay'), pause: $('pauseOverlay'), level: $('levelOverlay'),
+  over: $('gameOverlay'), cards: $('cards'), levelTitle: $('levelTitle'),
+  chT: $('chT'), chB: $('chB'), chL: $('chL'), chR: $('chR'), hitMarker: $('hitMarker'),
+  wepText: $('wepText'), bombHud: $('bombHud'), btnBomb: $('btnBomb'),
+};
+ui.crosshair.style.display = IS_TOUCH ? 'none' : 'block';
+$('controlsHint').textContent = IS_TOUCH
+  ? 'Left joystick to move — auto-aim fires for you. Right-side buttons: 💣 bomb, ⬆ jump, 🔫 swap weapon. New guns unlock as waves pass!'
+  : 'WASD move · mouse aim · click fire · SPACE jump · G or right-click bomb · 1-3 / Q swap weapon (new guns unlock as waves pass).';
+if (IS_TOUCH) {
+  $('touchBtns').style.display = 'flex';
+  $('btnPause').style.display = 'flex';
+  const bind = (id, fn) => $(id).addEventListener('touchstart', e => { e.preventDefault(); fn(); }, { passive: false });
+  bind('btnBomb', throwBomb);
+  bind('btnJump', doJump);
+  bind('btnWep', cycleWeapon);
+  bind('btnPause', () => {
+    if (mpOn() || state !== 'playing') return; // no pausing a shared world
+    state = 'paused'; ui.pause.classList.remove('hidden');
+  });
+}
+
+/* ================= upgrades ================= */
+const UPGRADES = [
+  { ico: '💥', nm: 'Heavy Rounds',  ds: '+25% weapon damage',        apply: () => player.dmgMul *= 1.25 },
+  { ico: '🔫', nm: 'Rapid Fire',    ds: '+18% fire rate',            apply: () => player.rateMul *= 1.18 },
+  { ico: '👟', nm: 'Adrenaline',    ds: '+10% move speed',           apply: () => player.speed *= 1.10 },
+  { ico: '❤️', nm: 'Juggernaut',    ds: '+20 max HP and heal 20',    apply: () => { player.maxHp += 20; player.hp = Math.min(player.maxHp, player.hp + 20); } },
+  { ico: '🧲', nm: 'Magnet',        ds: '+35% pickup radius',        apply: () => player.pickup *= 1.35 },
+  { ico: '🎯', nm: 'Long Barrel',   ds: '+20% range / lock-on reach',apply: () => player.rangeMul *= 1.20 },
+  { ico: '💣', nm: 'Demolitionist', ds: 'Bigger booms, -20% bomb cooldown', apply: () => { player.explMul *= 1.3; player.bombCdMul *= 0.8; } },
+];
+
+/* ================= input: keyboard + mouse ================= */
+addEventListener('keydown', e => {
+  keys[e.code] = true;
+  if (e.code === 'Space') e.preventDefault();
+  if (state !== 'playing') return;
+  if (e.code === 'Space' && !e.repeat) doJump();
+  else if (e.code === 'KeyG') throwBomb();
+  else if (e.code === 'KeyQ') cycleWeapon();
+  else if (e.code === 'Digit1') switchWeapon(0);
+  else if (e.code === 'Digit2') switchWeapon(1);
+  else if (e.code === 'Digit3') switchWeapon(2);
+});
+addEventListener('keyup',   e => { keys[e.code] = false; });
+
+canvas.addEventListener('mousedown', e => {
+  if (IS_TOUCH) return;
+  if (state === 'playing') {
+    if (document.pointerLockElement === canvas) {
+      if (e.button === 2) throwBomb();
+      else firing = true;
+    }
+    else lockPointer();
+  }
+});
+addEventListener('mouseup', () => { firing = false; });
+addEventListener('mousemove', e => {
+  if (document.pointerLockElement !== canvas) return;
+  yaw   -= e.movementX * 0.0022;
+  pitch += e.movementY * 0.0018;
+  pitch = Math.max(-0.05, Math.min(1.15, pitch));
+});
+addEventListener('contextmenu', e => e.preventDefault());
+
+function lockPointer() {
+  try { const p = canvas.requestPointerLock(); if (p && p.catch) p.catch(() => {}); } catch (e) {}
+}
+document.addEventListener('pointerlockchange', () => {
+  if (IS_TOUCH) return;
+  if (document.pointerLockElement !== canvas && state === 'playing' && !mpOn() && !choosing) {
+    state = 'paused'; firing = false; // co-op never pauses — the shared world keeps running
+    ui.pause.classList.remove('hidden');
+  }
+  if (document.pointerLockElement === canvas && state === 'paused') {
+    state = 'playing';
+    ui.pause.classList.add('hidden');
+  }
+});
+$('resumeBtn').addEventListener('click', () => {
+  if (IS_TOUCH) { state = 'playing'; ui.pause.classList.add('hidden'); }
+  else lockPointer();
+});
+
+/* ================= input: touch joystick ================= */
+canvas.addEventListener('touchstart', e => {
+  if (state !== 'playing') return;
+  for (const t of e.changedTouches) {
+    if (!joy.active && t.clientX < innerWidth * 0.6) {
+      joy.active = true; joy.id = t.identifier;
+      joy.ox = t.clientX; joy.oy = t.clientY; joy.x = 0; joy.y = 0;
+      ui.joyBase.style.display = ui.joyKnob.style.display = 'block';
+      ui.joyBase.style.left = (t.clientX - 60) + 'px';
+      ui.joyBase.style.top  = (t.clientY - 60) + 'px';
+      ui.joyKnob.style.left = (t.clientX - 26) + 'px';
+      ui.joyKnob.style.top  = (t.clientY - 26) + 'px';
+    }
+  }
+  e.preventDefault();
+}, { passive: false });
+canvas.addEventListener('touchmove', e => {
+  for (const t of e.changedTouches) {
+    if (joy.active && t.identifier === joy.id) {
+      let dx = t.clientX - joy.ox, dy = t.clientY - joy.oy;
+      const R = 58, d = Math.hypot(dx, dy);
+      if (d > R) { dx = dx / d * R; dy = dy / d * R; }
+      joy.x = dx / R; joy.y = dy / R;
+      ui.joyKnob.style.left = (joy.ox + dx - 26) + 'px';
+      ui.joyKnob.style.top  = (joy.oy + dy - 26) + 'px';
+    }
+  }
+  e.preventDefault();
+}, { passive: false });
+function endTouch(e) {
+  for (const t of e.changedTouches) {
+    if (joy.active && t.identifier === joy.id) {
+      joy.active = false; joy.x = 0; joy.y = 0;
+      ui.joyBase.style.display = ui.joyKnob.style.display = 'none';
+    }
+  }
+}
+canvas.addEventListener('touchend', endTouch);
+canvas.addEventListener('touchcancel', endTouch);
+
+/* ================= helpers ================= */
+function lerpAngle(a, b, t) {
+  let d = (b - a) % (Math.PI * 2);
+  if (d > Math.PI) d -= Math.PI * 2;
+  if (d < -Math.PI) d += Math.PI * 2;
+  return a + d * t;
+}
+function fmtTime(s) {
+  const m = Math.floor(s / 60), r = Math.floor(s % 60);
+  return `${String(m).padStart(2, '0')}:${String(r).padStart(2, '0')}`;
+}
+function announce(msg) {
+  ui.waveAnnounce.textContent = msg;
+  ui.waveAnnounce.classList.remove('show');
+  void ui.waveAnnounce.offsetWidth; // restart CSS animation
+  ui.waveAnnounce.classList.add('show');
+}
+
+/* ================= spawning ================= */
+function aliveCount() { return zombies.reduce((n, z) => n + (z.alive ? 1 : 0), 0); }
+
+function spawnZombie() {
+  const z = zombies.find(z => !z.alive && !z.dying);
+  if (!z) return;
+  const brute = wave >= 3 && Math.random() < Math.min(0.08 + (wave - 3) * 0.03, 0.3);
+  z.brute = brute;
+  if (brute) {
+    z.maxHp = 80 + wave * 20; z.speed = 1.5 + Math.random() * 0.2; z.dmg = 18;
+    z.radius = 1.0; z.xp = 12;
+    z.group.scale.set(1.6, 1.4, 1.5); // wide and heavy, not just uniformly bigger
+    z.mat.color.setHex(0x55701c);
+  } else {
+    z.maxHp = 26 + wave * 6;
+    z.speed = 2.1 + Math.random() * 0.5 + Math.min(wave * 0.05, 1.2);
+    z.dmg = 8; z.radius = 0.6; z.xp = 4;
+    z.group.scale.setScalar(0.95 + Math.random() * 0.13);
+    z.mat.color.setHex(0x6b8e23);
+  }
+  z.mat.emissive.setHex(0x000000);
+  z.hp = z.maxHp; z.flashT = 0; z.phase = Math.random() * 10;
+  // spawn in a ring around a living player, out in the fog
+  const a = Math.random() * Math.PI * 2;
+  const d = 28 + Math.random() * 8;
+  const nearGuest = mpRole === 'host' && mpOn() && !partnerDown && (downed || Math.random() < 0.5);
+  const ax = nearGuest ? remote.x : player.pos.x;
+  const az = nearGuest ? remote.z : player.pos.z;
+  z.group.position.set(ax + Math.cos(a) * d, 0, az + Math.sin(a) * d);
+  z.group.rotation.x = 0;
+  z.group.rotation.z = 0;
+  z.alive = true; z.dying = false;
+  z.group.visible = true;
+}
+
+function spawnOrb(pos, value) {
+  const o = orbs.find(o => !o.alive);
+  if (!o) return;
+  o.alive = true; o.value = value;
+  o.mesh.position.set(
+    pos.x + (Math.random() - 0.5) * 1.2, 0.45,
+    pos.z + (Math.random() - 0.5) * 1.2
+  );
+  o.mesh.visible = true;
+}
+
+/* ================= combat ================= */
+function damageZombie(z, dmg, dir, fromPartner = false) {
+  z.hp -= dmg;
+  z.flashT = 0.08;
+  z.mat.emissive.setHex(0x993322);
+  if (dir) { z.group.position.x += dir.x * 0.18; z.group.position.z += dir.z * 0.18; }
+  SFX.hit();
+  showDmg(z, Math.round(dmg), z.hp <= 0 ? '#d9a441' : '#fff');
+  if (!IS_TOUCH && !fromPartner) { hmT = Math.max(hmT, 0.16); ui.hitMarker.style.color = '#fff'; }
+  if (z.hp <= 0) killZombie(z);
+}
+function killZombie(z) {
+  z.alive = false; z.dying = true; z.dieT = 0;
+  z.spinDir = Math.random() < 0.5 ? -1 : 1;
+  kills++;
+  SFX.die();
+  burst(z.group.position, z.brute ? (IS_TOUCH ? 6 : 10) : (IS_TOUCH ? 3 : 6));
+  shakeAmp = Math.max(shakeAmp, z.brute ? 0.22 : 0.05);
+  if (!IS_TOUCH) { hmT = 0.25; ui.hitMarker.style.color = '#9ADE00'; }
+  if (mpRole === 'host') send({ a: 'k', i: z.idx });
+  const n = z.brute ? 3 : 1;
+  for (let i = 0; i < n; i++) spawnOrb(z.group.position, z.xp / n);
+}
+
+// route a local hit: host/solo applies it; guest sends it to the host and
+// shows a prediction (flash + number) so shooting still feels instant
+function applyHit(z, dmg, dx, dz) {
+  if (mpRole === 'guest') {
+    send({ a: 'h', i: z.idx, d: Math.round(dmg), dx: r2(dx), dz: r2(dz) });
+    z.flashT = 0.08; z.mat.emissive.setHex(0x993322);
+    showDmg(z, Math.round(dmg), '#fff');
+    if (!IS_TOUCH) { hmT = Math.max(hmT, 0.16); ui.hitMarker.style.color = '#fff'; }
+    SFX.hit();
+  } else {
+    damageZombie(z, dmg, { x: dx, z: dz });
+  }
+}
+function sendTracer(f, t) {
+  if (mpOn()) send({ a: 't', f: [r1(f.x), r1(f.y), r1(f.z)], t: [r1(t.x), r1(t.y), r1(t.z)] });
+}
+
+function raySphere(o, d, cx, cy, cz, r) {
+  const lx = cx - o.x, ly = cy - o.y, lz = cz - o.z;
+  const tca = lx * d.x + ly * d.y + lz * d.z;
+  if (tca < 0) return null;
+  const d2 = lx * lx + ly * ly + lz * lz - tca * tca;
+  if (d2 > r * r) return null;
+  return tca - Math.sqrt(r * r - d2);
+}
+
+function shootDesktop() {
+  const w = WEAPONS[player.weapon];
+  const aim = V.a; camera.getWorldDirection(aim);
+  const origin = V.b.copy(camera.position);
+  const camToPlayer = camera.position.distanceTo(player.pos);
+  const range = 45 * player.rangeMul + camToPlayer;
+  const muzzle = V.c; player.muzzle.getWorldPosition(muzzle);
+  spawnSpark(muzzle, true);
+  SFX[w.sfx]();
+  pitchKick = Math.min(pitchKick + w.kick, 0.06);
+  chSpread = Math.min(chSpread + w.bloom, 16);
+  player.armR.rotation.x = -0.25 - w.kick * 5;
+  const dmg = w.dmg * player.dmgMul;
+  for (let p = 0; p < w.pellets; p++) {
+    const dir = new THREE.Vector3(
+      aim.x + (Math.random() - 0.5) * 2 * w.spread,
+      aim.y + (Math.random() - 0.5) * 2 * w.spread,
+      aim.z + (Math.random() - 0.5) * 2 * w.spread
+    ).normalize();
+    let bestZ = null, bestB = null, bestT = Infinity;
+    for (const z of zombies) {
+      if (!z.alive) continue;
+      const t = raySphere(origin, dir, z.group.position.x, z.group.position.y + z.group.scale.y, z.group.position.z, z.brute ? 1.15 : 0.75);
+      if (t !== null && t > camToPlayer - 0.5 && t < range && t < bestT) { bestT = t; bestZ = z; bestB = null; }
+    }
+    for (const bl of barrels) {
+      if (!bl.alive || bl.fuse >= 0) continue;
+      const t = raySphere(origin, dir, bl.x, 0.55, bl.z, 0.62);
+      if (t !== null && t > camToPlayer - 0.5 && t < range && t < bestT) { bestT = t; bestB = bl; bestZ = null; }
+    }
+    if (bestZ || bestB) {
+      const hitP = origin.clone().addScaledVector(dir, bestT);
+      fireTracer(muzzle, hitP);
+      spawnSpark(hitP, false);
+      sendTracer(muzzle, hitP);
+      if (bestZ) applyHit(bestZ, dmg, dir.x, dir.z);
+      else if (mpRole === 'guest') send({ a: 'bb', i: bestB.idx });
+      else bestB.fuse = 0.06;
+    } else {
+      const endP = origin.clone().addScaledVector(dir, range);
+      fireTracer(muzzle, endP);
+      sendTracer(muzzle, endP);
+    }
+  }
+}
+
+function nearestZombie(maxDist) {
+  let best = null, bd2 = maxDist * maxDist;
+  for (const z of zombies) {
+    if (!z.alive) continue;
+    const d2 = (z.group.position.x - player.pos.x) ** 2 + (z.group.position.z - player.pos.z) ** 2;
+    if (d2 < bd2) { bd2 = d2; best = z; }
+  }
+  return best;
+}
+
+function shootAuto(target) {
+  const w = WEAPONS[player.weapon];
+  const muzzle = V.c; player.muzzle.getWorldPosition(muzzle);
+  spawnSpark(muzzle, true);
+  SFX[w.sfx]();
+  player.armR.rotation.x = -0.25 - w.kick * 5;
+  const dmg = w.dmg * player.dmgMul;
+  let hits;
+  if (w.pellets > 1) {
+    // shotgun on auto-aim: blasts the few closest zombies in range at once
+    const r2 = (15 * player.rangeMul) ** 2;
+    hits = zombies
+      .filter(z => z.alive && z.group.position.distanceToSquared(player.pos) < r2)
+      .sort((a, b) =>
+        a.group.position.distanceToSquared(player.pos) -
+        b.group.position.distanceToSquared(player.pos))
+      .slice(0, 3);
+    if (!hits.length) hits = [target];
+  } else hits = [target];
+  for (const z of hits) {
+    const hitP = z.group.position.clone(); hitP.y += z.group.scale.y;
+    fireTracer(muzzle, hitP);
+    spawnSpark(hitP, false);
+    sendTracer(muzzle, hitP);
+    const dx = hitP.x - player.pos.x, dz = hitP.z - player.pos.z;
+    const d = Math.hypot(dx, dz) || 1;
+    applyHit(z, w.pellets > 1 ? dmg * 2 : dmg, dx / d, dz / d);
+  }
+}
+
+function damagePlayer(d, force = false) {
+  if (downed) return;
+  if (!force && player.invuln > 0) return;
+  player.hp -= d;
+  player.invuln = Math.max(player.invuln, 0.4);
+  damageFlashT = 0.5;
+  shakeAmp = Math.max(shakeAmp, 0.35);
+  SFX.hurt();
+  if (player.hp <= 0) {
+    player.hp = 0;
+    if (mpOn() && !partnerDown) { // partner still up — go down and wait to respawn
+      downed = true; respawnT = 5;
+      firing = false;
+      player.group.visible = false;
+      $('respawnText').style.display = 'block';
+      send({ a: 'st', dead: true });
+    } else {
+      if (mpOn()) send({ a: 'o' });
+      gameOver();
+    }
+  }
+}
+
+/* ================= leveling ================= */
+function addXp(v) {
+  player.xp += v;
+  while (player.xp >= XP_NEED(player.level)) {
+    player.xp -= XP_NEED(player.level);
+    player.level++;
+    pendingLevels++;
+  }
+  if (pendingLevels > 0 && state === 'playing' && !choosing) showLevelUp();
+}
+function showLevelUp() {
+  if (mpOn()) choosing = true; // co-op: the world can't pause — pick fast, you're briefly protected
+  else state = 'levelup';
+  firing = false;
+  if (!IS_TOUCH && document.pointerLockElement === canvas) document.exitPointerLock();
+  ui.levelTitle.textContent = `LEVEL ${player.level - pendingLevels + 1} → CHOOSE`;
+  ui.cards.innerHTML = '';
+  const pool = [...UPGRADES].sort(() => Math.random() - 0.5).slice(0, 3);
+  for (const u of pool) {
+    const el = document.createElement('div');
+    el.className = 'card';
+    el.innerHTML = `<div class="ico">${u.ico}</div><div class="nm">${u.nm}</div><div class="ds">${u.ds}</div>`;
+    el.addEventListener('click', () => {
+      u.apply();
+      pendingLevels--;
+      if (pendingLevels > 0) { showLevelUp(); return; }
+      ui.level.classList.add('hidden');
+      choosing = false;
+      if (!mpOn()) state = 'playing';
+      if (!IS_TOUCH) lockPointer();
+    });
+    ui.cards.appendChild(el);
+  }
+  ui.level.classList.remove('hidden');
+  SFX.levelup();
+}
+
+/* ================= game flow ================= */
+function resetGame() {
+  player.pos.set(0, 0, 0);
+  player.hp = 100; player.maxHp = 100;
+  player.speed = 5.2; player.dmgMul = 1; player.rateMul = 1;
+  player.pickup = 2.6; player.rangeMul = 1; player.explMul = 1;
+  player.weapon = 0; player.bombCd = 0; player.bombCdMul = 1;
+  player.jumpY = 0; player.jumpV = 0;
+  player.level = 1; player.xp = 0; player.fireCd = 0; player.invuln = 0;
+  time = 0; wave = 1; waveTimer = 0; spawnTimer = 0; kills = 0;
+  firing = false; pendingLevels = 0; damageFlashT = 0;
+  chSpread = 0; hmT = 0; pitchKick = 0; shakeAmp = 0;
+  downed = false; partnerDown = false; respawnT = 0; netT = 0; choosing = false;
+  $('respawnText').style.display = 'none';
+  ui.level.classList.add('hidden');
+  player.group.visible = true;
+  remote.x = 2; remote.z = 2; remote.jy = 0; remote.hp = 100; remote.pk = 2.6;
+  remote.invulnT = 0; remote.walk = 0; remote.speedSm = 0;
+  remote.visible = mpOn();
+  remote.group.position.set(2, 0, 2);
+  camTarget.set(0, 0, 0); camera.fov = 70;
+  yaw = 0; pitch = 0.42;
+  player.armR.rotation.x = 0; player.armL.rotation.x = 0; player.group.rotation.x = 0;
+  ui.hitMarker.style.opacity = 0;
+  for (const z of zombies) { z.alive = false; z.dying = false; z.group.visible = false; }
+  for (const o of orbs)    { o.alive = false; o.mesh.visible = false; }
+  for (const t of tracers) { t.life = 0; t.line.visible = false; }
+  for (const s of sparks)  { s.life = 0; s.sprite.visible = false; }
+  for (const p of particles) { p.life = 0; p.mesh.visible = false; }
+  for (const d of dmgNums)   { d.life = 0; d.el.style.opacity = 0; }
+  for (const gr of grenades) { gr.alive = false; gr.mesh.visible = false; }
+  for (const b of booms)     { b.t = 1; b.mesh.visible = false; }
+  for (const bl of barrels)  { placeBarrel(bl, 10, 32); bl.alive = true; bl.fuse = -1; bl.mesh.visible = true; bl.mesh.scale.setScalar(1); }
+  updateChunks(true);
+  updateWepHud();
+  for (let i = 0; i < 4; i++) spawnZombie();
+  ui.waveText.textContent = 'WAVE 1';
+}
+function startGame() {
+  initAudio();
+  if (IS_TOUCH) { // mobile: go fullscreen landscape for the play session
+    try { if (document.documentElement.requestFullscreen && !document.fullscreenElement) document.documentElement.requestFullscreen().catch(() => {}); } catch (e) {}
+    try { if (screen.orientation && screen.orientation.lock) screen.orientation.lock('landscape').catch(() => {}); } catch (e) {}
+  }
+  if (mpRole === 'host') send({ a: 'go' }); // host starts/restarts both sides
+  const rb = $('retryBtn'); rb.disabled = false; rb.textContent = 'TRY AGAIN';
+  resetGame();
+  ui.start.classList.add('hidden');
+  ui.over.classList.add('hidden');
+  state = 'playing';
+  if (!IS_TOUCH) lockPointer();
+}
+function gameOver() {
+  if (state === 'gameover') return;
+  state = 'gameover';
+  firing = false; downed = false;
+  $('respawnText').style.display = 'none';
+  SFX.gameover();
+  if (!IS_TOUCH && document.pointerLockElement === canvas) document.exitPointerLock();
+  $('sTime').textContent = fmtTime(time);
+  $('sKills').textContent = kills;
+  $('sWave').textContent = wave;
+  $('sLevel').textContent = player.level;
+  if (mpRole === 'guest') { const rb = $('retryBtn'); rb.disabled = true; rb.textContent = 'WAITING FOR HOST…'; }
+  ui.over.classList.remove('hidden');
+}
+$('startBtn').addEventListener('click', startGame);
+$('retryBtn').addEventListener('click', startGame);
+
+/* ================= co-op networking (PeerJS / WebRTC) ================= */
+// Host runs the real simulation (zombies, waves, orbs, barrels, explosions) and
+// streams snapshots ~12×/s. The guest simulates only itself, renders the
+// snapshots, and sends its position + hit/grenade events back.
+const mpStatus = t => { $('mpStatus').textContent = t; };
+function randCode() {
+  const c = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
+  let s = ''; for (let i = 0; i < 4; i++) s += c[Math.floor(Math.random() * c.length)];
+  return s;
+}
+$('hostBtn').addEventListener('click', () => {
+  if (typeof Peer === 'undefined') { mpStatus('Co-op needs internet — PeerJS failed to load.'); return; }
+  if (peer) return;
+  mpStatus('Creating room…');
+  const code = randCode();
+  peer = new Peer('dzone-' + code);
+  peer.on('open', () => mpStatus(`ROOM CODE: ${code} — partner taps JOIN CO-OP and enters it. Waiting…`));
+  peer.on('connection', c => {
+    if (conn) { c.close(); return; } // 2 players max
+    conn = c;
+    conn.on('open', () => { mpRole = 'host'; setupConn(); startGame(); });
+  });
+  peer.on('error', e => { mpStatus('Room error (' + e.type + ') — try again.'); try { peer.destroy(); } catch (_) {} peer = null; });
+});
+$('joinBtn').addEventListener('click', () => {
+  if (typeof Peer === 'undefined') { mpStatus('Co-op needs internet — PeerJS failed to load.'); return; }
+  $('joinRow').style.display = 'flex';
+  $('joinCode').focus();
+});
+$('joinGo').addEventListener('click', () => {
+  const code = $('joinCode').value.trim().toUpperCase();
+  if (code.length < 4 || peer) return;
+  mpStatus('Connecting…');
+  peer = new Peer();
+  peer.on('open', () => {
+    conn = peer.connect('dzone-' + code, { reliable: true });
+    conn.on('open', () => { mpRole = 'guest'; setupConn(); mpStatus('Connected! Starting…'); });
+  });
+  peer.on('error', e => { mpStatus('Could not join (' + e.type + ') — check the code.'); try { peer.destroy(); } catch (_) {} peer = null; conn = null; });
+});
+function setupConn() {
+  conn.on('data', onNet);
+  conn.on('close', onPartnerLost);
+  conn.on('error', onPartnerLost);
+}
+function onPartnerLost() {
+  if (!mpRole) return;
+  const wasDowned = downed;
+  mpRole = null; conn = null;
+  try { if (peer) peer.destroy(); } catch (_) {}
+  peer = null;
+  remote.visible = false; remote.group.visible = false;
+  partnerDown = false;
+  const rb = $('retryBtn'); rb.disabled = false; rb.textContent = 'TRY AGAIN';
+  mpStatus('');
+  if (state === 'playing') {
+    if (wasDowned) { gameOver(); return; } // nobody left to revive you
+    announce('PARTNER LEFT — GOING SOLO');
+  }
+}
+function onNet(m) {
+  switch (m.a) {
+    case 'go': startGame(); break;
+    case 's': { // world snapshot → guest
+      time = m.tm; kills = m.k;
+      if (wave !== m.wv) { wave = m.wv; ui.waveText.textContent = 'WAVE ' + wave; }
+      remote.x = m.p[0]; remote.z = m.p[1]; remote.ry = m.p[2]; remote.jy = m.p[3];
+      const live = new Set();
+      for (const e of m.z) {
+        const z = zombies[e[0]]; if (!z) continue;
+        live.add(e[0]);
+        if (!z.alive) { // came into existence — set up for rendering
+          z.alive = true; z.dying = false; z.group.visible = true;
+          z.brute = !!e[4];
+          if (z.brute) { z.group.scale.set(1.6, 1.4, 1.5); z.mat.color.setHex(0x55701c); z.radius = 1.0; z.speed = 1.6; }
+          else { z.group.scale.setScalar(e[6] || 1); z.mat.color.setHex(0x6b8e23); z.radius = 0.6; z.speed = 2.6; }
+          z.mat.emissive.setHex(0x000000); z.flashT = 0;
+          z.group.rotation.x = 0; z.group.rotation.z = 0;
+          z.group.position.set(e[1], 0, e[2]);
+        }
+        z.netX = e[1]; z.netZ = e[2]; z.netRY = e[3];
+        z.hp = e[5]; z.maxHp = Math.max(z.maxHp, e[5]);
+      }
+      for (const z of zombies) {
+        if (z.alive && !live.has(z.idx)) { z.alive = false; if (!z.dying) z.group.visible = false; }
+      }
+      for (let i = 0; i < orbs.length; i++) { // orbs are render-only on the guest
+        const o = orbs[i];
+        if (i < m.o.length) {
+          o.alive = true; o.mesh.visible = true;
+          o.mesh.position.x = m.o[i][0]; o.mesh.position.z = m.o[i][1];
+        } else if (o.alive) { o.alive = false; o.mesh.visible = false; }
+      }
+      for (let i = 0; i < barrels.length && i < m.b.length; i++) {
+        const bl = barrels[i], e = m.b[i];
+        bl.x = e[0]; bl.z = e[1];
+        bl.mesh.position.set(bl.x, 0.53, bl.z);
+        if (bl.alive !== !!e[2]) { bl.alive = !!e[2]; bl.mesh.visible = bl.alive; bl.mesh.scale.setScalar(1); }
+      }
+      break;
+    }
+    case 'p': // guest state → host
+      remote.x = m.x; remote.z = m.z; remote.ry = m.ry; remote.jy = m.jy;
+      remote.hp = m.hp; remote.pk = m.pk;
+      break;
+    case 'h': { const z = zombies[m.i]; if (z && z.alive) damageZombie(z, m.d, { x: m.dx, z: m.dz }, true); break; }
+    case 't': V.a.set(m.f[0], m.f[1], m.f[2]); V.b.set(m.t[0], m.t[1], m.t[2]);
+      fireTracer(V.a, V.b); spawnSpark(V.a, true); spawnSpark(V.b, false); break;
+    case 'k': { // zombie died — play death fx locally
+      const z = zombies[m.i]; if (!z) break;
+      z.alive = false; z.dying = true; z.dieT = 0;
+      z.spinDir = Math.random() < 0.5 ? -1 : 1;
+      z.group.visible = true;
+      burst(z.group.position, z.brute ? 6 : 3);
+      SFX.die();
+      break;
+    }
+    case 'x': { // explosion fx
+      const b = booms.find(b => b.t >= 1) || booms[0];
+      b.t = 0; b.r = m.r;
+      b.mesh.position.set(m.x, 0.5, m.z); b.mesh.visible = true;
+      V.a.set(m.x, 0.5, m.z);
+      burst(V.a, 8);
+      shakeAmp = Math.max(shakeAmp, 0.3);
+      SFX.boom();
+      break;
+    }
+    case 'd': damagePlayer(m.v, true); break;
+    case 'xp': SFX.pickup(); addXp(m.v); break;
+    case 'w': {
+      wave = m.wv;
+      for (let i = 0; i < WEAPONS.length; i++) if (WEAPONS[i].unlockWave === wave) { player.weapon = i; SFX.levelup(); }
+      updateWepHud();
+      ui.waveText.textContent = 'WAVE ' + wave;
+      announce(m.msg);
+      SFX.wave();
+      break;
+    }
+    case 'g': { // partner grenade (host: real; guest: visual)
+      const gr = grenades.find(g => !g.alive); if (!gr) break;
+      gr.mesh.position.set(m.x, m.y || 1.3, m.z);
+      gr.vel.set(m.vx, m.vy, m.vz);
+      gr.fuse = 1.1; gr.alive = true; gr.mesh.visible = true;
+      break;
+    }
+    case 'bb': { const bl = barrels[m.i]; if (bl && bl.alive && bl.fuse < 0) bl.fuse = 0.06; break; }
+    case 'st':
+      partnerDown = m.dead;
+      remote.visible = !m.dead;
+      if (m.dead && downed) { // everybody's down — run ends
+        if (mpRole === 'host') send({ a: 'o' });
+        gameOver();
+      }
+      break;
+    case 'o': gameOver(); break;
+  }
+}
+
+/* ================= per-frame update ================= */
+function update(dt) {
+  time += dt;
+
+  /* ---- waves & spawning (host / solo only — guest gets them over the wire) ---- */
+  if (mpRole !== 'guest') {
+    waveTimer += dt;
+    if (waveTimer >= WAVE_LEN) {
+      waveTimer = 0; wave++;
+      let msg = 'WAVE ' + wave;
+      for (let i = 0; i < WEAPONS.length; i++) {
+        if (WEAPONS[i].unlockWave === wave) {
+          player.weapon = i; // hand the new toy over immediately
+          msg += ' — ' + WEAPONS[i].name + ' UNLOCKED';
+          SFX.levelup();
+        }
+      }
+      updateWepHud();
+      for (const bl of barrels) { // restock exploded barrels at a fresh spot nearby
+        if (!bl.alive && bl.fuse <= 0) {
+          placeBarrel(bl, 14, 32);
+          bl.alive = true; bl.fuse = -1; bl.mesh.visible = true; bl.mesh.scale.setScalar(1);
+        }
+      }
+      ui.waveText.textContent = 'WAVE ' + wave;
+      announce(msg);
+      SFX.wave();
+      if (mpRole === 'host') send({ a: 'w', wv: wave, msg });
+    }
+    spawnTimer -= dt;
+    const cap = Math.min(4 + wave * 3, mpOn() ? 40 : MAXZ);
+    if (spawnTimer <= 0 && aliveCount() < cap) {
+      spawnZombie();
+      spawnTimer = Math.max(0.3, 1.4 - wave * 0.06) * (mpOn() ? 0.8 : 1); // two guns → a bit more pressure
+    }
+  }
+
+  /* ---- movement input ---- */
+  let ix = 0, iz = 0;
+  if (IS_TOUCH) {
+    ix = joy.x; iz = -joy.y;
+  } else {
+    if (keys.KeyW || keys.ArrowUp) iz += 1;
+    if (keys.KeyS || keys.ArrowDown) iz -= 1;
+    if (keys.KeyD || keys.ArrowRight) ix += 1;
+    if (keys.KeyA || keys.ArrowLeft) ix -= 1;
+    const l = Math.hypot(ix, iz); if (l > 1) { ix /= l; iz /= l; }
+  }
+  if (downed) { ix = 0; iz = 0; } // no ghost-walking while waiting to respawn
+  const fx = Math.sin(yaw), fz = Math.cos(yaw);   // camera-forward on ground
+  const Rx = -fz, Rz = fx;                        // right = forward × up
+  let mx = fx * iz + Rx * ix;
+  let mz = fz * iz + Rz * ix;
+  const moving = Math.hypot(mx, mz) > 0.01;
+
+  if (moving) {
+    const ml = Math.hypot(mx, mz); mx /= ml; mz /= ml;
+    const spd = player.speed * (IS_TOUCH ? Math.min(1, Math.hypot(joy.x, joy.y) * 1.4) : 1);
+    player.pos.x += mx * spd * dt;
+    player.pos.z += mz * spd * dt;
+    player.walkPhase += dt * spd * 2.2;
+  }
+  // obstacle push-out (open world — no arena walls)
+  for (const o of obstacles) {
+    const dx = player.pos.x - o.x, dz = player.pos.z - o.z;
+    const d = Math.hypot(dx, dz), min = o.r + 0.45;
+    if (d < min && d > 0.001) {
+      player.pos.x = o.x + dx / d * min;
+      player.pos.z = o.z + dz / d * min;
+    }
+  }
+  for (const bl of barrels) {
+    if (!bl.alive) continue;
+    const dx = player.pos.x - bl.x, dz = player.pos.z - bl.z;
+    const d = Math.hypot(dx, dz);
+    if (d < 1.0 && d > 0.001) {
+      player.pos.x = bl.x + dx / d * 1.0;
+      player.pos.z = bl.z + dz / d * 1.0;
+    }
+  }
+  player.group.position.copy(player.pos);
+
+  // infinite world: ground slides under the player in tile steps, moon stays
+  // on the horizon, and scenery chunks stream in/out around you
+  ground.position.x = Math.round(player.pos.x / GROUND_TILE) * GROUND_TILE;
+  ground.position.z = Math.round(player.pos.z / GROUND_TILE) * GROUND_TILE;
+  moon.position.set(player.pos.x + 90, 65, player.pos.z - 120);
+  updateChunks(false);
+
+  // procedural walk anim: leg/arm swing + slight forward lean while moving
+  const swing = moving ? Math.sin(player.walkPhase) * 0.55 : 0;
+  player.legL.rotation.x = swing;
+  player.legR.rotation.x = -swing;
+  player.armL.rotation.x = -swing * 0.7;
+  player.group.rotation.x += ((moving ? 0.07 : 0) - player.group.rotation.x) * (1 - Math.exp(-8 * dt));
+  // jump physics
+  if (player.jumpY > 0) {
+    player.jumpV -= 20 * dt;
+    player.jumpY += player.jumpV * dt;
+    if (player.jumpY <= 0) { player.jumpY = 0; player.jumpV = 0; }
+  }
+  const bob = (moving && player.jumpY === 0) ? Math.abs(Math.sin(player.walkPhase)) * 0.05 : 0;
+  player.group.position.y = player.jumpY + bob;
+  player.shadow.position.y = 0.02 - player.jumpY; // shadow stays on the ground
+  player.shadow.scale.setScalar(Math.max(0.55, 1 - player.jumpY * 0.25));
+  player.armR.rotation.x *= Math.exp(-14 * dt); // gun recoil recovery
+
+  /* ---- camera + facing ---- */
+  let target = null;
+  if (IS_TOUCH) {
+    target = nearestZombie(15 * player.rangeMul);
+    if (moving) yaw = lerpAngle(yaw, Math.atan2(mx, mz), 1 - Math.exp(-3.5 * dt));
+    pitch = 0.5;
+    if (target) {
+      const ty = Math.atan2(target.group.position.x - player.pos.x, target.group.position.z - player.pos.z);
+      player.group.rotation.y = lerpAngle(player.group.rotation.y, ty, 1 - Math.exp(-12 * dt));
+    } else if (moving) {
+      player.group.rotation.y = lerpAngle(player.group.rotation.y, Math.atan2(mx, mz), 1 - Math.exp(-10 * dt));
+    }
+  } else {
+    player.group.rotation.y = yaw;
+  }
+  // damped follow: the camera trails the player slightly instead of being bolted on
+  const ck = 1 - Math.exp(-10 * dt);
+  camTarget.x += (player.pos.x - camTarget.x) * ck;
+  camTarget.z += (player.pos.z - camTarget.z) * ck;
+  const camDist = 5.6, effPitch = Math.max(-0.08, pitch - pitchKick);
+  const cp = Math.cos(effPitch), sp = Math.sin(effPitch);
+  // over-the-shoulder offset (desktop): shifts camera + target screen-left so the
+  // character sits right of center and the head no longer blocks the crosshair
+  const shoulder = IS_TOUCH ? 0 : 0.9;
+  const sox = Math.cos(yaw) * shoulder, soz = -Math.sin(yaw) * shoulder;
+  camera.position.set(
+    camTarget.x - Math.sin(yaw) * cp * camDist + sox,
+    1.2 + sp * camDist,
+    camTarget.z - Math.cos(yaw) * cp * camDist + soz
+  );
+  if (camera.position.y < 0.5) camera.position.y = 0.5; // never clip below the ground
+  camera.lookAt(camTarget.x + sox, 1.5, camTarget.z + soz);
+  // subtle FOV widen while running — sells the speed
+  camera.fov += ((moving ? 74 : 70) - camera.fov) * (1 - Math.exp(-6 * dt));
+  camera.updateProjectionMatrix();
+  if (shakeAmp > 0.002) {
+    camera.position.x += (Math.random() - 0.5) * shakeAmp;
+    camera.position.y += (Math.random() - 0.5) * shakeAmp;
+    camera.position.z += (Math.random() - 0.5) * shakeAmp;
+  }
+  pitchKick *= Math.exp(-14 * dt);
+  shakeAmp *= Math.exp(-7 * dt);
+
+  /* ---- firing ---- */
+  player.fireCd -= dt;
+  const wep = WEAPONS[player.weapon];
+  const canFire = !downed && !choosing;
+  if (!IS_TOUCH) {
+    if (firing && canFire && player.fireCd <= 0) {
+      shootDesktop();
+      player.fireCd = 1 / (wep.rate * player.rateMul);
+    }
+  } else if (target && canFire && player.fireCd <= 0) {
+    shootAuto(target);
+    player.fireCd = 1 / (wep.rate * player.rateMul);
+  }
+
+  /* ---- co-op: partner avatar, respawn, net sync ---- */
+  if (choosing) player.invuln = Math.max(player.invuln, 0.2); // brief safety while picking a card
+  if (downed) {
+    respawnT -= dt;
+    $('respawnText').textContent = 'RESPAWN IN ' + Math.max(1, Math.ceil(respawnT)) + '…';
+    if (respawnT <= 0 && mpOn()) { // get back up next to your partner
+      downed = false;
+      player.hp = Math.floor(player.maxHp / 2);
+      player.invuln = 2;
+      player.pos.set(remote.x + 2, 0, remote.z);
+      player.group.visible = true;
+      $('respawnText').style.display = 'none';
+      send({ a: 'st', dead: false });
+    }
+  }
+  if (mpOn()) {
+    remote.invulnT -= dt;
+    const rk = 1 - Math.exp(-10 * dt);
+    const mvx = (remote.x - remote.group.position.x) * rk;
+    const mvz = (remote.z - remote.group.position.z) * rk;
+    remote.group.position.x += mvx;
+    remote.group.position.z += mvz;
+    remote.group.position.y += (remote.jy - remote.group.position.y) * rk;
+    remote.group.rotation.y = lerpAngle(remote.group.rotation.y, remote.ry, rk);
+    remote.walk += Math.hypot(mvx, mvz) * 2.2;
+    remote.speedSm = remote.speedSm * 0.9 + (Math.hypot(mvx, mvz) / Math.max(dt, 1e-4)) * 0.1;
+    const rsw = Math.min(remote.speedSm / 5, 1) * Math.sin(remote.walk * 3) * 0.55;
+    remote.legL.rotation.x = rsw; remote.legR.rotation.x = -rsw;
+    remote.group.visible = remote.visible;
+    netT += dt;
+    if (netT >= 1 / 12) {
+      netT = 0;
+      if (mpRole === 'host') {
+        const zArr = [];
+        for (const z of zombies) {
+          if (!z.alive) continue;
+          zArr.push([z.idx, r1(z.group.position.x), r1(z.group.position.z), r2(z.group.rotation.y),
+            z.brute ? 1 : 0, Math.round(z.hp), r2(z.group.scale.y)]);
+        }
+        const oArr = [];
+        for (const o of orbs) if (o.alive) oArr.push([r1(o.mesh.position.x), r1(o.mesh.position.z)]);
+        const bArr = barrels.map(bl => [r1(bl.x), r1(bl.z), bl.alive ? 1 : 0]);
+        send({
+          a: 's', tm: r1(time), wv: wave, k: kills,
+          p: [r1(player.pos.x), r1(player.pos.z), r2(player.group.rotation.y), r2(player.jumpY)],
+          z: zArr, o: oArr, b: bArr,
+        });
+      } else {
+        send({
+          a: 'p', x: r1(player.pos.x), z: r1(player.pos.z),
+          ry: r2(player.group.rotation.y), jy: r2(player.jumpY),
+          hp: Math.round(player.hp), pk: r1(player.pickup),
+        });
+      }
+    }
+  } else remote.group.visible = false;
+
+  /* ---- zombies ---- */
+  player.invuln -= dt;
+  for (const z of zombies) {
+    if (z.dying) {
+      z.dieT += dt;
+      const f = Math.min(z.dieT / 0.3, 1);
+      z.group.rotation.x = -f * Math.PI / 2;          // fall backward (relative to facing)
+      z.group.rotation.z = z.spinDir * f * 0.4;       // with a lopsided twist
+      if (z.dieT > 0.3) z.group.position.y = -(z.dieT - 0.3) * 3;
+      if (z.dieT > 0.8) { z.dying = false; z.group.visible = false; z.group.position.y = 0; }
+      continue;
+    }
+    if (!z.alive) continue;
+
+    if (z.flashT > 0) { z.flashT -= dt; if (z.flashT <= 0) z.mat.emissive.setHex(0x000000); }
+
+    if (mpRole === 'guest') { // networked zombie: glide to host state, animate locally
+      const k = 1 - Math.exp(-10 * dt);
+      z.group.position.x += (z.netX - z.group.position.x) * k;
+      z.group.position.z += (z.netZ - z.group.position.z) * k;
+      z.group.rotation.y = lerpAngle(z.group.rotation.y, z.netRY || 0, k);
+      z.phase += dt * z.speed * 2.4;
+      const gs = Math.sin(z.phase) * 0.5;
+      z.legs[0].rotation.x = gs; z.legs[1].rotation.x = -gs * 0.75;
+      z.arms[0].rotation.x = -0.15 + Math.sin(z.phase * 0.7) * 0.12;
+      z.arms[1].rotation.x = -0.15 - Math.sin(z.phase * 0.7) * 0.12;
+      z.group.rotation.z = Math.sin(z.phase) * 0.06;
+      z.head.rotation.z = 0.06 + Math.sin(z.phase * 0.8) * 0.14;
+      z.group.position.y = Math.abs(Math.sin(z.phase)) * 0.04;
+      continue;
+    }
+
+    // chase the nearest living player (host tracks the partner too)
+    let dx = player.pos.x - z.group.position.x;
+    let dz = player.pos.z - z.group.position.z;
+    let dist = downed ? Infinity : (Math.hypot(dx, dz) || 1);
+    if (mpRole === 'host' && mpOn() && !partnerDown) {
+      const gdx = remote.x - z.group.position.x, gdz = remote.z - z.group.position.z;
+      const gdist = Math.hypot(gdx, gdz) || 1;
+      if (gdist < dist) { dx = gdx; dz = gdz; dist = gdist; }
+    }
+    if (dist === Infinity) continue; // nobody to chase this frame
+    if (dist > 55) { // left far behind while roaming — recycle into the ring ahead
+      const a = Math.random() * Math.PI * 2;
+      const bx = downed && mpOn() ? remote.x : player.pos.x;
+      const bz = downed && mpOn() ? remote.z : player.pos.z;
+      z.group.position.x = bx + Math.cos(a) * 30;
+      z.group.position.z = bz + Math.sin(a) * 30;
+      continue;
+    }
+    z.group.position.x += dx / dist * z.speed * dt;
+    z.group.position.z += dz / dist * z.speed * dt;
+    z.group.rotation.y = Math.atan2(dx, dz);
+
+    // procedural shamble: uneven leg swing, reaching arms, body sway, head lolling
+    z.phase += dt * z.speed * 2.4;
+    const s = Math.sin(z.phase) * 0.5;
+    z.legs[0].rotation.x = s; z.legs[1].rotation.x = -s * 0.75;
+    z.arms[0].rotation.x = -0.15 + Math.sin(z.phase * 0.7) * 0.12;
+    z.arms[1].rotation.x = -0.15 - Math.sin(z.phase * 0.7) * 0.12;
+    z.group.rotation.z = Math.sin(z.phase) * 0.06;
+    z.head.rotation.z = 0.06 + Math.sin(z.phase * 0.8) * 0.14;
+    z.group.position.y = Math.abs(Math.sin(z.phase)) * 0.04;
+
+    // contact damage (jumping clears the swipe)
+    if (!downed && player.jumpY < 0.7 &&
+        Math.hypot(player.pos.x - z.group.position.x, player.pos.z - z.group.position.z) < z.radius + 0.7) {
+      damagePlayer(z.dmg);
+    }
+    if (mpRole === 'host' && mpOn() && !partnerDown && remote.invulnT <= 0 && remote.jy < 0.7 &&
+        Math.hypot(remote.x - z.group.position.x, remote.z - z.group.position.z) < z.radius + 0.7) {
+      remote.invulnT = 0.4; // host rate-limits so the guest isn't shredded
+      send({ a: 'd', v: z.dmg });
+    }
+
+    // obstacle push-out
+    for (const o of obstacles) {
+      const ox = z.group.position.x - o.x, oz = z.group.position.z - o.z;
+      const od = Math.hypot(ox, oz), min = o.r + z.radius * 0.6;
+      if (od < min && od > 0.001) {
+        z.group.position.x = o.x + ox / od * min;
+        z.group.position.z = o.z + oz / od * min;
+      }
+    }
+  }
+  // separation (pairwise — fine at <=48 zombies; host/solo only)
+  if (mpRole !== 'guest') for (let i = 0; i < zombies.length; i++) {
+    const a = zombies[i]; if (!a.alive) continue;
+    for (let j = i + 1; j < zombies.length; j++) {
+      const b = zombies[j]; if (!b.alive) continue;
+      const dx = b.group.position.x - a.group.position.x;
+      const dz = b.group.position.z - a.group.position.z;
+      const min = a.radius + b.radius + 0.15;
+      const d2 = dx * dx + dz * dz;
+      if (d2 < min * min && d2 > 0.0001) {
+        const d = Math.sqrt(d2), push = (min - d) * 0.5 / d;
+        a.group.position.x -= dx * push; a.group.position.z -= dz * push;
+        b.group.position.x += dx * push; b.group.position.z += dz * push;
+      }
+    }
+  }
+
+  /* ---- XP orbs ---- */
+  for (const o of orbs) {
+    if (!o.alive) continue;
+    o.phase += dt * 3;
+    o.mesh.rotation.y += dt * 2.5;
+    o.mesh.position.y = 0.45 + Math.sin(o.phase) * 0.08;
+    if (mpRole === 'guest') continue; // guest just renders — host owns pickup logic
+
+    if (Math.abs(o.mesh.position.x - player.pos.x) > 70 || Math.abs(o.mesh.position.z - player.pos.z) > 70) {
+      o.alive = false; o.mesh.visible = false; // abandoned while roaming — free the slot
+      continue;
+    }
+    const dx = player.pos.x - o.mesh.position.x;
+    const dz = player.pos.z - o.mesh.position.z;
+    const d = Math.hypot(dx, dz);
+    let gd = Infinity;
+    if (mpRole === 'host' && mpOn() && !partnerDown) {
+      gd = Math.hypot(remote.x - o.mesh.position.x, remote.z - o.mesh.position.z);
+    }
+    if (!downed && d < player.pickup && d <= gd) {
+      const pull = 10 * dt / Math.max(d, 0.3);
+      o.mesh.position.x += dx * pull;
+      o.mesh.position.z += dz * pull;
+    } else if (gd < remote.pk) { // magnet toward the partner instead
+      const pull = 10 * dt / Math.max(gd, 0.3);
+      o.mesh.position.x += (remote.x - o.mesh.position.x) * pull;
+      o.mesh.position.z += (remote.z - o.mesh.position.z) * pull;
+    }
+    if (!downed && d < 0.75) {
+      o.alive = false; o.mesh.visible = false;
+      SFX.pickup();
+      addXp(o.value);
+      if (state !== 'playing') return; // level-up overlay opened (solo pauses)
+    } else if (gd < 0.75) {
+      o.alive = false; o.mesh.visible = false;
+      send({ a: 'xp', v: o.value }); // partner scooped it
+    }
+  }
+
+  /* ---- effects ---- */
+  for (const t of tracers) {
+    if (t.life > 0) {
+      t.life -= dt;
+      t.line.material.opacity = Math.max(t.life / 0.07, 0);
+      if (t.life <= 0) t.line.visible = false;
+    }
+  }
+  for (const s of sparks) {
+    if (s.life > 0) {
+      s.life -= dt;
+      if (s.life <= 0) s.sprite.visible = false;
+    }
+  }
+  for (const p of particles) {
+    if (p.life <= 0) continue;
+    p.life -= dt;
+    if (p.life <= 0) { p.mesh.visible = false; continue; }
+    p.vel.y -= 14 * dt;
+    p.mesh.position.addScaledVector(p.vel, dt);
+    if (p.mesh.position.y < 0.07) {
+      p.mesh.position.y = 0.07;
+      p.vel.y *= -0.35; p.vel.x *= 0.7; p.vel.z *= 0.7;
+    }
+    p.mesh.scale.setScalar(Math.min(p.life / p.max, 1));
+    p.mesh.rotation.x += dt * 6; p.mesh.rotation.y += dt * 8;
+  }
+
+  /* ---- grenades, barrels & explosions ---- */
+  if (player.bombCd > 0) player.bombCd -= dt;
+  for (const gr of grenades) {
+    if (!gr.alive) continue;
+    gr.vel.y -= 14 * dt;
+    gr.mesh.position.addScaledVector(gr.vel, dt);
+    if (gr.mesh.position.y < 0.16) {
+      gr.mesh.position.y = 0.16;
+      gr.vel.y *= -0.4; gr.vel.x *= 0.6; gr.vel.z *= 0.6;
+    }
+    gr.mesh.rotation.x += dt * 8;
+    gr.fuse -= dt;
+    gr.mat.emissive.setHex(Math.sin(gr.fuse * 28) > 0 ? 0xaa2015 : 0x000000); // fuse blink
+    if (gr.fuse <= 0) {
+      gr.alive = false; gr.mesh.visible = false;
+      // guest grenades are visual-only — the host's copy does the real damage
+      if (mpRole !== 'guest') explode(gr.mesh.position, 4.5 * player.explMul, 80 * player.dmgMul * player.explMul);
+    }
+  }
+  if (mpRole !== 'guest') for (const bl of barrels) { // host/solo own barrel logic
+    if (!bl.alive) continue;
+    if (bl.fuse < 0) {
+      // drifted out of range while roaming — move it to fresh ground nearby
+      if (Math.hypot(bl.x - player.pos.x, bl.z - player.pos.z) > 55) placeBarrel(bl, 20, 35);
+      continue;
+    }
+    bl.fuse -= dt;
+    bl.mesh.scale.setScalar(1 + Math.abs(Math.sin(bl.fuse * 40)) * 0.12); // about to blow
+    if (bl.fuse <= 0) {
+      bl.alive = false; bl.mesh.visible = false; bl.mesh.scale.setScalar(1);
+      explode(bl.mesh.position, 4.2 * player.explMul, 70 * player.explMul);
+    }
+  }
+  for (const b of booms) {
+    if (b.t >= 1) continue;
+    b.t += dt / 0.3;
+    const k = Math.min(b.t, 1);
+    b.mesh.scale.setScalar(b.r * (0.25 + 0.75 * k));
+    b.mesh.material.opacity = 0.85 * (1 - k);
+    if (b.t >= 1) b.mesh.visible = false;
+  }
+
+  /* ---- damage numbers (world → screen) ---- */
+  camera.updateMatrixWorld();
+  for (const d of dmgNums) {
+    if (d.life <= 0) continue;
+    d.life -= dt;
+    if (d.life <= 0) { d.el.style.opacity = 0; continue; }
+    d.pos.y += 1.6 * dt;
+    V.a.copy(d.pos).project(camera);
+    if (V.a.z > 1) { d.el.style.opacity = 0; continue; }
+    d.el.style.opacity = Math.min(d.life / 0.35, 1);
+    d.el.style.transform =
+      `translate(${(V.a.x * 0.5 + 0.5) * innerWidth}px, ${(-V.a.y * 0.5 + 0.5) * innerHeight}px) translate(-50%,-50%)`;
+  }
+
+  /* ---- crosshair: bloom while firing/moving, hit-marker flash ---- */
+  if (!IS_TOUCH) {
+    chSpread *= Math.exp(-9 * dt);
+    const g = 5 + chSpread + (moving ? 2 : 0);
+    ui.chT.style.transform = `translateY(${-g - 9}px)`;
+    ui.chB.style.transform = `translateY(${g}px)`;
+    ui.chL.style.transform = `translateX(${-g - 9}px)`;
+    ui.chR.style.transform = `translateX(${g}px)`;
+    if (hmT > 0) hmT -= dt;
+    const o = Math.max(Math.min(hmT / 0.14, 1), 0);
+    ui.hitMarker.style.opacity = o;
+    ui.hitMarker.style.transform = `scale(${1.4 - o * 0.4})`;
+  }
+
+  /* ---- vignette: damage flash + low-HP pulse ---- */
+  let vig = 0;
+  if (damageFlashT > 0) { damageFlashT -= dt; vig = Math.max(damageFlashT / 0.5, 0); }
+  if (player.hp > 0 && player.hp < 30) vig = Math.max(vig, 0.18 + Math.sin(time * 7) * 0.1);
+  ui.damageFlash.style.opacity = vig;
+
+  /* ---- HUD ---- */
+  ui.hpFill.style.width = (player.hp / player.maxHp * 100) + '%';
+  ui.hpText.textContent = `${Math.ceil(player.hp)} / ${player.maxHp}`;
+  ui.xpFill.style.width = (player.xp / XP_NEED(player.level) * 100) + '%';
+  ui.levelBadge.textContent = 'LV ' + player.level;
+  ui.killText.textContent = '☠ ' + kills;
+  ui.timeText.textContent = fmtTime(time);
+  ui.bombHud.textContent = player.bombCd > 0 ? `💣 ${player.bombCd.toFixed(1)}s` : '💣 READY';
+  ui.bombHud.style.opacity = player.bombCd > 0 ? 0.45 : 1;
+  if (IS_TOUCH) ui.btnBomb.style.opacity = player.bombCd > 0 ? 0.35 : 1;
+}
+
+/* ================= main loop ================= */
+updateChunks(true); // populate the world around the spawn point for the menu backdrop
+const clock = new THREE.Clock();
+function tick() {
+  requestAnimationFrame(tick);
+  const dt = Math.min(clock.getDelta(), 1 / 30);
+  if (state === 'playing') update(dt);
+  renderer.render(scene, camera);
+}
+tick();
+</script>
+</body>
+</html>

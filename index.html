@@ -1484,6 +1484,60 @@
       .m3-wrap.m3-full .m3-hud, .m3-wrap.m3-full .m3-board { width:100%; max-width:min(93vw, 60vh); margin-left:auto; margin-right:auto; }
       body.sk-fs-lock { overflow:hidden; }
     }
+    /* ── Dead Zone (iframed 3D game) ──
+       These rules live OUTSIDE the max-width:860px block above on purpose. They
+       were once inside it, which meant a desktop got none of them and the iframe
+       fell back to the browser's default 300x150. Dead Zone is the only game
+       here that is played full-size on a PC too, so its layout can never be
+       phone-only. */
+    .dz-note { display:flex; flex-wrap:wrap; justify-content:center; gap:0.3rem 0.7rem; margin:0.6rem 0 0.2rem; font-size:0.66rem; color:#64748b; }
+    body.dz-fs-lock { overflow:hidden; }
+    /* Dead Zone renders inside .app-body, which is `position:fixed` — and a fixed
+       element ALWAYS opens its own stacking context, even at z-index:auto. So the
+       game's z-index:3000 only ever competed with its siblings inside .app-body,
+       while .app-body itself sat at an effective 0 in the root and lost to the
+       z-index:50 header. Result: the header painted over the game's top 76px
+       (hiding the health bar, kills and weapons) and swallowed the ✕ / ⛶ at
+       top:14px — which read as "the top is cropped and there's no way out".
+       No z-index on the game can escape that box, so lift the box itself for the
+       duration of the game. Must clear the header (50) and the mobile tab bar (95);
+       the real overlays (profile, licence, toasts) all sit far above this and still
+       win, as they should. */
+    body.dz-fs-lock .app-body { z-index:3000; }
+    .dz-frame { width:100%; height:min(60vh,440px); border:0; display:block; border-radius:12px; background:#0b0e0a; }
+    /* Dead Zone gets its own fullscreen class rather than reusing .game-full.
+       .game-full is built for the portrait/square games and forces every child
+       into a centred column — `max-width:min(94vw,66vh)`, which on a 1080p
+       monitor is only ~713px. A landscape 3D game needs the whole viewport, and
+       overriding that rule piecemeal was fragile, so this owns its own layout
+       end to end and inherits none of it. */
+    .dz-wrap.dz-full {
+      position:fixed; inset:0; z-index:3000;
+      margin:0; padding:0; border:0; border-radius:0;
+      background:#0b0e0a; display:block; overflow:hidden;
+    }
+    /* inset:0 pins the frame to the fixed parent's edges, so it fills the
+       viewport without depending on any percentage-height chain. */
+    .dz-wrap.dz-full .dz-frame {
+      position:absolute; inset:0;
+      width:100%; height:100%;
+      max-width:none; margin:0; border:0; border-radius:0;
+    }
+    /* Buttons are position:fixed so they stay put whether the wrapper is merely
+       viewport-filling or in real browser fullscreen (where a fixed element is
+       positioned against the fullscreened box, which is what we want). */
+    .dz-exit, .dz-fs {
+      position:fixed; top:14px; z-index:3010;
+      width:44px; height:44px; border-radius:10px; cursor:pointer;
+      background:rgba(20,26,15,0.72); border:1px solid rgba(232,230,220,0.35);
+      color:#e8e6dc; font-size:17px; font-weight:700; line-height:1;
+      display:flex; align-items:center; justify-content:center;
+      font-family:'Inter','Segoe UI',system-ui,sans-serif;
+    }
+    .dz-exit { right:66px; }   /* left of the game's own pause button */
+    .dz-fs   { right:118px; }  /* left of the exit button */
+    .dz-exit:hover { background:rgba(220,38,38,0.55); border-color:rgba(248,113,113,0.7); }
+    .dz-fs:hover   { background:rgba(154,222,0,0.45); border-color:rgba(190,242,100,0.7); }
     /* ── Fruit Match (match-3) ── */
     .m3-wrap { border-radius:18px; border:1px solid rgba(236,72,153,0.2); background:linear-gradient(180deg, rgba(236,72,153,0.06), rgba(15,23,42,0.15)); padding:0.9rem; }
     .m3-intro { text-align:center; padding:0.9rem 0.5rem; }
@@ -8957,9 +9011,127 @@ function flexAchievements() {
 
 var _funTab  = 'rewards';   // 'rewards' | 'games'
 var _funGame = null;        // null = game hub; else a FUN_GAMES id
+// ── DEAD ZONE (3D zombie survival) ─────────────────
+// Deliberately runs in an iframe rather than being merged in. It's a full
+// Three.js app that assumes it owns the viewport: a global `* {}` reset,
+// `html,body{overflow:hidden}`, and ten position:fixed HUD elements that would
+// otherwise escape the panel and sit on top of the whole tracker. Its own
+// document keeps all of that contained.
+//
+// Fullscreen is deliberately NOT granted to the iframe. The game asks for it
+// (document.documentElement.requestFullscreen), and if it got it the game's
+// document would cover the Exit button and strand the user with no way back.
+// The game wraps that call in .catch(), so it fails harmlessly, and _dzToggleFs()
+// below gives the same result safely by fullscreening our own wrapper instead.
+// Orientation-lock goes with it; the game's own #rotateHint already handles that.
+var DZ_URL = 'deadzone.html';
+var _dz = null;
+
+function _dzIntroHtml() {
+  return '<div class="gm-intro">'
+    + '<div class="gm-intro-ico">🧟</div>'
+    + '<div class="gm-intro-title">Dead Zone</div>'
+    + '<div class="gm-intro-desc">3D zombie survival. Hold out against the waves, level up your gear, and team up with a friend.</div>'
+    + '<div class="dz-note"><span>📶 Needs internet</span><span>📱 Turn your phone sideways</span></div>'
+    + '<button class="gm-play" onclick="startDeadzone()">▶  Play</button>'
+    + '</div>';
+}
+// Dead Zone's own fullscreen. _gameFullscreen()'s .game-full is shaped for the
+// portrait/square games and caps children at min(94vw,66vh) — that squeezed this
+// into a ~700px box on a desktop monitor. Same body zoom-lock side-effects, own
+// layout class.
+function _dzFullscreen(on) {
+  var a = document.getElementById('dzArea');
+  if (a) a.classList.toggle('dz-full', !!on);
+  // Its own lock class, not the other games' sk-fs-lock: that rule is phone-only,
+  // so on a desktop the page behind the game stayed scrollable.
+  try { document.body.classList.toggle('dz-fs-lock', !!on); } catch (e) {}
+  try { _skSetZoomLock(!!on); } catch (e) {}
+}
+// Real browser fullscreen — drops the tab bar and address bar too, which .dz-full
+// alone can't do.
+//
+// We fullscreen the PAGE (documentElement), not #dzArea. Fullscreening #dzArea
+// cropped the whole top of the game: #dzArea is itself `position:fixed; inset:0`,
+// and promoting it to the top layer makes the browser force its own !important
+// position/inset/size onto it, so our fixed `inset:0` and the UA's resolve against
+// a viewport that is changing underneath them — the box ends up anchored roughly a
+// browser-chrome's height too high and the HUD along the top is sheared off.
+//
+// Fullscreening the page sidesteps that entirely: no element is restyled, the
+// viewport simply gets bigger, and .dz-full fills it with exactly the same CSS
+// that already works windowed. The ✕ and ⛶ are position:fixed, so they ride along.
+// (This is also why the iframe itself is never given allowfullscreen: the game's
+// own request would put its document on top and bury the way out.)
+function _dzFsOn() {
+  return !!(document.fullscreenElement || document.webkitFullscreenElement);
+}
+function _dzToggleFs() {
+  try {
+    if (_dzFsOn()) {
+      (document.exitFullscreen || document.webkitExitFullscreen).call(document);
+    } else {
+      // Safari/iOS has no Element.requestFullscreen; the button just no-ops there
+      // and .dz-full still fills the viewport, so nothing breaks.
+      var el = document.documentElement;
+      var req = el.requestFullscreen || el.webkitRequestFullscreen;
+      if (req) { var p = req.call(el); if (p && p.catch) p.catch(function () {}); }
+    }
+  } catch (e) {}
+}
+// Keep the icon honest when fullscreen is left via Esc/F11 rather than the button.
+(function () {
+  function sync() {
+    var b = document.getElementById('dzFsBtn');
+    if (!b) return;
+    b.title = _dzFsOn() ? 'Exit fullscreen' : 'Fullscreen';
+  }
+  document.addEventListener('fullscreenchange', sync);
+  document.addEventListener('webkitfullscreenchange', sync);
+})();
+function startDeadzone() {
+  var a = document.getElementById('dzArea');
+  if (!a) return;
+  _funActive = 'deadzone';   // stops renderFunPanel() wiping the game mid-play
+  _dz = true;
+  // Size the box BEFORE the iframe exists: the game reads innerWidth/innerHeight
+  // once at startup to build its camera and renderer, so it must load already
+  // full-size or it renders for a box that no longer exists.
+  _dzFullscreen(true);
+  a.innerHTML = '<iframe class="dz-frame" id="dzFrame" src="' + DZ_URL + '" title="Dead Zone"'
+    + ' allow="pointer-lock; autoplay" referrerpolicy="no-referrer"></iframe>'
+    + '<button class="dz-fs" id="dzFsBtn" onclick="_dzToggleFs()" title="Fullscreen">⛶</button>'
+    + '<button class="dz-exit" onclick="_dzMenu()" title="Quit game">✕</button>';
+}
+function _dzMenu() {
+  _stopDeadzone();
+  var a = document.getElementById('dzArea');
+  if (a) a.innerHTML = _dzIntroHtml();
+}
+// Removing the iframe destroys its document outright — render loop, WebGL
+// context, audio and any PeerJS connection all die with it. That's the whole
+// point of the iframe: nothing to unwind by hand, and a 3D game can't be left
+// burning battery in the background.
+function _stopDeadzone() {
+  var f = document.getElementById('dzFrame');
+  if (f && f.parentNode) f.parentNode.removeChild(f);
+  _dz = null;
+  if (_funActive === 'deadzone') _funActive = null;
+  _dzFullscreen(false);
+  // Quitting must also drop real fullscreen, or the app is left filling the
+  // screen with no game in it and no obvious way out.
+  try { if (_dzFsOn()) (document.exitFullscreen || document.webkitExitFullscreen).call(document); } catch (e) {}
+}
+
 // Registry of playable games. Add a new game = add one entry here (id, meta,
 // container HTML, and an optional best-score subtitle).
 var FUN_GAMES = [
+  {
+    id: 'deadzone', name: 'Dead Zone', icon: '🧟', color: '154,222,0',
+    tag: '3D zombie survival. Waves, levels & 2-player co-op.',
+    container: function () { return '<div class="gm-wrap dz-wrap" id="dzArea" style="--gc:154,222,0">' + _dzIntroHtml() + '</div>'; },
+    sub: function () { return '📶 Online · landscape'; }
+  },
   {
     id: 'sudoku', name: 'Sudoku', icon: '🔢', color: '168,85,247',
     tag: 'Classic number logic. Play solo or with friends.',
@@ -9008,6 +9180,7 @@ function _funGameCardHtml(g) {
 function openFunGame(id) { _stopFunGames(); _funGame = id; renderFunPanel(); }
 function backToGameHub() { _stopFunGames(); _funGame = null; renderFunPanel(); }
 function _stopFunGames() {
+  try { _stopDeadzone(); } catch (e) {}
   try { if (_g3 && _g3.active) _end3DGame(true); } catch (e) {}
   try { if (_game) { clearInterval(_game.timer); clearInterval(_game.spawner); _game = null; } } catch (e) {}
   try { if (_sudoku) { if (_sudoku.timer) clearInterval(_sudoku.timer); if (_sudoku.room) { try { _sudoku.room.ref.off('value', _sudoku.room.listener); } catch (e2) {} try { _sudoku.room.ref.child('members/' + _sudoku.room.pid).remove(); } catch (e3) {} } _sudoku = null; } } catch (e) {}
@@ -16090,6 +16263,8 @@ function switchMPanel(name) {
   if (name === 'fun') { try { renderFunPanel(); } catch (e) {} }
   else {
     // Leaving the Fun tab — stop any running game so it doesn't run in the background.
+    // Dead Zone especially: a WebGL render loop left alive would eat the battery.
+    try { _stopDeadzone(); } catch (e) {}
     try { if (_g3 && _g3.active) _end3DGame(true); } catch (e) {}
     try { if (_game) { clearInterval(_game.timer); clearInterval(_game.spawner); _game = null; } } catch (e) {}
   }
