@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-<title>DEAD ZONE — 3rd Person Zombie Survival</title>
+<title>DEAD ZONE — External Asset Roster</title>
 <style>
   * { margin:0; padding:0; box-sizing:border-box; }
   html, body { width:100%; height:100%; overflow:hidden; background:#0b0e0a;
@@ -94,6 +94,39 @@
   .card .ds { font-size:13px; opacity:.8; line-height:1.4; }
   .hidden { display:none !important; }
 
+  /* ---------- animated character picker ---------- */
+  #startOverlay { overflow-y:auto; }
+  #characterPicker { position:relative; pointer-events:auto; display:flex; align-items:center; justify-content:center;
+    gap:13px; margin:5px 0 3px; min-height:158px; }
+  #charPreview { position:relative; width:132px; height:154px; flex:0 0 auto; overflow:hidden;
+    border-radius:12px; border:1px solid rgba(154,222,0,.48);
+    background:radial-gradient(circle at 50% 36%, rgba(75,94,57,.35), rgba(8,11,7,.88) 70%);
+    box-shadow:inset 0 0 24px rgba(0,0,0,.45), 0 0 14px rgba(154,222,0,.12); }
+  #charPreview canvas { width:100% !important; height:100% !important; }
+  #charPreviewLoading { position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+    font-size:11px; letter-spacing:1px; opacity:.62; pointer-events:none; }
+  #charInfo { width:178px; text-align:left; }
+  #charLabel { color:#9ADE00; font-size:11px; font-weight:800; letter-spacing:2px; opacity:.85; }
+  #charName { margin-top:3px; color:#e8e6dc; font-size:21px; line-height:1; font-weight:900; letter-spacing:2px; }
+  #charDesc { margin-top:7px; min-height:32px; font-size:11px; line-height:1.35; opacity:.65; }
+  #charControls { display:grid; grid-template-columns:30px minmax(0,1fr) 30px; gap:6px; margin-top:8px; }
+  #charSelect, .charNav { pointer-events:auto; min-height:30px; border:1px solid #6b8e23; border-radius:7px;
+    background:rgba(15,20,12,.92); color:#dce4d5; font:800 10px/1 'Segoe UI',system-ui,sans-serif; letter-spacing:.7px; }
+  #charSelect { width:100%; padding:0 6px; cursor:pointer; }
+  .charNav { cursor:pointer; color:#9ADE00; font-size:12px; }
+  .charNav:hover, .charNav:active, #charSelect:focus { border-color:#9ADE00; outline:none; }
+  .charNav:disabled, #charSelect:disabled { opacity:.45; cursor:not-allowed; }
+  #charCount { margin-top:4px; text-align:center; font-size:9px; letter-spacing:1px; opacity:.55; }
+  .charChoice { pointer-events:auto; cursor:pointer; border:1px solid #6b8e23; border-radius:7px;
+    padding:7px 10px; background:rgba(15,20,12,.9); color:#b9c2ae; font:800 11px/1 'Segoe UI',system-ui,sans-serif;
+    letter-spacing:1px; transition:transform .08s,border-color .08s,color .08s,background .08s; }
+  .charChoice:hover, .charChoice:active { transform:translateY(-1px); border-color:#9ADE00; }
+  .charChoice.selected { color:#0b0e0a; background:#9ADE00; border-color:#9ADE00; }
+  .charChoice:disabled { cursor:not-allowed; transform:none; opacity:.48; }
+  #characterPicker.locked::after { content:'LOCKED FOR MATCH'; position:absolute; left:50%; bottom:1px; transform:translateX(-50%);
+    padding:3px 7px; border-radius:5px; color:#d9a441; background:rgba(7,9,6,.82);
+    font-size:9px; font-weight:900; letter-spacing:1px; }
+
   /* ---------- multiplayer lobby ---------- */
   .btn2 { background:transparent; color:#9ADE00; border:2px solid #9ADE00; box-shadow:none; }
   /* compact start-menu controls; gameplay buttons keep their original size */
@@ -105,7 +138,8 @@
     text-align:center; background:rgba(20,26,15,.9); border:2px solid #6b8e23; color:#e8e6dc;
     border-radius:8px; font-family:inherit; pointer-events:auto; }
   #joinRow .btn { margin-top:0; padding:12px 24px; }
-  #mpStatus { margin-top:14px; font-size:15px; color:#d9a441; min-height:22px; font-weight:600; }
+  #assetStatus { margin-top:10px; font-size:12px; color:#9ADE00; min-height:18px; opacity:.8; }
+  #mpStatus { margin-top:4px; font-size:15px; color:#d9a441; min-height:22px; font-weight:600; }
   #respawnText { position:fixed; top:40%; left:50%; transform:translate(-50%,-50%); z-index:8; display:none;
     font-size:26px; font-weight:800; color:#e05545; text-shadow:0 2px 6px #000; letter-spacing:2px; }
   #btnPause { position:fixed; top:14px; right:14px; z-index:9; width:44px; height:44px; border-radius:10px;
@@ -120,6 +154,12 @@
       font-size:20px; font-weight:700; text-align:center; padding:24px; }
     #rotateHint .ico { font-size:52px; }
   }
+  @media (max-height:500px) and (orientation:landscape) {
+    #startOverlay { justify-content:flex-start; padding-top:5px; }
+    .overlay h1 { font-size:28px; margin-bottom:1px; }
+    #startOverlay > p { margin-bottom:3px; }
+    #controlsHint { display:none; }
+  }
   @media (max-width:760px) {
     #hpBar { width:150px; height:18px; }
     #killText { top:38px; } #wepText { top:58px; } #bombHud { top:76px; }
@@ -132,6 +172,14 @@
     .btn { padding:12px 28px; font-size:16px; }
     #startOverlay .btn { padding:8px 16px; font-size:13px; margin-top:10px; }
     #mpRow { gap:7px; }
+    #characterPicker { min-height:130px; gap:9px; margin:2px 0; }
+    #charPreview { width:106px; height:125px; }
+    #charInfo { width:154px; }
+    #charName { font-size:17px; }
+    #charDesc { font-size:10px; min-height:27px; }
+    #charControls { grid-template-columns:28px minmax(0,1fr) 28px; gap:4px; }
+    #charSelect, .charNav { min-height:28px; font-size:9px; }
+    .charChoice { padding:6px 8px; font-size:10px; }
     .card { width:136px; padding:14px 10px; }
     .card .ico { font-size:26px; }
   }
@@ -173,6 +221,20 @@
 <div class="overlay" id="startOverlay">
   <h1>DEAD ZONE</h1>
   <p style="color:#d9a441;font-weight:700;letter-spacing:2px;">SURVIVE THE HORDE</p>
+  <div id="characterPicker">
+    <div id="charPreview"><div id="charPreviewLoading">LOADING MODEL…</div></div>
+    <div id="charInfo">
+      <div id="charLabel">YOUR CHARACTER</div>
+      <div id="charName">SWAT</div>
+      <div id="charDesc">Armoured tactical operator. Character choice is visual only.</div>
+      <div id="charControls">
+        <button class="charNav" id="charPrev" aria-label="Previous character">◀</button>
+        <select id="charSelect" aria-label="Choose character"></select>
+        <button class="charNav" id="charNext" aria-label="Next character">▶</button>
+      </div>
+      <div id="charCount">1 / 21</div>
+    </div>
+  </div>
   <p id="controlsHint"></p>
   <p style="opacity:.6;font-size:13px;">Kills drop XP — walk over it. Level up to choose an upgrade.</p>
   <button class="btn btn2" id="aimBtn" style="display:none;margin-bottom:12px;">🎯 AIM: AUTO-SHOOT</button>
@@ -182,6 +244,7 @@
     <button class="btn btn2" id="joinBtn">JOIN CO-OP</button>
   </div>
   <div id="joinRow"><input id="joinCode" maxlength="4" placeholder="CODE" autocomplete="off"><button class="btn" id="joinGo">GO</button></div>
+  <div id="assetStatus">Checking assets/ folder…</div>
   <div id="mpStatus"></div>
 </div>
 
@@ -210,22 +273,138 @@
 
 <script src="https://unpkg.com/mqtt@5.10.4/dist/mqtt.min.js"></script>
 <script type="importmap">
-{ "imports": { "three": "https://unpkg.com/three@0.160.0/build/three.module.js" } }
+{ "imports": {
+  "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+  "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+} }
 </script>
 
 <script type="module">
 import * as THREE from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { clone as cloneSkeleton } from 'three/addons/utils/SkeletonUtils.js';
+
+// GLB files are loaded from the extracted assets/ folder beside this HTML file.
+const ASSET_PATHS = Object.freeze({
+  zombie: './assets/zombies/zombie.glb',
+  rifle: './assets/guns/Assault Rifle.glb',
+  shotgun: './assets/guns/Shotgun.glb',
+  smg: './assets/guns/Submachine Gun.glb',
+});
+
+// Character models are loaded only when selected or seen in multiplayer.
+// This keeps the first download small even though the roster has many models.
+const CHARACTER_DEFS = Object.freeze({
+  swat: {
+    id: 'swat', name: 'SWAT', path: './assets/player_characters/men/Swat.glb',
+    desc: 'Armoured tactical operator.'
+  },
+  soldier: {
+    id: 'soldier', name: 'SOLDIER', path: './assets/player_characters/women/Soldier.glb',
+    desc: 'Field soldier equipped for fast response.'
+  },
+  male_adventurer: {
+    id: 'male_adventurer', name: 'ADVENTURER', path: './assets/player_characters/men/Adventurer.glb',
+    desc: 'Rugged survivor ready to explore the dead zone.'
+  },
+  astronaut: {
+    id: 'astronaut', name: 'ASTRONAUT', path: './assets/player_characters/men/Astronaut.glb',
+    desc: 'A space explorer stranded among the infected.'
+  },
+  beach: {
+    id: 'beach', name: 'BEACH', path: './assets/player_characters/men/Beach Character.glb',
+    desc: 'An unlikely survivor caught far from safety.'
+  },
+  businessman: {
+    id: 'businessman', name: 'BUSINESS MAN', path: './assets/player_characters/men/Business Man.glb',
+    desc: 'From the office to the outbreak.'
+  },
+  casual: {
+    id: 'casual', name: 'CASUAL', path: './assets/player_characters/men/Casual Character.glb',
+    desc: 'An everyday survivor fighting to stay alive.'
+  },
+  farmer: {
+    id: 'farmer', name: 'FARMER', path: './assets/player_characters/men/Farmer.glb',
+    desc: 'A hardened farmer accustomed to difficult work.'
+  },
+  hoodie: {
+    id: 'hoodie', name: 'HOODIE', path: './assets/player_characters/men/Hoodie Character.glb',
+    desc: 'A quick street survivor who keeps a low profile.'
+  },
+  king: {
+    id: 'king', name: 'KING', path: './assets/player_characters/men/King.glb',
+    desc: 'Royalty refuses to surrender the last safe ground.'
+  },
+  male_punk: {
+    id: 'male_punk', name: 'PUNK', path: './assets/player_characters/men/Punk.glb',
+    desc: 'A fearless rebel built for chaos.'
+  },
+  male_worker: {
+    id: 'male_worker', name: 'WORKER', path: './assets/player_characters/men/Worker.glb',
+    desc: 'A dependable worker turned resourceful survivor.'
+  },
+  female_adventurer: {
+    id: 'female_adventurer', name: 'ADVENTURER F', path: './assets/player_characters/women/Adventurer.glb',
+    desc: 'A capable explorer prepared for hostile territory.'
+  },
+  animated_woman_alt: {
+    id: 'animated_woman_alt', name: 'SURVIVOR A', path: './assets/player_characters/women/Animated Woman-nIItLV9nxS.glb',
+    desc: 'A determined survivor with combat-ready animations.'
+  },
+  animated_woman: {
+    id: 'animated_woman', name: 'SURVIVOR B', path: './assets/player_characters/women/Animated Woman.glb',
+    desc: 'A determined civilian adapting to the outbreak.'
+  },
+  medieval: {
+    id: 'medieval', name: 'MEDIEVAL', path: './assets/player_characters/women/Medieval.glb',
+    desc: 'A warrior from another age facing a modern plague.'
+  },
+  female_punk: {
+    id: 'female_punk', name: 'PUNK F', path: './assets/player_characters/women/Punk.glb',
+    desc: 'A bold rebel who thrives under pressure.'
+  },
+  scifi: {
+    id: 'scifi', name: 'SCI-FI', path: './assets/player_characters/women/Sci Fi Character.glb',
+    desc: 'A futuristic operator entering the infected zone.'
+  },
+  suit: {
+    id: 'suit', name: 'SUIT', path: './assets/player_characters/women/Suit.glb',
+    desc: 'Professional appearance, survival instincts.'
+  },
+  witch: {
+    id: 'witch', name: 'WITCH', path: './assets/player_characters/women/Witch.glb',
+    desc: 'A mysterious survivor with an unusual presence.'
+  },
+  female_worker: {
+    id: 'female_worker', name: 'WORKER F', path: './assets/player_characters/women/Worker.glb',
+    desc: 'A practical survivor ready to rebuild or fight.'
+  },
+});
+const CHARACTER_IDS = Object.freeze(Object.keys(CHARACTER_DEFS));
+function validCharacter(id) { return CHARACTER_DEFS[id] ? id : 'swat'; }
+let selectedCharacter = 'swat';
+try { selectedCharacter = validCharacter(localStorage.getItem('dz_character') || 'swat'); } catch (_) {}
+let remoteCharacter = selectedCharacter === 'swat' ? 'soldier' : 'swat';
+let characterSelectionLocked = false;
+let enhancedAssets = {
+  characters: Object.create(null),
+  characterPromises: Object.create(null),
+  guns: null,
+  zombie: null,
+};
 
 /* ================= device & constants ================= */
 const IS_TOUCH = matchMedia('(pointer: coarse)').matches || ('ontouchstart' in window && navigator.maxTouchPoints > 0);
 const MAXZ  = IS_TOUCH ? 34 : 48;       // concurrent zombie cap (3D is GPU-heavy; tablets get fewer)
 const WAVE_LEN = 25;                    // seconds per wave
 const XP_NEED  = lv => 20 + lv * 15;
+const AUTO_AIM_FOV = 175; // total horizontal peripheral cone: ±87.5° from camera forward
 
 /* ================= renderer / scene ================= */
 const renderer = new THREE.WebGLRenderer({ antialias: !IS_TOUCH, powerPreference: 'high-performance' });
 renderer.setPixelRatio(Math.min(devicePixelRatio, IS_TOUCH ? 1.5 : 2));
 renderer.setSize(innerWidth, innerHeight);
+renderer.outputColorSpace = THREE.SRGBColorSpace;
 document.body.appendChild(renderer.domElement);
 const canvas = renderer.domElement;
 
@@ -526,6 +705,8 @@ const player = {
   weapon: 0, bombCd: 0, bombCdMul: 1, jumpY: 0, jumpV: 0,
   level: 1, xp: 0, fireCd: 0, invuln: 0, walkPhase: 0,
   legL: null, legR: null, armL: null, armR: null, muzzle: null, shadow: null,
+  fallbackMeshes: [], weaponFallbackMeshes: [], modelRoot: null, modelMixer: null,
+  modelActions: null, modelAction: null, weaponModels: [], assetMuzzles: [], characterId: null,
 };
 {
   const g = player.group;
@@ -555,16 +736,20 @@ const player = {
   const armR = new THREE.Group(); armR.position.set(0.42, 1.36, 0);
   player.armR = armR;
   const armRm = new THREE.Mesh(GEO.armF, MAT.pBody); armRm.position.z = 0.25; armRm.scale.set(0.9, 0.9, 0.7); armR.add(armRm);
-  const gun = new THREE.Mesh(GEO.gun, MAT.gun); gun.position.set(0, 0, 0.55); armR.add(gun);
-  const barrel = new THREE.Mesh(GEO.barrel, MAT.gun); barrel.rotation.x = Math.PI / 2; barrel.position.set(0, 0.02, 0.95); armR.add(barrel);
-  const sight = new THREE.Mesh(GEO.sight, MAT.pAccent); sight.position.set(0, 0.13, 0.5); armR.add(sight);
-  const mag = new THREE.Mesh(GEO.mag, MAT.gun); mag.position.set(0, -0.16, 0.55); mag.rotation.x = 0.15; armR.add(mag);
+  const gun = new THREE.Mesh(GEO.gun, MAT.gun); gun.userData.weaponFallback = true; gun.position.set(0, 0, 0.55); armR.add(gun);
+  const barrel = new THREE.Mesh(GEO.barrel, MAT.gun); barrel.userData.weaponFallback = true; barrel.rotation.x = Math.PI / 2; barrel.position.set(0, 0.02, 0.95); armR.add(barrel);
+  const sight = new THREE.Mesh(GEO.sight, MAT.pAccent); sight.userData.weaponFallback = true; sight.position.set(0, 0.13, 0.5); armR.add(sight);
+  const mag = new THREE.Mesh(GEO.mag, MAT.gun); mag.userData.weaponFallback = true; mag.position.set(0, -0.16, 0.55); mag.rotation.x = 0.15; armR.add(mag);
   player.muzzle = new THREE.Object3D(); player.muzzle.position.set(0, 0.02, 1.2); armR.add(player.muzzle);
   g.add(armR);
 
   const sh = new THREE.Mesh(GEO.shadow, MAT.shadow); sh.rotation.x = -Math.PI / 2; sh.position.y = 0.02; g.add(sh);
   player.shadow = sh;
   scene.add(g);
+  g.traverse(o => {
+    if (!o.isMesh || o === player.shadow) return;
+    (o.userData.weaponFallback ? player.weaponFallbackMeshes : player.fallbackMeshes).push(o);
+  });
 }
 
 /* ================= partner avatar (co-op) ================= */
@@ -572,6 +757,8 @@ const remote = {
   group: null, legL: null, legR: null,
   x: 2, z: 2, ry: 0, jy: 0, hp: 100, pk: 2.6,
   walk: 0, speedSm: 0, visible: false, invulnT: 0,
+  fallbackMeshes: [], weaponFallbackMeshes: [], modelRoot: null, modelMixer: null,
+  modelActions: null, modelAction: null, weaponModels: [], assetMuzzles: [], armR: null, characterId: null,
 };
 {
   const accent = new THREE.MeshLambertMaterial({ color: 0x41b8d9 }); // partner reads as teal
@@ -589,8 +776,9 @@ const remote = {
     if (side < 0) remote.legL = hip; else remote.legR = hip;
   }
   const armR = new THREE.Group(); armR.position.set(0.42, 1.36, 0);
+  remote.armR = armR;
   const armRm = new THREE.Mesh(GEO.armF, MAT.pBody); armRm.position.z = 0.25; armRm.scale.set(0.9, 0.9, 0.7); armR.add(armRm);
-  const rgun = new THREE.Mesh(GEO.gun, MAT.gun); rgun.position.set(0, 0, 0.55); armR.add(rgun);
+  const rgun = new THREE.Mesh(GEO.gun, MAT.gun); rgun.userData.weaponFallback = true; rgun.position.set(0, 0, 0.55); armR.add(rgun);
   g.add(armR);
   const armL = new THREE.Group(); armL.position.set(-0.42, 1.36, 0);
   const armLm = new THREE.Mesh(GEO.limb, MAT.pBody); armLm.position.y = -0.28; armLm.scale.set(0.8, 0.9, 0.8); armL.add(armLm);
@@ -599,6 +787,10 @@ const remote = {
   g.visible = false;
   scene.add(g);
   remote.group = g;
+  g.traverse(o => {
+    if (!o.isMesh || o === rsh) return;
+    (o.userData.weaponFallback ? remote.weaponFallbackMeshes : remote.fallbackMeshes).push(o);
+  });
 }
 
 /* ================= zombie pool ================= */
@@ -635,15 +827,528 @@ function buildZombie() {
   }
   g.visible = false;
   scene.add(g);
+  const fallbackMeshes = [];
+  g.traverse(o => { if (o.isMesh && o !== shadow) fallbackMeshes.push(o); });
   return {
-    group: g, mat, legs, arms, head,
+    group: g, mat, legs, arms, head, fallbackMeshes,
+    modelRoot: null, modelMixer: null, modelActions: null, modelAction: null, modelMats: [],
     alive: false, dying: false, dieT: 0, spinDir: 1,
+    attacking: false, attackT: 0, attackHit: false, attackTarget: null, attackCooldown: 0,
     hp: 1, maxHp: 1, speed: 2, dmg: 8, radius: 0.55, xp: 4, brute: false,
     phase: Math.random() * 10, flashT: 0,
   };
 }
 // full 48-slot pool even on mobile — in co-op the guest mirrors the host's pool by index
 for (let i = 0; i < 48; i++) { const z = buildZombie(); z.idx = i; z.netX = 0; z.netZ = 0; z.netRY = 0; zombies.push(z); }
+
+/* ================= embedded GLB asset upgrade ================= */
+const gltfLoader = new GLTFLoader();
+const assetStatus = t => { const el = document.getElementById('assetStatus'); if (el) el.textContent = t; };
+const assetFailures = [];
+const assetResolvedPaths = Object.create(null);
+function assetUrl(path) { return new URL(path, document.baseURI); }
+function assetCandidateUrls(path) {
+  const candidates = [path];
+  if (path.startsWith('./assets/')) {
+    // Also support the two common GitHub upload layouts:
+    // 1) an accidental assets/assets/ nesting, and
+    // 2) this HTML placed inside the extracted assets folder.
+    candidates.push(path.replace('./assets/', './assets/assets/'));
+    candidates.push(path.replace('./assets/', './'));
+  }
+  return [...new Set(candidates)].map(p => new URL(p, document.baseURI));
+}
+function rememberAssetFailure(label, path, err) {
+  const url = assetUrl(path);
+  const detail = err && err.message ? err.message : String(err || 'Unknown loading error');
+  const message = `${label}: ${url.pathname} — ${detail}`;
+  assetFailures.push(message);
+  console.error(message, err);
+  return message;
+}
+async function loadGlb(path, label) {
+  if (location.protocol === 'file:') {
+    throw new Error('LOCAL FILE MODE BLOCKED: double-click START_GAME.bat and open the localhost page');
+  }
+  const attempts = [];
+  for (const url of assetCandidateUrls(path)) {
+    try {
+      const response = await fetch(url.href, { cache: 'no-store' });
+      if (!response.ok) throw new Error(`HTTP ${response.status} ${response.statusText}`);
+      const type = (response.headers.get('content-type') || '').toLowerCase();
+      if (type.includes('text/html')) {
+        throw new Error('Server returned HTML instead of a GLB');
+      }
+      const data = await response.arrayBuffer();
+      if (data.byteLength < 20) throw new Error('Downloaded file is empty or incomplete');
+      const base = url.href.slice(0, url.href.lastIndexOf('/') + 1);
+      const gltf = await gltfLoader.parseAsync(data, base);
+      assetResolvedPaths[path] = url.pathname;
+      return gltf;
+    } catch (err) {
+      attempts.push(`${url.pathname}: ${err && err.message ? err.message : err}`);
+    }
+  }
+  throw new Error(`Tried ${attempts.join(' | ')}`);
+}
+
+function prepareImportedModel(root, cloneMaterials = false) {
+  const mats = [];
+  root.traverse(o => {
+    if (!o.isMesh) return;
+    o.frustumCulled = false;
+    if (cloneMaterials) {
+      if (Array.isArray(o.material)) o.material = o.material.map(m => m.clone());
+      else if (o.material) o.material = o.material.clone();
+    }
+    const list = Array.isArray(o.material) ? o.material : [o.material];
+    for (const m of list) {
+      if (!m) continue;
+      if (m.map) m.map.colorSpace = THREE.SRGBColorSpace;
+      if (!mats.includes(m)) mats.push(m);
+    }
+  });
+  return mats;
+}
+function clipBySuffix(clips, suffix, fallback = null) {
+  return clips.find(c => c.name.endsWith('|' + suffix)) ||
+         clips.find(c => c.name.toLowerCase().includes(suffix.toLowerCase())) || fallback;
+}
+function makeActions(root, clips, type) {
+  const mixer = new THREE.AnimationMixer(root);
+  const isZombie = type === 'zombie';
+  const idleClip = isZombie
+    ? clipBySuffix(clips, 'ZombieIdle')
+    : clipBySuffix(clips, 'Idle_Gun_Pointing', clipBySuffix(clips, 'Idle_Gun', clipBySuffix(clips, 'Idle')));
+  const runClip = isZombie
+    ? clipBySuffix(clips, 'ZombieRun', clipBySuffix(clips, 'ZombieWalk'))
+    : clipBySuffix(clips, 'Run_Shoot', clipBySuffix(clips, 'Run', clipBySuffix(clips, 'Walk')));
+  const walkClip = isZombie
+    ? clipBySuffix(clips, 'ZombieWalk', runClip)
+    : clipBySuffix(clips, 'Walk', runClip);
+  const attackClip = isZombie ? clipBySuffix(clips, 'ZombieBite') : null;
+  const actions = {
+    idle: idleClip ? mixer.clipAction(idleClip) : null,
+    run: runClip ? mixer.clipAction(runClip) : null,
+    walk: walkClip ? mixer.clipAction(walkClip) : null,
+    attack: attackClip ? mixer.clipAction(attackClip) : null,
+  };
+  for (const [name, a] of Object.entries(actions)) {
+    if (!a) continue;
+    a.enabled = true;
+    if (name === 'attack') {
+      a.setLoop(THREE.LoopOnce, 1);
+      a.clampWhenFinished = true;
+    } else {
+      a.setLoop(THREE.LoopRepeat, Infinity);
+    }
+  }
+  return { mixer, actions };
+}
+function setModelAction(owner, name, fade = 0.14, force = false) {
+  if (!owner.modelActions) return;
+  const next = owner.modelActions[name] || owner.modelActions.idle;
+  if (!next || (!force && owner.modelAction === next)) return;
+  if (force && owner.modelAction === next) next.stop();
+  next.reset().fadeIn(fade).play();
+  if (owner.modelAction && owner.modelAction !== next) owner.modelAction.fadeOut(fade);
+  owner.modelAction = next;
+}
+function setupCharacterModel(owner, gltf) {
+  if (owner.modelMixer) owner.modelMixer.stopAllAction();
+  if (owner.modelRoot && owner.modelRoot.parent) owner.modelRoot.parent.remove(owner.modelRoot);
+  owner.modelRoot = null; owner.modelMixer = null; owner.modelActions = null; owner.modelAction = null;
+  owner.weaponModels = []; owner.assetMuzzles = [];
+
+  // SkeletonUtils.clone lets both players pick the same character without
+  // sharing one animated skeleton instance.
+  const root = cloneSkeleton(gltf.scene);
+  root.position.set(0, 0, 0);
+  root.rotation.set(0, 0, 0);
+  root.scale.setScalar(1);
+  prepareImportedModel(root, true);
+  owner.group.add(root);
+  owner.fallbackMeshes.forEach(m => { m.visible = false; });
+  const anim = makeActions(root, gltf.animations, 'character');
+  owner.modelRoot = root; owner.modelMixer = anim.mixer; owner.modelActions = anim.actions;
+  setModelAction(owner, 'idle', 0);
+  owner.modelMixer.update(0);
+  owner.group.updateMatrixWorld(true);
+}
+function findRigNode(root, names) {
+  for (const name of names) {
+    const exact = root.getObjectByName(name);
+    if (exact) return exact;
+  }
+  let found = null;
+  root.traverse(o => {
+    if (found) return;
+    const n = (o.name || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+    if (names.some(name => n.includes(name.toLowerCase().replace(/[^a-z0-9]/g, '')))) found = o;
+  });
+  return found;
+}
+function makeWeaponModel(gltf, scale) {
+  const holder = new THREE.Group();
+  const root = gltf.scene.clone(true);
+  prepareImportedModel(root, false);
+  root.scale.setScalar(scale);
+  holder.add(root);
+  return holder;
+}
+function attachWeaponToHand(owner, holder, gripOffset = null) {
+  const hand = owner.modelRoot && findRigNode(owner.modelRoot, [
+    'Wrist.R', 'RightHand', 'mixamorigRightHand', 'Hand.R'
+  ]);
+  const off = gripOffset || { x: 0, y: -0.015, z: -0.025 };
+
+  // First place the weapon exactly where the animated hand is in character
+  // space. Object3D.attach then preserves that world pose while re-parenting
+  // it to the hand bone, including compensation for the armature's 100x scale.
+  owner.group.add(holder);
+  owner.group.updateMatrixWorld(true);
+  if (hand) {
+    hand.updateWorldMatrix(true, false);
+    const handWorld = new THREE.Vector3();
+    hand.getWorldPosition(handWorld);
+    owner.group.worldToLocal(handWorld);
+    holder.position.copy(handWorld).add(new THREE.Vector3(off.x, off.y, off.z));
+    holder.rotation.set(0, -Math.PI / 2, 0);
+    owner.group.updateMatrixWorld(true);
+    hand.attach(holder);
+  } else {
+    // Fallback for a differently named rig.
+    holder.position.set(0.18, 1.22, 0.25);
+    holder.rotation.set(0, -Math.PI / 2, 0);
+  }
+}
+function installWeapons(owner, gunGltfs, isPartner = false) {
+  // These GLBs point down local +X. The previous muzzle was placed on local
+  // +Z, which made tracers begin to the character's right. Each point below
+  // is measured at the actual barrel tip after the model's scale is applied.
+  const defs = [
+    [gunGltfs.rifle,  0.19, { x: 0.735, y: 0.110, z: 0.000 }, { x: 0, y: -0.015, z: -0.020 }],
+    [gunGltfs.shotgun,0.19, { x: 0.828, y: 0.041, z: 0.000 }, { x: 0, y: -0.018, z: -0.020 }],
+    [gunGltfs.smg,    0.23, { x: 0.527, y: 0.130, z: 0.000 }, { x: 0, y: -0.014, z: -0.015 }],
+  ];
+  owner.weaponModels = []; owner.assetMuzzles = [];
+  for (const [gltf, scale, muzzlePoint, grip] of defs) {
+    const holder = makeWeaponModel(gltf, scale);
+    attachWeaponToHand(owner, holder, grip);
+    owner.weaponModels.push(holder);
+    const muzzle = new THREE.Object3D();
+    muzzle.position.set(muzzlePoint.x, muzzlePoint.y, muzzlePoint.z);
+    holder.add(muzzle);
+    owner.assetMuzzles.push(muzzle);
+  }
+  owner.weaponFallbackMeshes.forEach(m => { m.visible = false; });
+  updateAssetWeapon(owner, isPartner ? 0 : player.weapon);
+}
+function updateAssetWeapon(owner, index = player.weapon) {
+  if (!owner.weaponModels) return;
+  owner.weaponModels.forEach((m, i) => { m.visible = i === index; });
+}
+function activeMuzzle() {
+  return player.assetMuzzles[player.weapon] || player.muzzle;
+}
+
+async function loadCharacterAsset(characterId) {
+  const id = validCharacter(characterId);
+  if (enhancedAssets.characters[id]) return enhancedAssets.characters[id];
+  if (!enhancedAssets.characterPromises[id]) {
+    const def = CHARACTER_DEFS[id];
+    enhancedAssets.characterPromises[id] = loadGlb(def.path, def.name)
+      .then(gltf => {
+        enhancedAssets.characters[id] = gltf;
+        delete enhancedAssets.characterPromises[id];
+        return gltf;
+      })
+      .catch(err => {
+        delete enhancedAssets.characterPromises[id];
+        rememberAssetFailure(`Character ${def.name}`, def.path, err);
+        throw err;
+      });
+  }
+  return enhancedAssets.characterPromises[id];
+}
+
+async function applyCharacterToOwner(owner, characterId, force = false) {
+  const id = validCharacter(characterId);
+  owner.requestedCharacterId = id;
+  if (!force && owner.characterId === id && owner.modelRoot) {
+    if (enhancedAssets.guns && (!owner.weaponModels || !owner.weaponModels.length)) {
+      installWeapons(owner, enhancedAssets.guns, owner === remote);
+    }
+    return true;
+  }
+  try {
+    const gltf = await loadCharacterAsset(id);
+    if (owner.requestedCharacterId !== id) return false; // a newer selection won the race
+    setupCharacterModel(owner, gltf);
+    if (enhancedAssets.guns) installWeapons(owner, enhancedAssets.guns, owner === remote);
+    owner.characterId = id;
+    if (owner === player && enhancedAssets.guns) updateAssetWeapon(player, player.weapon);
+    return true;
+  } catch (_) {
+    owner.fallbackMeshes?.forEach(m => { m.visible = true; });
+    return false;
+  }
+}
+function setRemoteCharacter(id) {
+  const next = validCharacter(id);
+  if (remoteCharacter === next && remote.characterId === next) return;
+  remoteCharacter = next;
+  void applyCharacterToOwner(remote, remoteCharacter);
+}
+
+let previewRenderer = null, previewScene = null, previewCamera = null;
+let previewStage = null, previewOwner = null, previewTime = 0;
+function ensureCharacterPreview() {
+  if (previewRenderer) return true;
+  const host = document.getElementById('charPreview');
+  if (!host) return false;
+  try {
+    previewRenderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: 'low-power' });
+    previewRenderer.setPixelRatio(Math.min(devicePixelRatio, 1.5));
+    const rect = host.getBoundingClientRect();
+    previewRenderer.setSize(Math.max(1, rect.width), Math.max(1, rect.height), false);
+    previewRenderer.outputColorSpace = THREE.SRGBColorSpace;
+    previewRenderer.setClearColor(0x000000, 0);
+    host.appendChild(previewRenderer.domElement);
+
+    previewScene = new THREE.Scene();
+    previewCamera = new THREE.PerspectiveCamera(31, Math.max(rect.width, 1) / Math.max(rect.height, 1), 0.1, 20);
+    previewCamera.position.set(0, 1.04, 3.25);
+    previewCamera.lookAt(0, 1.02, 0);
+    previewScene.add(new THREE.HemisphereLight(0xcfe5ff, 0x273018, 2.1));
+    const key = new THREE.DirectionalLight(0xffffff, 2.0); key.position.set(2.2, 3.5, 3.0); previewScene.add(key);
+    const rim = new THREE.DirectionalLight(0x78b9ff, 1.1); rim.position.set(-2.5, 2.0, -2.0); previewScene.add(rim);
+    const ring = new THREE.Mesh(
+      new THREE.CircleGeometry(0.78, 32),
+      new THREE.MeshBasicMaterial({ color: 0x28341d, transparent: true, opacity: 0.8 })
+    );
+    ring.rotation.x = -Math.PI / 2; ring.position.y = 0.004; previewScene.add(ring);
+    previewStage = new THREE.Group(); previewScene.add(previewStage);
+    previewOwner = {
+      group: previewStage, fallbackMeshes: [], weaponFallbackMeshes: [],
+      modelRoot: null, modelMixer: null, modelActions: null, modelAction: null,
+      weaponModels: [], assetMuzzles: [], characterId: null,
+    };
+    const loading = document.getElementById('charPreviewLoading');
+    if (loading) loading.style.display = 'flex';
+    return true;
+  } catch (err) {
+    console.warn('Animated character preview unavailable:', err);
+    previewRenderer = null; previewScene = null; previewCamera = null; previewStage = null; previewOwner = null;
+    const loading = document.getElementById('charPreviewLoading');
+    if (loading) loading.textContent = 'PREVIEW UNAVAILABLE';
+    return false;
+  }
+}
+function resizeCharacterPreview() {
+  if (!previewRenderer || !previewCamera) return;
+  const host = document.getElementById('charPreview');
+  if (!host) return;
+  const rect = host.getBoundingClientRect();
+  previewRenderer.setSize(Math.max(1, rect.width), Math.max(1, rect.height), false);
+  previewCamera.aspect = Math.max(rect.width, 1) / Math.max(rect.height, 1);
+  previewCamera.updateProjectionMatrix();
+}
+addEventListener('resize', resizeCharacterPreview);
+async function rebuildCharacterPreview(characterId) {
+  if (!ensureCharacterPreview()) return;
+  const id = validCharacter(characterId);
+  previewOwner.requestedCharacterId = id;
+  const loading = document.getElementById('charPreviewLoading');
+  if (loading) { loading.style.display = 'flex'; loading.textContent = 'LOADING MODEL…'; }
+  try {
+    const gltf = await loadCharacterAsset(id);
+    if (!previewOwner || previewOwner.requestedCharacterId !== id) return;
+    setupCharacterModel(previewOwner, gltf);
+    if (enhancedAssets.guns) installWeapons(previewOwner, enhancedAssets.guns, true);
+    previewOwner.characterId = id;
+    previewStage.rotation.set(0, 0, 0);
+    previewTime = 0;
+    if (loading) loading.style.display = 'none';
+  } catch (_) {
+    if (loading) { loading.style.display = 'flex'; loading.textContent = 'MODEL NOT FOUND'; }
+  }
+}
+function renderCharacterPreview(dt) {
+  if (!previewRenderer || !previewScene || !previewCamera || state !== 'menu') return;
+  previewTime += dt;
+  if (previewOwner && previewOwner.modelMixer) previewOwner.modelMixer.update(dt);
+  if (previewStage) previewStage.rotation.y = Math.sin(previewTime * 0.72) * 0.24;
+  previewRenderer.render(previewScene, previewCamera);
+}
+function buildCharacterOptions() {
+  const select = document.getElementById('charSelect');
+  if (!select || select.options.length) return;
+  for (const id of CHARACTER_IDS) {
+    const def = CHARACTER_DEFS[id];
+    const option = document.createElement('option');
+    option.value = id;
+    option.textContent = def.name;
+    select.appendChild(option);
+  }
+}
+function updateCharacterUI() {
+  buildCharacterOptions();
+  const def = CHARACTER_DEFS[selectedCharacter];
+  const name = document.getElementById('charName');
+  const desc = document.getElementById('charDesc');
+  const select = document.getElementById('charSelect');
+  const count = document.getElementById('charCount');
+  const index = Math.max(0, CHARACTER_IDS.indexOf(selectedCharacter));
+  if (name) name.textContent = def.name;
+  if (desc) desc.textContent = def.desc;
+  if (select) { select.value = selectedCharacter; select.disabled = characterSelectionLocked; }
+  if (count) count.textContent = `${index + 1} / ${CHARACTER_IDS.length}`;
+  const prev = document.getElementById('charPrev');
+  const next = document.getElementById('charNext');
+  if (prev) prev.disabled = characterSelectionLocked;
+  if (next) next.disabled = characterSelectionLocked;
+  const picker = document.getElementById('characterPicker');
+  if (picker) picker.classList.toggle('locked', characterSelectionLocked);
+}
+function setCharacterLocked(locked) {
+  characterSelectionLocked = !!locked;
+  updateCharacterUI();
+}
+function chooseCharacter(id) {
+  if (characterSelectionLocked) return;
+  selectedCharacter = validCharacter(id);
+  try { localStorage.setItem('dz_character', selectedCharacter); } catch (_) {}
+  updateCharacterUI();
+  void applyCharacterToOwner(player, selectedCharacter);
+  void rebuildCharacterPreview(selectedCharacter);
+}
+function stepCharacter(direction) {
+  const current = Math.max(0, CHARACTER_IDS.indexOf(selectedCharacter));
+  const next = (current + direction + CHARACTER_IDS.length) % CHARACTER_IDS.length;
+  chooseCharacter(CHARACTER_IDS[next]);
+}
+const charSelectEl = document.getElementById('charSelect');
+if (charSelectEl) charSelectEl.addEventListener('change', e => chooseCharacter(e.target.value));
+document.getElementById('charPrev')?.addEventListener('click', () => stepCharacter(-1));
+document.getElementById('charNext')?.addEventListener('click', () => stepCharacter(1));
+updateCharacterUI();
+
+function setupZombieModels(gltf) {
+  for (const z of zombies) {
+    const root = cloneSkeleton(gltf.scene);
+    root.position.set(0, 0, 0);
+    root.rotation.set(0, 0, 0);
+    root.scale.setScalar(0.225);
+    z.modelMats = prepareImportedModel(root, true);
+    z.group.add(root);
+    z.fallbackMeshes.forEach(m => { m.visible = false; });
+    const anim = makeActions(root, gltf.animations, 'zombie');
+    z.modelRoot = root; z.modelMixer = anim.mixer; z.modelActions = anim.actions;
+    setModelAction(z, 'run', 0);
+    if (z.modelAction) z.modelAction.time = Math.random() * Math.max(z.modelAction.getClip().duration, 0.1);
+  }
+}
+function setZombieEmissive(z, hex) {
+  z.mat.emissive.setHex(hex);
+  for (const m of z.modelMats || []) if (m.emissive) m.emissive.setHex(hex);
+}
+function setZombieTint(z, brute) {
+  z.mat.color.setHex(brute ? 0x55701c : 0x6b8e23);
+  for (const m of z.modelMats || []) if (m.color) m.color.setHex(brute ? 0xb7c768 : 0xffffff);
+}
+
+const Z_ATTACK_DURATION = 0.95;
+const Z_ATTACK_HIT_TIME = 0.46;
+function startZombieAttack(z, target, replicate = true) {
+  if (!z || !z.alive || z.attacking) return;
+  z.attacking = true;
+  z.attackT = 0;
+  z.attackHit = false;
+  z.attackTarget = target;
+  if (z.modelActions && z.modelActions.attack) {
+    setModelAction(z, 'attack', 0.08, true);
+    // The source ZombieBite clip is about five seconds long. Speed it up
+    // into a readable, responsive one-second swipe/bite.
+    z.modelActions.attack.timeScale =
+      Math.max(1, z.modelActions.attack.getClip().duration / Z_ATTACK_DURATION);
+  }
+  if (replicate && mpRole === 'host' && mpOn()) send({ a: 'za', i: z.idx, t: target });
+}
+function finishZombieAttack(z) {
+  z.attacking = false;
+  z.attackT = 0;
+  z.attackHit = false;
+  z.attackTarget = null;
+  z.attackCooldown = z.brute ? 0.42 : 0.28;
+  setModelAction(z, z.brute ? 'walk' : 'run', 0.1);
+}
+
+async function loadEnhancedAssets() {
+  assetFailures.length = 0;
+  if (location.protocol === 'file:') {
+    assetStatus('⚠ LOCAL FILE MODE IS BLOCKED — double-click START_GAME.bat in this folder');
+  } else {
+    assetStatus('Loading selected character…');
+  }
+
+  // Character loading is independent. A missing gun or zombie must never
+  // force the player back to the basic fallback character.
+  const characterResults = await Promise.allSettled([
+    applyCharacterToOwner(player, selectedCharacter, true),
+    applyCharacterToOwner(remote, remoteCharacter, true),
+    rebuildCharacterPreview(selectedCharacter),
+  ]);
+  const selectedReady = !!player.modelRoot;
+  if (!selectedReady) {
+    const loading = document.getElementById('charPreviewLoading');
+    if (loading) {
+      loading.style.display = 'flex';
+      loading.textContent = location.protocol === 'file:' ? 'RUN START_GAME.BAT' : 'MODEL PATH ERROR';
+    }
+  }
+
+  assetStatus(selectedReady ? 'Character ready — loading weapons and zombie…' : 'Character missing — checking remaining asset paths…');
+
+  const coreDefs = [
+    ['zombie', ASSET_PATHS.zombie, 'Zombie'],
+    ['rifle', ASSET_PATHS.rifle, 'Assault Rifle'],
+    ['shotgun', ASSET_PATHS.shotgun, 'Shotgun'],
+    ['smg', ASSET_PATHS.smg, 'Submachine Gun'],
+  ];
+  const coreResults = await Promise.allSettled(coreDefs.map(([, path, label]) =>
+    loadGlb(path, label).catch(err => {
+      rememberAssetFailure(label, path, err);
+      throw err;
+    })
+  ));
+  const loaded = {};
+  coreResults.forEach((result, i) => {
+    if (result.status === 'fulfilled') loaded[coreDefs[i][0]] = result.value;
+  });
+
+  if (loaded.zombie) {
+    enhancedAssets.zombie = loaded.zombie;
+    setupZombieModels(loaded.zombie);
+  }
+  if (loaded.rifle && loaded.shotgun && loaded.smg) {
+    enhancedAssets.guns = { rifle: loaded.rifle, shotgun: loaded.shotgun, smg: loaded.smg };
+    if (player.modelRoot) installWeapons(player, enhancedAssets.guns, false);
+    if (remote.modelRoot) installWeapons(remote, enhancedAssets.guns, true);
+    if (previewOwner && previewOwner.modelRoot) installWeapons(previewOwner, enhancedAssets.guns, true);
+  }
+
+  if (location.protocol === 'file:') {
+    assetStatus('⚠ LOCAL FILE MODE IS BLOCKED — double-click START_GAME.bat, then use http://localhost');
+  } else if (!assetFailures.length && selectedReady) {
+    assetStatus(`✓ Assets ready — ${CHARACTER_IDS.length} characters available`);
+    setTimeout(() => { if (state !== 'menu') assetStatus(''); }, 1800);
+  } else {
+    const first = assetFailures[0] || 'Selected character could not be loaded';
+    assetStatus(`⚠ ${first}`);
+  }
+}
+loadEnhancedAssets();
 
 /* ================= XP orbs ================= */
 const orbs = [];
@@ -680,7 +1385,7 @@ function makeGlowTexture(color) {
   return new THREE.CanvasTexture(c);
 }
 const flashTex = makeGlowTexture('rgba(255,220,140,1)');
-const sparkTex = makeGlowTexture('rgba(154,222,0,1)');
+const sparkTex = makeGlowTexture('rgba(55,155,255,1)');
 const sparks = [];
 for (let i = 0; i < 12; i++) {
   const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: sparkTex, blending: THREE.AdditiveBlending, depthWrite: false, transparent: true }));
@@ -700,17 +1405,21 @@ function spawnSpark(pos, isMuzzle) {
 const particles = [];
 {
   const geo = new THREE.BoxGeometry(0.13, 0.13, 0.13);
-  const mat = new THREE.MeshLambertMaterial({ color: 0x7da62a, emissive: 0x223a05 });
+  const baseMat = new THREE.MeshLambertMaterial({ color: 0xc62828, emissive: 0x4a0000 });
   for (let i = 0; i < (IS_TOUCH ? 20 : 36); i++) {
-    const m = new THREE.Mesh(geo, mat);
+    // One material per particle lets zombie blood stay red while explosion
+    // debris keeps a warm dust colour.
+    const m = new THREE.Mesh(geo, baseMat.clone());
     m.visible = false; scene.add(m);
     particles.push({ mesh: m, vel: new THREE.Vector3(), life: 0, max: 1 });
   }
 }
-function burst(pos, n) {
+function burst(pos, n, isBlood = true) {
   for (let i = 0; i < n; i++) {
     const p = particles.find(p => p.life <= 0);
     if (!p) return;
+    p.mesh.material.color.setHex(isBlood ? 0xc62828 : 0x8a6034);
+    p.mesh.material.emissive.setHex(isBlood ? 0x4a0000 : 0x2b1608);
     p.mesh.position.set(pos.x, 0.9 + Math.random() * 0.6, pos.z);
     p.vel.set((Math.random() - 0.5) * 5, 2.5 + Math.random() * 3, (Math.random() - 0.5) * 5);
     p.max = p.life = 0.45 + Math.random() * 0.3;
@@ -768,6 +1477,7 @@ function updateWepHud() {
     const label = locked ? '🔒' : (IS_TOUCH ? w.name : `[${i + 1}] ${w.name}`);
     return `<span class="${cls}">${label}</span>`;
   }).join('');
+  updateAssetWeapon(player, player.weapon);
 }
 
 /* ================= explosive barrels ================= */
@@ -810,7 +1520,7 @@ function explode(center, radius, dmg) {
   b.t = 0; b.r = radius;
   b.mesh.position.copy(center); b.mesh.position.y = Math.max(center.y, 0.5);
   b.mesh.visible = true;
-  burst(center, IS_TOUCH ? 6 : 10);
+  burst(center, IS_TOUCH ? 6 : 10, false);
   shakeAmp = Math.max(shakeAmp, 0.4);
   SFX.boom();
   for (const z of zombies) {
@@ -952,10 +1662,10 @@ const aimUI = () => !IS_TOUCH || !autoAim; // does this device aim with a crossh
 function applyAimMode() {
   ui.crosshair.style.display = aimUI() ? 'block' : 'none';
   $('btnFire').style.display = (IS_TOUCH && !autoAim) ? 'flex' : 'none';
-  $('aimBtn').textContent = autoAim ? '🎯 AIM: AUTO-SHOOT' : '🎯 AIM: MANUAL';
+  $('aimBtn').textContent = autoAim ? `🎯 AIM: AUTO ${AUTO_AIM_FOV}°` : '🎯 AIM: MANUAL';
   $('controlsHint').textContent = IS_TOUCH
     ? (autoAim
-      ? 'Left side: joystick to move. Swipe the right side to look around — auto-aim fires for you. Buttons: 🔫 swap weapon, 💣 bomb, ⬆ jump. New guns unlock as waves pass!'
+      ? `Left side: joystick to move. Swipe right to look — auto-aim only targets zombies inside the ${AUTO_AIM_FOV}° forward view. Buttons: 🔫 swap weapon, 💣 bomb, ⬆ jump.`
       : 'Left side: joystick to move. Swipe the right side to aim, hold 🔥 to fire — drag on 🔥 to aim while firing. Buttons: 🔫 swap weapon, 💣 bomb, ⬆ jump.')
     : 'WASD move · mouse aim · click fire · SPACE jump · G or right-click bomb · 1-3 / Q swap weapon (new guns unlock as waves pass).';
 }
@@ -1143,16 +1853,18 @@ function spawnZombie() {
     z.maxHp = 80 + wave * 20; z.speed = 1.5 + Math.random() * 0.2; z.dmg = 18;
     z.radius = 1.0; z.xp = 12;
     z.group.scale.set(1.6, 1.4, 1.5); // wide and heavy, not just uniformly bigger
-    z.mat.color.setHex(0x55701c);
+    setZombieTint(z, true);
   } else {
     z.maxHp = 26 + wave * 6;
     z.speed = 2.1 + Math.random() * 0.5 + Math.min(wave * 0.05, 1.2);
     z.dmg = 8; z.radius = 0.6; z.xp = 4;
     z.group.scale.setScalar(0.95 + Math.random() * 0.13);
-    z.mat.color.setHex(0x6b8e23);
+    setZombieTint(z, false);
   }
-  z.mat.emissive.setHex(0x000000);
+  setZombieEmissive(z, 0x000000);
   z.hp = z.maxHp; z.flashT = 0; z.phase = Math.random() * 10;
+  z.attacking = false; z.attackT = 0; z.attackHit = false;
+  z.attackTarget = null; z.attackCooldown = 0.15 + Math.random() * 0.25;
   // spawn in a ring around a living player, out in the fog
   const a = Math.random() * Math.PI * 2;
   const d = 28 + Math.random() * 8;
@@ -1181,7 +1893,7 @@ function spawnOrb(pos, value) {
 function damageZombie(z, dmg, dir, fromPartner = false) {
   z.hp -= dmg;
   z.flashT = 0.08;
-  z.mat.emissive.setHex(0x993322);
+  setZombieEmissive(z, 0x8f1111);
   if (dir) { z.group.position.x += dir.x * 0.18; z.group.position.z += dir.z * 0.18; }
   SFX.hit();
   showDmg(z, Math.round(dmg), z.hp <= 0 ? '#d9a441' : '#fff');
@@ -1190,12 +1902,13 @@ function damageZombie(z, dmg, dir, fromPartner = false) {
 }
 function killZombie(z) {
   z.alive = false; z.dying = true; z.dieT = 0;
+  z.attacking = false; z.attackT = 0; z.attackHit = false; z.attackTarget = null;
   z.spinDir = Math.random() < 0.5 ? -1 : 1;
   kills++;
   SFX.die();
   burst(z.group.position, z.brute ? (IS_TOUCH ? 6 : 10) : (IS_TOUCH ? 3 : 6));
   shakeAmp = Math.max(shakeAmp, z.brute ? 0.22 : 0.05);
-  if (aimUI()) { hmT = 0.25; ui.hitMarker.style.color = '#9ADE00'; }
+  if (aimUI()) { hmT = 0.25; ui.hitMarker.style.color = '#e53935'; }
   if (mpRole === 'host') send({ a: 'k', i: z.idx });
   const n = z.brute ? 3 : 1;
   for (let i = 0; i < n; i++) spawnOrb(z.group.position, z.xp / n);
@@ -1206,7 +1919,7 @@ function killZombie(z) {
 function applyHit(z, dmg, dx, dz) {
   if (mpRole === 'guest') {
     send({ a: 'h', i: z.idx, d: Math.round(dmg), dx: r2(dx), dz: r2(dz) });
-    z.flashT = 0.08; z.mat.emissive.setHex(0x993322);
+    z.flashT = 0.08; setZombieEmissive(z, 0x8f1111);
     showDmg(z, Math.round(dmg), '#fff');
     if (aimUI()) { hmT = Math.max(hmT, 0.16); ui.hitMarker.style.color = '#fff'; }
     SFX.hit();
@@ -1233,7 +1946,7 @@ function shootDesktop() {
   const origin = V.b.copy(camera.position);
   const camToPlayer = camera.position.distanceTo(player.pos);
   const range = 45 * player.rangeMul + camToPlayer;
-  const muzzle = V.c; player.muzzle.getWorldPosition(muzzle);
+  const muzzle = V.c; activeMuzzle().getWorldPosition(muzzle);
   spawnSpark(muzzle, true);
   SFX[w.sfx]();
   pitchKick = Math.min(pitchKick + w.kick, 0.06);
@@ -1282,10 +1995,29 @@ function nearestZombie(maxDist) {
   }
   return best;
 }
+function nearestZombieInView(maxDist, fovDeg = AUTO_AIM_FOV) {
+  let best = null, bestScore = Infinity;
+  const maxD2 = maxDist * maxDist;
+  const minDot = Math.cos(THREE.MathUtils.degToRad(fovDeg * 0.5));
+  const fx = Math.sin(yaw), fz = Math.cos(yaw);
+  for (const z of zombies) {
+    if (!z.alive) continue;
+    const dx = z.group.position.x - player.pos.x;
+    const dz = z.group.position.z - player.pos.z;
+    const d2 = dx * dx + dz * dz;
+    if (d2 <= 0.0001 || d2 > maxD2) continue;
+    const dot = (dx * fx + dz * fz) / Math.sqrt(d2);
+    if (dot < minDot) continue; // never lock onto zombies behind the camera
+    // Prefer enemies nearer the centre of view while still respecting range.
+    const score = d2 * (1 + (1 - dot) * 1.35);
+    if (score < bestScore) { bestScore = score; best = z; }
+  }
+  return best;
+}
 
 function shootAuto(target) {
   const w = WEAPONS[player.weapon];
-  const muzzle = V.c; player.muzzle.getWorldPosition(muzzle);
+  const muzzle = V.c; activeMuzzle().getWorldPosition(muzzle);
   spawnSpark(muzzle, true);
   SFX[w.sfx]();
   player.armR.rotation.x = -0.25 - w.kick * 5;
@@ -1397,7 +2129,11 @@ function resetGame() {
   yaw = 0; pitch = 0.42;
   player.armR.rotation.x = 0; player.armL.rotation.x = 0; player.group.rotation.x = 0;
   ui.hitMarker.style.opacity = 0;
-  for (const z of zombies) { z.alive = false; z.dying = false; z.group.visible = false; }
+  for (const z of zombies) {
+    z.alive = false; z.dying = false; z.attacking = false;
+    z.attackT = 0; z.attackHit = false; z.attackTarget = null; z.attackCooldown = 0;
+    z.group.visible = false;
+  }
   for (const o of orbs)    { o.alive = false; o.mesh.visible = false; }
   for (const t of tracers) { t.life = 0; t.line.visible = false; }
   for (const s of sparks)  { s.life = 0; s.sprite.visible = false; }
@@ -1413,6 +2149,9 @@ function resetGame() {
 }
 function startGame(fromNetwork = false) {
   initAudio();
+  setCharacterLocked(true);
+  void applyCharacterToOwner(player, selectedCharacter);
+  void applyCharacterToOwner(remote, remoteCharacter);
   if (IS_TOUCH) { // mobile: go fullscreen landscape for the play session
     try { if (document.documentElement.requestFullscreen && !document.fullscreenElement) document.documentElement.requestFullscreen().catch(() => {}); } catch (e) {}
     try { if (screen.orientation && screen.orientation.lock) screen.orientation.lock('landscape').catch(() => {}); } catch (e) {}
@@ -1439,8 +2178,8 @@ function gameOver() {
   if (mpRole === 'guest') { const rb = $('retryBtn'); rb.disabled = true; rb.textContent = 'WAITING FOR HOST…'; }
   ui.over.classList.remove('hidden');
 }
-$('startBtn').addEventListener('click', startGame);
-$('retryBtn').addEventListener('click', startGame);
+$('startBtn').addEventListener('click', () => startGame(false));
+$('retryBtn').addEventListener('click', () => startGame(false));
 
 /* ================= co-op networking (MQTT / WebSocket relay) ================= */
 // The first multiplayer version used WebRTC. That can fail even when both
@@ -1450,12 +2189,12 @@ $('retryBtn').addEventListener('click', startGame);
 // This version sends the same compact game packets through an MQTT broker over
 // secure WebSockets. It is not peer-to-peer, but it works through normal HTTPS
 // firewalls and does not need STUN/TURN/NAT traversal.
-const NET_VERSION = 3;
+const NET_VERSION = 5;
 const MQTT_BROKERS = [
   'wss://broker.hivemq.com:8884/mqtt',
   'wss://test.mosquitto.org:8081/mqtt',
 ];
-const MQTT_ROOT = 'dead-zone-browser-game-v3';
+const MQTT_ROOT = 'dead-zone-browser-game-v6-assets-loader';
 const mpStatus = t => { $('mpStatus').textContent = t; };
 
 function randCode() {
@@ -1535,6 +2274,7 @@ function killPeer(msg) {
   partnerNetId = ''; sessionId = '';
   partnerLostHandled = false;
   endRelayClient();
+  if (state === 'menu') setCharacterLocked(false);
   if (msg) mpStatus(msg);
 }
 
@@ -1625,6 +2365,7 @@ function subscribeRelay(client, topic, done) {
 function hostRoom() {
   if (mpOn() || peer) return;
   killPeer();
+  setCharacterLocked(true);
   const token = netGeneration;
   roomCode = randCode();
   hostTopic = `${MQTT_ROOT}/${roomCode}/host`;
@@ -1646,6 +2387,7 @@ function hostRoom() {
           return;
         }
         partnerNetId = m.from;
+        setRemoteCharacter(m.char);
         guestTopic = replyTopic;
         if (!sessionId) sessionId = randomNetId('s');
         conn = makeRelayConn('host');
@@ -1654,7 +2396,7 @@ function hostRoom() {
         lastNetRx = Date.now();
         publishPacket(guestTopic, {
           kind: 'welcome', from: localNetId, sid: sessionId, v: NET_VERSION,
-          broker: brokerName(url),
+          char: selectedCharacter, broker: brokerName(url),
         }, 1);
         mpStatus('Partner found — completing connection…');
         clearNetTimer();
@@ -1670,6 +2412,7 @@ function hostRoom() {
       if (!partnerNetId || m.from !== partnerNetId || m.sid !== sessionId) return;
       lastNetRx = Date.now();
       if (m.kind === 'ready') {
+        setRemoteCharacter(m.char);
         clearNetTimer();
         mpStatus('Partner connected! Starting…');
         startHeartbeat();
@@ -1694,6 +2437,7 @@ function joinRoom() {
   if (mpOn() || peer) return;
 
   killPeer();
+  setCharacterLocked(true);
   const token = netGeneration;
   roomCode = code;
   hostTopic = `${MQTT_ROOT}/${roomCode}/host`;
@@ -1717,11 +2461,12 @@ function joinRoom() {
         clearJoinTimer(); clearNetTimer();
         partnerNetId = m.from;
         sessionId = m.sid;
+        setRemoteCharacter(m.char);
         conn = makeRelayConn('guest');
         mpRole = 'guest';
         partnerLostHandled = false;
         lastNetRx = Date.now();
-        publishPacket(hostTopic, { kind: 'ready', from: localNetId, sid: sessionId }, 1);
+        publishPacket(hostTopic, { kind: 'ready', from: localNetId, sid: sessionId, char: selectedCharacter }, 1);
         mpStatus(`Connected through ${m.broker || brokerName(url)} — waiting for host…`);
         startHeartbeat();
         return;
@@ -1734,7 +2479,7 @@ function joinRoom() {
 
     subscribeRelay(client, guestTopic, () => {
       const sendJoin = () => publishPacket(hostTopic, {
-        kind: 'join', from: localNetId, v: NET_VERSION,
+        kind: 'join', from: localNetId, v: NET_VERSION, char: selectedCharacter,
       }, 1);
       sendJoin();
       joinTimer = setInterval(sendJoin, 1400);
@@ -1771,6 +2516,7 @@ function onPartnerLost(reason = 'Connection lost.') {
   partnerDown = false;
   const rb = $('retryBtn'); rb.disabled = false; rb.textContent = 'TRY AGAIN';
   if (state === 'menu') {
+    setCharacterLocked(false);
     mpStatus(`${reason} ${role === 'host' ? 'Tap HOST to create a new room.' : 'Enter the code and tap GO again.'}`);
     return;
   }
@@ -1808,6 +2554,7 @@ function onNet(m) {
     case 'go': startGame(true); break;
     case 's': { // world snapshot → guest
       time = m.tm; kills = m.k;
+      if (m.ch) setRemoteCharacter(m.ch);
       if (wave !== m.wv) { wave = m.wv; ui.waveText.textContent = 'WAVE ' + wave; }
       remote.x = m.p[0]; remote.z = m.p[1]; remote.ry = m.p[2]; remote.jy = m.p[3];
       const live = new Set();
@@ -1817,9 +2564,9 @@ function onNet(m) {
         if (!z.alive) { // came into existence — set up for rendering
           z.alive = true; z.dying = false; z.group.visible = true;
           z.brute = !!e[4];
-          if (z.brute) { z.group.scale.set(1.6, 1.4, 1.5); z.mat.color.setHex(0x55701c); z.radius = 1.0; z.speed = 1.6; }
-          else { z.group.scale.setScalar(e[6] || 1); z.mat.color.setHex(0x6b8e23); z.radius = 0.6; z.speed = 2.6; }
-          z.mat.emissive.setHex(0x000000); z.flashT = 0;
+          if (z.brute) { z.group.scale.set(1.6, 1.4, 1.5); setZombieTint(z, true); z.radius = 1.0; z.speed = 1.6; }
+          else { z.group.scale.setScalar(e[6] || 1); setZombieTint(z, false); z.radius = 0.6; z.speed = 2.6; }
+          setZombieEmissive(z, 0x000000); z.flashT = 0;
           z.group.rotation.x = 0; z.group.rotation.z = 0;
           z.group.position.set(e[1], 0, e[2]);
         }
@@ -1845,6 +2592,7 @@ function onNet(m) {
       break;
     }
     case 'p': // guest state → host
+      if (m.ch) setRemoteCharacter(m.ch);
       remote.x = m.x; remote.z = m.z; remote.ry = m.ry; remote.jy = m.jy;
       remote.hp = m.hp; remote.pk = m.pk;
       break;
@@ -1854,6 +2602,7 @@ function onNet(m) {
     case 'k': { // zombie died — play death fx locally
       const z = zombies[m.i]; if (!z) break;
       z.alive = false; z.dying = true; z.dieT = 0;
+      z.attacking = false; z.attackT = 0; z.attackHit = false; z.attackTarget = null;
       z.spinDir = Math.random() < 0.5 ? -1 : 1;
       z.group.visible = true;
       burst(z.group.position, z.brute ? 6 : 3);
@@ -1865,7 +2614,7 @@ function onNet(m) {
       b.t = 0; b.r = m.r;
       b.mesh.position.set(m.x, 0.5, m.z); b.mesh.visible = true;
       V.a.set(m.x, 0.5, m.z);
-      burst(V.a, 8);
+      burst(V.a, 8, false);
       shakeAmp = Math.max(shakeAmp, 0.3);
       SFX.boom();
       break;
@@ -1889,6 +2638,11 @@ function onNet(m) {
       break;
     }
     case 'bb': { const bl = barrels[m.i]; if (bl && bl.alive && bl.fuse < 0) bl.fuse = 0.06; break; }
+    case 'za': { // host began a zombie bite/swipe
+      const z = zombies[m.i];
+      if (z && z.alive) startZombieAttack(z, m.t || 'player', false);
+      break;
+    }
     case 'st':
       partnerDown = m.dead;
       remote.visible = !m.dead;
@@ -1996,6 +2750,11 @@ function update(dt) {
   player.legR.rotation.x = -swing;
   player.armL.rotation.x = -swing * 0.7;
   player.group.rotation.x += ((moving ? 0.07 : 0) - player.group.rotation.x) * (1 - Math.exp(-8 * dt));
+  if (player.modelMixer) {
+    setModelAction(player, moving ? 'run' : 'idle');
+    if (player.modelAction) player.modelAction.timeScale = moving ? 1.15 : 1;
+    player.modelMixer.update(dt);
+  }
   // jump physics
   if (player.jumpY > 0) {
     player.jumpV -= 20 * dt;
@@ -2013,7 +2772,7 @@ function update(dt) {
   if (IS_TOUCH && autoAim) {
     // camera yaw/pitch come only from swipe-look (Minecraft-style) —
     // the joystick moves the character but never turns the camera
-    target = nearestZombie(15 * player.rangeMul);
+    target = nearestZombieInView(15 * player.rangeMul, AUTO_AIM_FOV);
     if (target) {
       const ty = Math.atan2(target.group.position.x - player.pos.x, target.group.position.z - player.pos.z);
       player.group.rotation.y = lerpAngle(player.group.rotation.y, ty, 1 - Math.exp(-12 * dt));
@@ -2091,6 +2850,11 @@ function update(dt) {
     remote.group.rotation.y = lerpAngle(remote.group.rotation.y, remote.ry, rk);
     remote.walk += Math.hypot(mvx, mvz) * 2.2;
     remote.speedSm = remote.speedSm * 0.9 + (Math.hypot(mvx, mvz) / Math.max(dt, 1e-4)) * 0.1;
+    if (remote.modelMixer) {
+      setModelAction(remote, remote.speedSm > 0.35 ? 'run' : 'idle');
+      if (remote.modelAction) remote.modelAction.timeScale = remote.speedSm > 0.35 ? 1.1 : 1;
+      remote.modelMixer.update(dt);
+    }
     const rsw = Math.min(remote.speedSm / 5, 1) * Math.sin(remote.walk * 3) * 0.55;
     remote.legL.rotation.x = rsw; remote.legR.rotation.x = -rsw;
     remote.group.visible = remote.visible;
@@ -2108,7 +2872,7 @@ function update(dt) {
         for (const o of orbs) if (o.alive) oArr.push([r1(o.mesh.position.x), r1(o.mesh.position.z)]);
         const bArr = barrels.map(bl => [r1(bl.x), r1(bl.z), bl.alive ? 1 : 0]);
         send({
-          a: 's', tm: r1(time), wv: wave, k: kills,
+          a: 's', tm: r1(time), wv: wave, k: kills, ch: selectedCharacter,
           p: [r1(player.pos.x), r1(player.pos.z), r2(player.group.rotation.y), r2(player.jumpY)],
           z: zArr, o: oArr, b: bArr,
         });
@@ -2116,7 +2880,7 @@ function update(dt) {
         send({
           a: 'p', x: r1(player.pos.x), z: r1(player.pos.z),
           ry: r2(player.group.rotation.y), jy: r2(player.jumpY),
-          hp: Math.round(player.hp), pk: r1(player.pickup),
+          hp: Math.round(player.hp), pk: r1(player.pickup), ch: selectedCharacter,
         });
       }
     }
@@ -2136,32 +2900,59 @@ function update(dt) {
     }
     if (!z.alive) continue;
 
-    if (z.flashT > 0) { z.flashT -= dt; if (z.flashT <= 0) z.mat.emissive.setHex(0x000000); }
+    if (z.flashT > 0) { z.flashT -= dt; if (z.flashT <= 0) setZombieEmissive(z, 0x000000); }
+    if (z.attackCooldown > 0) z.attackCooldown -= dt;
+    if (z.modelMixer) {
+      if (z.attacking) {
+        setModelAction(z, 'attack');
+        if (z.modelActions.attack) z.modelActions.attack.timeScale =
+          Math.max(1, z.modelActions.attack.getClip().duration / Z_ATTACK_DURATION);
+      } else {
+        setModelAction(z, z.brute ? 'walk' : 'run');
+        if (z.modelAction) z.modelAction.timeScale = z.brute ? 0.8 : Math.min(1.35, z.speed / 2.4);
+      }
+      z.modelMixer.update(dt);
+    }
 
     if (mpRole === 'guest') { // networked zombie: glide to host state, animate locally
       const k = 1 - Math.exp(-10 * dt);
       z.group.position.x += (z.netX - z.group.position.x) * k;
       z.group.position.z += (z.netZ - z.group.position.z) * k;
       z.group.rotation.y = lerpAngle(z.group.rotation.y, z.netRY || 0, k);
-      z.phase += dt * z.speed * 2.4;
-      const gs = Math.sin(z.phase) * 0.5;
-      z.legs[0].rotation.x = gs; z.legs[1].rotation.x = -gs * 0.75;
-      z.arms[0].rotation.x = -0.15 + Math.sin(z.phase * 0.7) * 0.12;
-      z.arms[1].rotation.x = -0.15 - Math.sin(z.phase * 0.7) * 0.12;
-      z.group.rotation.z = Math.sin(z.phase) * 0.06;
-      z.head.rotation.z = 0.06 + Math.sin(z.phase * 0.8) * 0.14;
-      z.group.position.y = Math.abs(Math.sin(z.phase)) * 0.04;
+      if (z.attacking) {
+        z.attackT += dt;
+        const strike = Math.sin(Math.min(z.attackT / Z_ATTACK_DURATION, 1) * Math.PI);
+        z.arms[0].rotation.x = -0.35 - strike * 0.95;
+        z.arms[1].rotation.x = -0.35 - strike * 0.95;
+        z.group.rotation.x = -strike * 0.12;
+        if (z.attackT >= Z_ATTACK_DURATION) finishZombieAttack(z);
+      } else {
+        z.phase += dt * z.speed * 2.4;
+        const gs = Math.sin(z.phase) * 0.5;
+        z.legs[0].rotation.x = gs; z.legs[1].rotation.x = -gs * 0.75;
+        z.arms[0].rotation.x = -0.15 + Math.sin(z.phase * 0.7) * 0.12;
+        z.arms[1].rotation.x = -0.15 - Math.sin(z.phase * 0.7) * 0.12;
+        z.group.rotation.z = Math.sin(z.phase) * 0.06;
+        z.head.rotation.z = 0.06 + Math.sin(z.phase * 0.8) * 0.14;
+        z.group.position.y = Math.abs(Math.sin(z.phase)) * 0.04;
+        z.group.rotation.x *= Math.exp(-12 * dt);
+      }
       continue;
     }
 
     // chase the nearest living player (host tracks the partner too)
-    let dx = player.pos.x - z.group.position.x;
-    let dz = player.pos.z - z.group.position.z;
+    let targetType = 'player';
+    let tx = player.pos.x, tz = player.pos.z;
+    let dx = tx - z.group.position.x;
+    let dz = tz - z.group.position.z;
     let dist = downed ? Infinity : (Math.hypot(dx, dz) || 1);
     if (mpRole === 'host' && mpOn() && !partnerDown) {
       const gdx = remote.x - z.group.position.x, gdz = remote.z - z.group.position.z;
       const gdist = Math.hypot(gdx, gdz) || 1;
-      if (gdist < dist) { dx = gdx; dz = gdz; dist = gdist; }
+      if (gdist < dist) {
+        targetType = 'remote'; tx = remote.x; tz = remote.z;
+        dx = gdx; dz = gdz; dist = gdist;
+      }
     }
     if (dist === Infinity) continue; // nobody to chase this frame
     if (dist > 55) { // left far behind while roaming — recycle into the ring ahead
@@ -2172,29 +2963,48 @@ function update(dt) {
       z.group.position.z = bz + Math.sin(a) * 30;
       continue;
     }
-    z.group.position.x += dx / dist * z.speed * dt;
-    z.group.position.z += dz / dist * z.speed * dt;
+
     z.group.rotation.y = Math.atan2(dx, dz);
+    const attackRange = z.radius + 0.78;
 
-    // procedural shamble: uneven leg swing, reaching arms, body sway, head lolling
-    z.phase += dt * z.speed * 2.4;
-    const s = Math.sin(z.phase) * 0.5;
-    z.legs[0].rotation.x = s; z.legs[1].rotation.x = -s * 0.75;
-    z.arms[0].rotation.x = -0.15 + Math.sin(z.phase * 0.7) * 0.12;
-    z.arms[1].rotation.x = -0.15 - Math.sin(z.phase * 0.7) * 0.12;
-    z.group.rotation.z = Math.sin(z.phase) * 0.06;
-    z.head.rotation.z = 0.06 + Math.sin(z.phase * 0.8) * 0.14;
-    z.group.position.y = Math.abs(Math.sin(z.phase)) * 0.04;
+    if (z.attacking) {
+      z.attackT += dt;
+      const strike = Math.sin(Math.min(z.attackT / Z_ATTACK_DURATION, 1) * Math.PI);
+      z.arms[0].rotation.x = -0.35 - strike * 0.95;
+      z.arms[1].rotation.x = -0.35 - strike * 0.95;
+      z.group.rotation.x = -strike * 0.12;
 
-    // contact damage (jumping clears the swipe)
-    if (!downed && player.jumpY < 0.7 &&
-        Math.hypot(player.pos.x - z.group.position.x, player.pos.z - z.group.position.z) < z.radius + 0.7) {
-      damagePlayer(z.dmg);
-    }
-    if (mpRole === 'host' && mpOn() && !partnerDown && remote.invulnT <= 0 && remote.jy < 0.7 &&
-        Math.hypot(remote.x - z.group.position.x, remote.z - z.group.position.z) < z.radius + 0.7) {
-      remote.invulnT = 0.4; // host rate-limits so the guest isn't shredded
-      send({ a: 'd', v: z.dmg });
+      if (!z.attackHit && z.attackT >= Z_ATTACK_HIT_TIME) {
+        z.attackHit = true;
+        if (z.attackTarget === 'remote') {
+          const rd = Math.hypot(remote.x - z.group.position.x, remote.z - z.group.position.z);
+          if (mpRole === 'host' && mpOn() && !partnerDown && remote.invulnT <= 0 &&
+              remote.jy < 0.7 && rd < attackRange + 0.35) {
+            remote.invulnT = 0.4;
+            send({ a: 'd', v: z.dmg });
+          }
+        } else {
+          const pd = Math.hypot(player.pos.x - z.group.position.x, player.pos.z - z.group.position.z);
+          if (!downed && player.jumpY < 0.7 && pd < attackRange + 0.35) damagePlayer(z.dmg);
+        }
+      }
+      if (z.attackT >= Z_ATTACK_DURATION) finishZombieAttack(z);
+    } else if (dist < attackRange && z.attackCooldown <= 0) {
+      startZombieAttack(z, targetType);
+    } else {
+      z.group.position.x += dx / dist * z.speed * dt;
+      z.group.position.z += dz / dist * z.speed * dt;
+
+      // procedural shamble: uneven leg swing, reaching arms, body sway, head lolling
+      z.phase += dt * z.speed * 2.4;
+      const s = Math.sin(z.phase) * 0.5;
+      z.legs[0].rotation.x = s; z.legs[1].rotation.x = -s * 0.75;
+      z.arms[0].rotation.x = -0.15 + Math.sin(z.phase * 0.7) * 0.12;
+      z.arms[1].rotation.x = -0.15 - Math.sin(z.phase * 0.7) * 0.12;
+      z.group.rotation.z = Math.sin(z.phase) * 0.06;
+      z.head.rotation.z = 0.06 + Math.sin(z.phase * 0.8) * 0.14;
+      z.group.position.y = Math.abs(Math.sin(z.phase)) * 0.04;
+      z.group.rotation.x *= Math.exp(-12 * dt);
     }
 
     // obstacle push-out
@@ -2386,6 +3196,7 @@ function tick() {
   requestAnimationFrame(tick);
   const dt = Math.min(clock.getDelta(), 1 / 30);
   if (state === 'playing') update(dt);
+  else if (state === 'menu') renderCharacterPreview(dt);
   renderer.render(scene, camera);
 }
 tick();
