@@ -96,7 +96,10 @@
 
   /* ---------- multiplayer lobby ---------- */
   .btn2 { background:transparent; color:#9ADE00; border:2px solid #9ADE00; box-shadow:none; }
-  #mpRow { display:flex; gap:12px; flex-wrap:wrap; justify-content:center; }
+  /* compact start-menu controls; gameplay buttons keep their original size */
+  #startOverlay .btn { margin-top:14px; padding:9px 20px; font-size:14px; letter-spacing:1.4px; border-radius:8px; }
+  #startOverlay #aimBtn { margin-bottom:6px !important; }
+  #mpRow { display:flex; gap:9px; flex-wrap:wrap; justify-content:center; }
   #joinRow { display:none; margin-top:14px; gap:10px; align-items:center; justify-content:center; }
   #joinRow input { width:130px; padding:12px; font-size:20px; letter-spacing:5px; text-transform:uppercase;
     text-align:center; background:rgba(20,26,15,.9); border:2px solid #6b8e23; color:#e8e6dc;
@@ -127,6 +130,8 @@
     .overlay h1 { letter-spacing:6px; }
     .overlay p { font-size:13px; }
     .btn { padding:12px 28px; font-size:16px; }
+    #startOverlay .btn { padding:8px 16px; font-size:13px; margin-top:10px; }
+    #mpRow { gap:7px; }
     .card { width:136px; padding:14px 10px; }
     .card .ico { font-size:26px; }
   }
@@ -203,7 +208,7 @@
   <button class="btn" id="retryBtn">TRY AGAIN</button>
 </div>
 
-<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+<script src="https://unpkg.com/mqtt@5.10.4/dist/mqtt.min.js"></script>
 <script type="importmap">
 { "imports": { "three": "https://unpkg.com/three@0.160.0/build/three.module.js" } }
 </script>
@@ -1437,229 +1442,336 @@ function gameOver() {
 $('startBtn').addEventListener('click', startGame);
 $('retryBtn').addEventListener('click', startGame);
 
-/* ================= co-op networking (PeerJS / WebRTC) ================= */
-// The host owns the world simulation. A small handshake is completed before
-// either side starts, which prevents the host's first "go" packet from racing
-// the guest's data listener.
-const NET_VERSION = 2;
+/* ================= co-op networking (MQTT / WebSocket relay) ================= */
+// The first multiplayer version used WebRTC. That can fail even when both
+// devices have working internet because many routers/mobile networks block
+// direct peer-to-peer traffic or require a dependable TURN server.
+//
+// This version sends the same compact game packets through an MQTT broker over
+// secure WebSockets. It is not peer-to-peer, but it works through normal HTTPS
+// firewalls and does not need STUN/TURN/NAT traversal.
+const NET_VERSION = 3;
+const MQTT_BROKERS = [
+  'wss://broker.hivemq.com:8884/mqtt',
+  'wss://test.mosquitto.org:8081/mqtt',
+];
+const MQTT_ROOT = 'dead-zone-browser-game-v3';
 const mpStatus = t => { $('mpStatus').textContent = t; };
+
 function randCode() {
   const c = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
   let s = ''; for (let i = 0; i < 4; i++) s += c[Math.floor(Math.random() * c.length)];
   return s;
 }
-
-// PeerServer is only signalling. STUN tries a direct connection; TURN is the
-// relay fallback for restrictive Wi-Fi/mobile networks.
-const PEER_OPTS = {
-  host: '0.peerjs.com',
-  port: 443,
-  path: '/',
-  secure: true,
-  debug: 1,
-  config: {
-    iceCandidatePoolSize: 4,
-    sdpSemantics: 'unified-plan',
-    iceServers: [
-      { urls: ['stun:stun.l.google.com:19302', 'stun:stun1.l.google.com:19302', 'stun:stun.cloudflare.com:3478'] },
-      { urls: 'turn:openrelay.metered.ca:80', username: 'openrelayproject', credential: 'openrelayproject' },
-      { urls: 'turn:openrelay.metered.ca:443', username: 'openrelayproject', credential: 'openrelayproject' },
-      { urls: 'turn:openrelay.metered.ca:443?transport=tcp', username: 'openrelayproject', credential: 'openrelayproject' },
-    ],
-  },
-};
+function randomNetId(prefix = 'p') {
+  const a = new Uint32Array(2);
+  try { crypto.getRandomValues(a); }
+  catch (_) { a[0] = Math.random() * 0xffffffff; a[1] = Date.now(); }
+  return prefix + '-' + a[0].toString(36) + a[1].toString(36);
+}
+function safeJson(raw) {
+  try { return JSON.parse(typeof raw === 'string' ? raw : new TextDecoder().decode(raw)); }
+  catch (_) { return null; }
+}
+function brokerName(url) {
+  try { return new URL(url).hostname; } catch (_) { return 'relay'; }
+}
 
 let netTimer = 0;
 let netGeneration = 0;
 let roomCode = '';
-let connReady = false;
+let localNetId = '';
+let partnerNetId = '';
+let sessionId = '';
+let hostTopic = '';
+let guestTopic = '';
+let joinTimer = 0;
+let heartbeatTimer = 0;
+let lastNetRx = 0;
 let partnerLostHandled = false;
 
-function clearNetTimer() {
-  clearTimeout(netTimer);
-  netTimer = 0;
+function clearNetTimer() { clearTimeout(netTimer); netTimer = 0; }
+function clearJoinTimer() { clearInterval(joinTimer); joinTimer = 0; }
+function clearHeartbeat() { clearInterval(heartbeatTimer); heartbeatTimer = 0; }
+
+function publishPacket(topic, packet, qos = 0) {
+  if (!peer || !peer.connected || !topic) return false;
+  try {
+    peer.publish(topic, JSON.stringify(packet), { qos, retain: false });
+    return true;
+  } catch (_) { return false; }
 }
 
-function killPeer(msg) { // tear down a stuck/failed attempt so re-tapping always works
+function makeRelayConn(role) {
+  return {
+    open: true,
+    send(data) {
+      if (!this.open || !peer || !peer.connected || !partnerNetId || !sessionId) return;
+      const topic = role === 'host' ? guestTopic : hostTopic;
+      publishPacket(topic, { kind: 'data', from: localNetId, sid: sessionId, data }, 0);
+    },
+    close() {
+      if (!this.open) return;
+      this.open = false;
+      const topic = role === 'host' ? guestTopic : hostTopic;
+      publishPacket(topic, { kind: 'leave', from: localNetId, sid: sessionId }, 1);
+    },
+  };
+}
+
+function endRelayClient() {
+  const old = peer;
+  peer = null;
+  if (!old) return;
+  try { old.removeAllListeners(); } catch (_) {}
+  try { old.end(true); } catch (_) {}
+}
+
+function killPeer(msg) {
   netGeneration++;
-  clearNetTimer();
-  const oldConn = conn, oldPeer = peer;
-  conn = null; peer = null; mpRole = null;
-  connReady = false; partnerLostHandled = false;
-  try { if (oldConn) oldConn.close(); } catch (_) {}
-  try { if (oldPeer) oldPeer.destroy(); } catch (_) {}
+  clearNetTimer(); clearJoinTimer(); clearHeartbeat();
+  try { if (conn) conn.close(); } catch (_) {}
+  conn = null; mpRole = null;
+  partnerNetId = ''; sessionId = '';
+  partnerLostHandled = false;
+  endRelayClient();
   if (msg) mpStatus(msg);
 }
 
-function peerErrorText(e, fallback) {
-  const type = e && e.type ? e.type : 'unknown';
-  if (type === 'peer-unavailable') return 'Room not found — make sure the host is still waiting and recheck the code.';
-  if (type === 'network' || type === 'server-error' || type === 'socket-error') return 'Signalling server could not be reached — check both internet connections and retry.';
-  if (type === 'browser-incompatible') return 'This browser does not support WebRTC data connections. Try current Chrome, Edge, Firefox, or Safari.';
-  if (type === 'ssl-unavailable') return 'Secure connection failed. Open the game from HTTPS or localhost.';
-  return `${fallback} (${type}) — retry.`;
-}
-
-function attachPeerRecovery(p, token) {
-  p.on('disconnected', () => {
-    if (token !== netGeneration || peer !== p || p.destroyed) return;
-    try { p.reconnect(); } catch (_) {}
-  });
-}
-
-function setupConn(c, token) {
-  let opened = false;
-  const onOpen = () => {
-    if (opened || token !== netGeneration || conn !== c) return;
-    opened = true;
-    connReady = true;
-    partnerLostHandled = false;
-    clearNetTimer();
-    if (mpRole === 'guest') {
-      mpStatus('Connected — syncing with host…');
-      send({ a: 'hello', v: NET_VERSION });
-      netTimer = setTimeout(() => {
-        if (mpRole === 'guest' && state === 'menu') killPeer('Host did not answer — tap GO to retry.');
-      }, 8000);
-    } else {
-      mpStatus('Partner connected — completing handshake…');
-      netTimer = setTimeout(() => {
-        if (mpRole === 'host' && state === 'menu') {
-          try { c.close(); } catch (_) {}
-          conn = null; mpRole = null; connReady = false;
-          mpStatus(`ROOM CODE: ${roomCode} — handshake timed out. Waiting for another join…`);
-        }
-      }, 8000);
-    }
-  };
-
-  c.on('open', onOpen);
-  c.on('data', m => {
-    if (token !== netGeneration || conn !== c) return;
-    onNet(m);
-  });
-  c.on('close', () => {
-    if (token !== netGeneration || conn !== c) return;
-    onPartnerLost();
-  });
-  c.on('error', () => {
-    if (token !== netGeneration || conn !== c) return;
-    onPartnerLost();
-  });
-  if (c.open) queueMicrotask(onOpen);
-}
-
-function createHostPeer(token, attempt = 0) {
-  if (token !== netGeneration) return;
-  roomCode = randCode();
-  const p = new Peer('dzone-' + roomCode, PEER_OPTS);
-  peer = p;
-  mpStatus('Creating room…');
-  clearNetTimer();
-  netTimer = setTimeout(() => {
-    if (token === netGeneration && peer === p && !p.open) {
-      killPeer('No response from the room server — check your internet and tap HOST again.');
-    }
-  }, 12000);
-
-  p.on('open', () => {
-    if (token !== netGeneration || peer !== p) return;
-    clearNetTimer();
-    mpStatus(`ROOM CODE: ${roomCode} — partner taps JOIN CO-OP and enters it. Waiting…`);
-  });
-  attachPeerRecovery(p, token);
-  p.on('connection', c => {
-    if (token !== netGeneration || peer !== p) { try { c.close(); } catch (_) {} return; }
-    if (conn) { try { c.close(); } catch (_) {} return; } // two players max
-    conn = c;
-    mpRole = 'host';
-    setupConn(c, token);
-  });
-  p.on('error', e => {
-    if (token !== netGeneration || peer !== p) return;
-    if (!mpRole && e && e.type === 'unavailable-id' && attempt < 5) {
-      clearNetTimer();
-      try { p.destroy(); } catch (_) {}
-      createHostPeer(token, attempt + 1); // rare code collision — silently choose another
+function startHeartbeat() {
+  clearHeartbeat();
+  lastNetRx = Date.now();
+  heartbeatTimer = setInterval(() => {
+    if (!mpOn()) return;
+    if (Date.now() - lastNetRx > 10000) {
+      onPartnerLost('Partner stopped responding.');
       return;
     }
-    if (!mpRole) killPeer(peerErrorText(e, 'Room error'));
+    send({ a: 'ping', ts: Date.now() });
+  }, 2000);
+}
+
+function connectRelay(token, mode, code, ready, attempt = 0) {
+  if (token !== netGeneration) return;
+  if (typeof mqtt === 'undefined') {
+    killPeer('Multiplayer library failed to load. Refresh the page while online.');
+    return;
+  }
+  if (attempt >= MQTT_BROKERS.length) {
+    killPeer('Could not reach the multiplayer relay. Try another browser or network.');
+    return;
+  }
+
+  const url = MQTT_BROKERS[attempt];
+  localNetId = randomNetId(mode === 'host' ? 'h' : 'g');
+  let firstConnect = true;
+  let connectedOnce = false;
+  mpStatus(`Connecting to multiplayer relay (${attempt + 1}/${MQTT_BROKERS.length})…`);
+
+  const client = mqtt.connect(url, {
+    clientId: 'dz-' + localNetId,
+    clean: true,
+    keepalive: 20,
+    connectTimeout: 7000,
+    reconnectPeriod: 1800,
+    protocolVersion: 4,
+    resubscribe: true,
+  });
+  peer = client;
+
+  clearNetTimer();
+  netTimer = setTimeout(() => {
+    if (token !== netGeneration || peer !== client || connectedOnce) return;
+    try { client.end(true); } catch (_) {}
+    if (peer === client) peer = null;
+    connectRelay(token, mode, code, ready, attempt + 1);
+  }, 8500);
+
+  client.on('connect', () => {
+    if (token !== netGeneration || peer !== client) { try { client.end(true); } catch (_) {} return; }
+    connectedOnce = true;
+    clearNetTimer();
+    if (firstConnect) {
+      firstConnect = false;
+      ready(client, url);
+    } else if (state === 'playing') {
+      mpStatus('Relay reconnected.');
+      setTimeout(() => { if (state === 'playing') mpStatus(''); }, 1200);
+    }
+  });
+  client.on('reconnect', () => {
+    if (token === netGeneration && peer === client && mpOn()) mpStatus('Connection interrupted — reconnecting…');
+  });
+  client.on('offline', () => {
+    if (token === netGeneration && peer === client && mpOn()) mpStatus('Connection interrupted — reconnecting…');
+  });
+  client.on('error', err => {
+    // MQTT.js will retry automatically. The initial timeout above switches to
+    // the backup broker if this endpoint cannot be reached at all.
+    console.warn('Multiplayer relay error:', err && err.message ? err.message : err);
   });
 }
 
-$('hostBtn').addEventListener('click', () => {
-  if (typeof Peer === 'undefined') { mpStatus('Co-op needs internet — PeerJS failed to load.'); return; }
+function subscribeRelay(client, topic, done) {
+  client.subscribe(topic, { qos: 0 }, err => {
+    if (err) {
+      killPeer('Connected to the relay, but room subscription failed. Retry multiplayer.');
+      return;
+    }
+    done();
+  });
+}
+
+function hostRoom() {
   if (mpOn() || peer) return;
   killPeer();
   const token = netGeneration;
-  createHostPeer(token);
-});
+  roomCode = randCode();
+  hostTopic = `${MQTT_ROOT}/${roomCode}/host`;
+  partnerNetId = ''; sessionId = '';
 
-$('joinBtn').addEventListener('click', () => {
-  if (typeof Peer === 'undefined') { mpStatus('Co-op needs internet — PeerJS failed to load.'); return; }
-  $('joinRow').style.display = 'flex';
-  $('joinCode').focus();
-});
+  connectRelay(token, 'host', roomCode, (client, url) => {
+    client.on('message', (topic, raw) => {
+      if (token !== netGeneration || peer !== client || topic !== hostTopic) return;
+      const m = safeJson(raw); if (!m || !m.kind || !m.from) return;
+
+      if (m.kind === 'join') {
+        const replyTopic = `${MQTT_ROOT}/${roomCode}/guest/${m.from}`;
+        if (m.v !== NET_VERSION) {
+          publishPacket(replyTopic, { kind: 'reject', msg: 'Game versions do not match. Both players must use the same HTML file.' }, 1);
+          return;
+        }
+        if (partnerNetId && partnerNetId !== m.from) {
+          publishPacket(replyTopic, { kind: 'reject', msg: 'This room already has two players.' }, 1);
+          return;
+        }
+        partnerNetId = m.from;
+        guestTopic = replyTopic;
+        if (!sessionId) sessionId = randomNetId('s');
+        conn = makeRelayConn('host');
+        mpRole = 'host';
+        partnerLostHandled = false;
+        lastNetRx = Date.now();
+        publishPacket(guestTopic, {
+          kind: 'welcome', from: localNetId, sid: sessionId, v: NET_VERSION,
+          broker: brokerName(url),
+        }, 1);
+        mpStatus('Partner found — completing connection…');
+        clearNetTimer();
+        netTimer = setTimeout(() => {
+          if (token !== netGeneration || state !== 'menu' || !partnerNetId) return;
+          try { if (conn) conn.close(); } catch (_) {}
+          conn = null; mpRole = null; partnerNetId = ''; sessionId = '';
+          mpStatus(`ROOM CODE: ${roomCode} — partner did not finish joining. Waiting…`);
+        }, 10000);
+        return;
+      }
+
+      if (!partnerNetId || m.from !== partnerNetId || m.sid !== sessionId) return;
+      lastNetRx = Date.now();
+      if (m.kind === 'ready') {
+        clearNetTimer();
+        mpStatus('Partner connected! Starting…');
+        startHeartbeat();
+        startGame(false);
+      } else if (m.kind === 'data') {
+        onNet(m.data);
+      } else if (m.kind === 'leave') {
+        onPartnerLost('Partner left the room.');
+      }
+    });
+
+    subscribeRelay(client, hostTopic, () => {
+      mpStatus(`ROOM CODE: ${roomCode} — partner taps JOIN CO-OP and enters it. Waiting…`);
+    });
+  });
+}
 
 function joinRoom() {
   const code = $('joinCode').value.replace(/[^A-Z0-9]/gi, '').toUpperCase();
   $('joinCode').value = code;
-  if (code.length !== 4 || mpOn() || peer) {
-    if (code.length !== 4) mpStatus('Enter the 4-character room code.');
-    return;
-  }
+  if (code.length !== 4) { mpStatus('Enter the 4-character room code.'); return; }
+  if (mpOn() || peer) return;
+
   killPeer();
   const token = netGeneration;
   roomCode = code;
-  mpStatus('Connecting…');
-  const p = new Peer(PEER_OPTS);
-  peer = p;
-  clearNetTimer();
-  netTimer = setTimeout(() => {
-    if (token === netGeneration && state === 'menu') {
-      killPeer(`Couldn't reach room ${code} — check the code and both internet connections, then tap GO again.`);
-    }
-  }, 16000);
+  hostTopic = `${MQTT_ROOT}/${roomCode}/host`;
 
-  p.on('open', () => {
-    if (token !== netGeneration || peer !== p) return;
-    const c = p.connect('dzone-' + code, {
-      reliable: true,
-      serialization: 'json',
-      metadata: { game: 'dead-zone', version: NET_VERSION },
+  connectRelay(token, 'guest', roomCode, (client, url) => {
+    guestTopic = `${MQTT_ROOT}/${roomCode}/guest/${localNetId}`;
+
+    client.on('message', (topic, raw) => {
+      if (token !== netGeneration || peer !== client || topic !== guestTopic) return;
+      const m = safeJson(raw); if (!m || !m.kind) return;
+
+      if (m.kind === 'reject') {
+        killPeer(m.msg || 'The host rejected this connection.');
+        return;
+      }
+      if (m.kind === 'welcome') {
+        if (m.v !== NET_VERSION) {
+          killPeer('Game versions do not match. Both players must use the same HTML file.');
+          return;
+        }
+        clearJoinTimer(); clearNetTimer();
+        partnerNetId = m.from;
+        sessionId = m.sid;
+        conn = makeRelayConn('guest');
+        mpRole = 'guest';
+        partnerLostHandled = false;
+        lastNetRx = Date.now();
+        publishPacket(hostTopic, { kind: 'ready', from: localNetId, sid: sessionId }, 1);
+        mpStatus(`Connected through ${m.broker || brokerName(url)} — waiting for host…`);
+        startHeartbeat();
+        return;
+      }
+      if (!partnerNetId || m.from !== partnerNetId || m.sid !== sessionId) return;
+      lastNetRx = Date.now();
+      if (m.kind === 'data') onNet(m.data);
+      else if (m.kind === 'leave') onPartnerLost('Host left the room.');
     });
-    conn = c;
-    mpRole = 'guest';
-    setupConn(c, token);
-  });
-  attachPeerRecovery(p, token);
-  p.on('error', e => {
-    if (token !== netGeneration || peer !== p || state !== 'menu') return;
-    killPeer(peerErrorText(e, 'Could not join'));
+
+    subscribeRelay(client, guestTopic, () => {
+      const sendJoin = () => publishPacket(hostTopic, {
+        kind: 'join', from: localNetId, v: NET_VERSION,
+      }, 1);
+      sendJoin();
+      joinTimer = setInterval(sendJoin, 1400);
+      clearNetTimer();
+      netTimer = setTimeout(() => {
+        if (token === netGeneration && state === 'menu' && !mpOn()) {
+          killPeer(`Room ${roomCode} did not answer. Check the code and make sure the host is still waiting.`);
+        }
+      }, 14000);
+    });
   });
 }
 
-$('joinGo').addEventListener('click', joinRoom);
-$('joinCode').addEventListener('keydown', e => {
-  if (e.key === 'Enter') joinRoom();
+$('hostBtn').addEventListener('click', hostRoom);
+$('joinBtn').addEventListener('click', () => {
+  if (typeof mqtt === 'undefined') { mpStatus('Multiplayer library failed to load. Refresh while online.'); return; }
+  $('joinRow').style.display = 'flex';
+  $('joinCode').focus();
 });
+$('joinGo').addEventListener('click', joinRoom);
+$('joinCode').addEventListener('keydown', e => { if (e.key === 'Enter') joinRoom(); });
 
-function onPartnerLost() {
+function onPartnerLost(reason = 'Connection lost.') {
   if (partnerLostHandled || !mpRole) return;
   partnerLostHandled = true;
-  clearNetTimer();
+  clearNetTimer(); clearJoinTimer(); clearHeartbeat();
   const wasDowned = downed;
   const role = mpRole;
-  const oldPeer = peer;
-  mpRole = null; conn = null; peer = null; connReady = false;
-  try { if (oldPeer) oldPeer.destroy(); } catch (_) {}
+  try { if (conn) conn.open = false; } catch (_) {}
+  conn = null; mpRole = null;
+  partnerNetId = ''; sessionId = '';
+  endRelayClient();
   remote.visible = false; remote.group.visible = false;
   partnerDown = false;
   const rb = $('retryBtn'); rb.disabled = false; rb.textContent = 'TRY AGAIN';
   if (state === 'menu') {
-    mpStatus(role === 'host'
-      ? 'Partner disconnected — tap HOST to create a new room.'
-      : 'Connection lost — enter the code and tap GO again.');
+    mpStatus(`${reason} ${role === 'host' ? 'Tap HOST to create a new room.' : 'Enter the code and tap GO again.'}`);
     return;
   }
   mpStatus('');
@@ -1668,6 +1780,7 @@ function onPartnerLost() {
     announce('PARTNER LEFT — GOING SOLO');
   }
 }
+
 function onNet(m) {
   if (!m || typeof m !== 'object') return;
   switch (m.a) {
