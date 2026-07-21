@@ -5681,6 +5681,7 @@
 
     <div class="field-label">Current Remaining Balance</div>
     <input type="number" id="debtRemaining" inputmode="decimal" placeholder="e.g. 15000" min="0" step="0.01" />
+    <div id="debtAutoTotalHint" style="display:none;font-size:0.68rem;color:#7dd3fc;margin:0.15rem 0 0.2rem;line-height:1.4;">↑ These add up your monthly schedule automatically — Total is everything keyed in, Remaining is what's still unpaid.</div>
 
     <!-- Fixed payment fields -->
     <div id="debtFixedFields">
@@ -5732,11 +5733,40 @@
     <div id="debtVariableFields" style="display:none;">
       <div style="background:rgba(244,114,182,0.06);border:1px solid rgba(244,114,182,0.15);border-radius:10px;padding:0.7rem 0.85rem;margin-bottom:0.75rem;">
         <div style="font-size:0.75rem;color:#f9a8d4;font-weight:600;margin-bottom:0.2rem;">🔀 Variable billing mode</div>
-        <div style="font-size:0.72rem;color:#64748b;line-height:1.5;">Bill changes every month. Enter known upcoming amounts below — they'll be pre-logged as bills automatically.</div>
+        <div style="font-size:0.72rem;color:#64748b;line-height:1.5;">For a fixed plan like RM120 × 24, use <b style="color:#7dd3fc;">⚡ Same amount every month</b> below. If the bill changes month to month, type each amount in the schedule instead.</div>
       </div>
+
+      <!-- BNPL quick fill: one amount spread across N months, no per-month typing -->
+      <div style="background:rgba(56,189,248,0.06);border:1px solid rgba(56,189,248,0.2);border-radius:10px;padding:0.7rem 0.85rem;margin-bottom:0.75rem;">
+        <div style="font-size:0.75rem;color:#7dd3fc;font-weight:700;margin-bottom:0.15rem;">⚡ Same amount every month</div>
+        <div style="font-size:0.7rem;color:#64748b;line-height:1.5;margin-bottom:0.55rem;">Adds this amount on top of each month — stack a new BNPL onto what's already there. Set it once instead of typing every month.</div>
+        <div style="display:flex;gap:0.4rem;margin-bottom:0.45rem;">
+          <div style="flex:1;">
+            <div style="font-size:0.67rem;color:#64748b;margin-bottom:0.18rem;">Per month (RM)</div>
+            <input type="number" id="debtBnplAmt" inputmode="decimal" placeholder="120" min="0" step="0.01"
+              style="width:100%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:7px;padding:0.35rem 0.55rem;color:#e2e8f0;font-size:0.82rem;" />
+          </div>
+          <div style="flex:1;">
+            <div style="font-size:0.67rem;color:#64748b;margin-bottom:0.18rem;">For how many months</div>
+            <input type="number" id="debtBnplMonths" inputmode="numeric" placeholder="24" min="1" max="120"
+              style="width:100%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:7px;padding:0.35rem 0.55rem;color:#e2e8f0;font-size:0.82rem;" />
+          </div>
+        </div>
+        <div style="margin-bottom:0.5rem;">
+          <div style="font-size:0.67rem;color:#64748b;margin-bottom:0.18rem;">Starts</div>
+          <select id="debtBnplStart" class="prem-select" style="width:100%;"></select>
+        </div>
+        <div style="display:flex;gap:0.4rem;">
+          <button type="button" onclick="bnplQuickFill()"
+            style="flex:1;padding:0.4rem;border-radius:8px;border:1px solid rgba(56,189,248,0.45);background:rgba(56,189,248,0.14);color:#7dd3fc;font-size:0.76rem;font-weight:700;cursor:pointer;">⚡ Add to schedule</button>
+          <button type="button" onclick="bnplClearUnpaid()"
+            style="padding:0.4rem 0.8rem;border-radius:8px;border:1px solid rgba(255,255,255,0.12);background:transparent;color:#64748b;font-size:0.76rem;font-weight:600;cursor:pointer;">Clear</button>
+        </div>
+      </div>
+
       <div class="field-label">Due Day of Month <span style="color:#475569;">(optional, 1–31)</span></div>
       <input type="number" id="debtDueDayVar" inputmode="numeric" placeholder="e.g. 15" min="1" max="31" />
-      <div class="field-label" style="margin-top:0.75rem;">Monthly Bill Schedule <span style="color:#475569;">(optional)</span></div>
+      <div class="field-label" style="margin-top:0.75rem;">Monthly Bill Schedule <span style="color:#475569;">— fine-tune any month</span></div>
       <div id="debtScheduleRows" style="display:flex;flex-direction:column;gap:0.3rem;margin-bottom:0.5rem;"></div>
     </div>
 
@@ -7654,12 +7684,27 @@ function saveDebts(arr) { localStorage.setItem(DEBT_KEY, JSON.stringify(arr)); }
 var _DEBT_COLORS = ['#f472b6','#a78bfa','#60a5fa','#34d399','#fb923c','#f87171','#facc15','#2dd4bf'];
 var _editDebtTarget = null;
 
-function _buildDebtScheduleRows(existingBills) {
+// "July 2026" → how many months ahead of the current cycle it is (0 = this cycle).
+// Returns -1 for anything unparseable.
+function _monthOffset(label) {
+  var parts = String(label || '').split(' ');
+  var m = ALL_MONTHS.indexOf(parts[0]);
+  var y = parseInt(parts[1], 10);
+  if (m < 0 || !y) return -1;
+  return (y - periodYear) * 12 + (m - periodMonthIdx);
+}
+
+function _buildDebtScheduleRows(existingBills, count) {
   var rows = document.getElementById('debtScheduleRows');
   if (!rows) return;
+  // Always show at least 24 months, but grow so a longer BNPL plan (or the caller's
+  // requested length) is fully visible and editable.
+  var need = count || 0;
+  (existingBills || []).forEach(function(b) { need = Math.max(need, _monthOffset(b.month) + 1); });
+  var total = Math.max(24, need);
   rows.innerHTML = '';
   rows.style.cssText = 'display:flex;flex-direction:column;gap:0.3rem;max-height:260px;overflow-y:auto;padding-right:4px;';
-  for (var i = 0; i < 24; i++) {
+  for (var i = 0; i < total; i++) {
     var d      = new Date(periodYear, periodMonthIdx + i, 1);
     var mIdx   = d.getMonth();
     var yr     = d.getFullYear();
@@ -7674,11 +7719,117 @@ function _buildDebtScheduleRows(existingBills) {
         ALL_MONTHS[mIdx].slice(0,3) + ' ' + yr + (isPaid ? ' ✓' : '') +
       '</span>' +
       '<input type="number" min="0" step="0.01" placeholder="—" data-dmonth="' + label + '" ' +
+        'oninput="_bnplSyncTotals()" ' +
         (isPaid ? 'disabled title="Already paid" style="opacity:0.4;" ' : '') +
         'value="' + val + '" ' +
         'style="flex:1;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:0.35rem 0.6rem;color:#e2e8f0;font-size:0.8rem;" />';
     rows.appendChild(row);
   }
+  // Whatever rebuilt the grid, keep Total / Remaining mirrored to it (no-op unless
+  // we're in variable mode).
+  _bnplSyncTotals();
+}
+
+// Snapshot whatever is currently typed in the grid as a bills array, so a rebuild
+// (e.g. when the quick-fill grows the grid) never loses work in progress. Paid rows
+// are disabled but keep their value — carry the paid flag so they stay locked.
+function _readScheduleGrid() {
+  var out = [];
+  var inputs = document.querySelectorAll('#debtScheduleRows input[data-dmonth]');
+  inputs.forEach(function(inp) {
+    var amt = parseFloat(inp.value);
+    if (amt > 0) out.push({ month: inp.getAttribute('data-dmonth'), amount: amt, paid: !!inp.disabled });
+  });
+  return out;
+}
+
+// Pure core of the quick fill: ADD `amount` to each of `months` consecutive months
+// starting `startOff` cycles ahead. It stacks on top of whatever a month already
+// has — so a second BNPL adds to the first rather than wiping it — and a month that
+// is already PAID is left completely alone. Kept DOM-free so it can be unit-tested.
+function _bnplFillBills(existingBills, amount, months, startOff) {
+  var bills = (existingBills || []).slice();
+  var added = 0, skipped = 0;
+  for (var i = 0; i < months; i++) {
+    var idx = startOff + i;
+    var d = new Date(periodYear, periodMonthIdx + idx, 1);
+    var label = ALL_MONTHS[d.getMonth()] + ' ' + d.getFullYear();
+    var ex = bills.find(function(b) { return b.month === label; });
+    if (ex && ex.paid) { skipped++; continue; } // don't touch a month already paid
+    if (ex) ex.amount = Math.round(((ex.amount || 0) + amount) * 100) / 100; // stack, 2dp
+    else bills.push({ month: label, amount: amount, paid: false });
+    added++;
+  }
+  return { bills: bills, added: added, skipped: skipped, span: startOff + months };
+}
+
+// Sum of a bills array: everything, or (unpaidOnly) just the months not yet paid.
+function _sumBills(bills, unpaidOnly) {
+  return Math.round((bills || []).reduce(function(s, b) {
+    return s + ((unpaidOnly && b.paid) ? 0 : (parseFloat(b.amount) || 0));
+  }, 0) * 100) / 100;
+}
+
+// Read the on-screen schedule grid and mirror its sums into the Total / Remaining
+// fields so a BNPL's total literally IS "everything keyed in across the months",
+// and Remaining is the still-unpaid part. Variable mode only — in fixed mode those
+// fields are the user's own figures and must be left alone.
+function _bnplSyncTotals() {
+  if (_debtType !== 'variable') return;
+  var all = 0, unpaid = 0;
+  document.querySelectorAll('#debtScheduleRows input[data-dmonth]').forEach(function(inp) {
+    var amt = parseFloat(inp.value) || 0;
+    all += amt;
+    if (!inp.disabled) unpaid += amt;   // disabled row = already paid
+  });
+  all = Math.round(all * 100) / 100; unpaid = Math.round(unpaid * 100) / 100;
+  var t = document.getElementById('debtTotal'), r = document.getElementById('debtRemaining');
+  if (t) t.value = all    ? all.toFixed(2)    : '';
+  if (r) r.value = unpaid ? unpaid.toFixed(2) : '';
+}
+
+function bnplQuickFill() {
+  var amt      = parseFloat(document.getElementById('debtBnplAmt').value);
+  var months   = parseInt(document.getElementById('debtBnplMonths').value, 10);
+  var startOff = parseInt(document.getElementById('debtBnplStart').value, 10) || 0;
+  if (!(amt > 0))     { showToast('Enter a monthly amount first'); return; }
+  if (!(months >= 1)) { showToast('Enter how many months'); return; }
+  var res = _bnplFillBills(_readScheduleGrid(), amt, months, startOff);
+  _buildDebtScheduleRows(res.bills, res.span);   // re-render (grows the grid + re-syncs totals)
+  showToast('Added ' + fmt(amt) + ' to ' + res.added + ' month' + (res.added === 1 ? '' : 's') +
+            (res.skipped ? ' — skipped ' + res.skipped + ' paid' : ''));
+}
+
+// Wipe every UNPAID month back to blank (paid months stay). The escape hatch for
+// add-mode: if a fill was wrong, clear and start over instead of hand-blanking rows.
+function bnplClearUnpaid() {
+  var inputs = document.querySelectorAll('#debtScheduleRows input[data-dmonth]');
+  var n = 0;
+  inputs.forEach(function(inp) { if (!inp.disabled && parseFloat(inp.value) > 0) { inp.value = ''; n++; } });
+  _bnplSyncTotals();
+  showToast(n ? 'Cleared ' + n + ' month' + (n === 1 ? '' : 's') : 'Nothing to clear');
+}
+
+// Populate the "Starts" dropdown with the next 24 months (0 = current cycle).
+function _populateBnplStart() {
+  var sel = document.getElementById('debtBnplStart');
+  if (!sel) return;
+  var html = '';
+  for (var i = 0; i < 24; i++) {
+    var d = new Date(periodYear, periodMonthIdx + i, 1);
+    html += '<option value="' + i + '">' + ALL_MONTHS[d.getMonth()].slice(0, 3) + ' ' + d.getFullYear() +
+            (i === 0 ? ' (this month)' : '') + '</option>';
+  }
+  sel.innerHTML = html;
+  sel.value = '0';
+}
+
+// Clear the quick-fill inputs — they're a tool, not saved data, so they should
+// never carry over between opening the modal for different debts.
+function _resetBnplQuickFill() {
+  var a = document.getElementById('debtBnplAmt');    if (a) a.value = '';
+  var m = document.getElementById('debtBnplMonths'); if (m) m.value = '';
+  _populateBnplStart();
 }
 
 function calcDebtLoan() {
@@ -7734,6 +7885,7 @@ function openAddDebt() {
   document.getElementById('debtModalTitle').textContent = 'Add Debt';
   document.getElementById('debtSaveBtn').textContent    = 'Add Debt';
   setDebtType('fixed');
+  _resetBnplQuickFill();
   _buildDebtScheduleRows([]);
   _populateBankSelect('debtBank', '');
   document.getElementById('addDebtModal').classList.add('open');
@@ -7757,6 +7909,7 @@ function openEditDebt(id) {
   document.getElementById('debtModalTitle').textContent = 'Edit Debt';
   document.getElementById('debtSaveBtn').textContent    = 'Save Changes';
   setDebtType(isVar ? 'variable' : 'fixed');
+  _resetBnplQuickFill();
   _buildDebtScheduleRows(entry.bills || []);
   calcDebtLoan();
   _populateBankSelect('debtBank', entry.bank || '');
@@ -7816,6 +7969,10 @@ function saveDebtEntry() {
     if (idx !== -1) {
       var existing = list[idx];
       var mergedBills = isVariable ? mergeDebtSchedule(existing.bills) : (existing.bills || []);
+      // A variable (BNPL) debt's total/remaining ARE its schedule — total is every
+      // month keyed in, remaining is the part not yet paid. Derive them so they can
+      // never drift from the bills, however the bills were entered.
+      if (isVariable) { total = _sumBills(mergedBills, false); remaining = _sumBills(mergedBills, true); }
       var updEntry = { id: existing.id, color: existing.color, name: name, total: total, remaining: remaining,
                     minPay: isVariable ? 0 : minPay, dueDay: dueDayFinal,
                     variable: isVariable, bills: mergedBills };
@@ -7830,6 +7987,8 @@ function saveDebtEntry() {
   } else {
     var color = _DEBT_COLORS[list.length % _DEBT_COLORS.length];
     var newBills = isVariable ? mergeDebtSchedule([]) : [];
+    // Same as the edit path: a BNPL's total/remaining come from its schedule.
+    if (isVariable) { total = _sumBills(newBills, false); remaining = _sumBills(newBills, true); }
     var newEntry = { id: uid(), color: color, name: name, total: total, remaining: remaining,
                 minPay: isVariable ? 0 : minPay, dueDay: dueDayFinal,
                 variable: isVariable, bills: newBills };
@@ -8027,13 +8186,21 @@ function setDebtType(type) {
     btn.style.background = active ? 'rgba(244,114,182,0.12)'          : 'transparent';
     btn.style.color      = active ? '#f9a8d4'                          : '#475569';
   }
+  // Total / Remaining are the user's own figures for a fixed debt, but for a BNPL
+  // they're computed from the schedule — so lock them and show why.
+  var tEl = document.getElementById('debtTotal'), rEl = document.getElementById('debtRemaining');
+  var hint = document.getElementById('debtAutoTotalHint');
+  var lock = (type === 'variable');
+  if (tEl) { tEl.readOnly = lock; tEl.style.opacity = lock ? '0.75' : ''; }
+  if (rEl) { rEl.readOnly = lock; rEl.style.opacity = lock ? '0.75' : ''; }
+  if (hint) hint.style.display = lock ? '' : 'none';
   if (type === 'variable') {
     fixedFields.style.display = 'none';
     varFields.style.display   = '';
     _applyBtn(btnFixed, false);
     _applyBtn(btnVar,   true);
     var existingBills = _editDebtTarget ? (_editDebtTarget.bills || []) : [];
-    _buildDebtScheduleRows(existingBills);
+    _buildDebtScheduleRows(existingBills);   // also syncs Total / Remaining from the schedule
   } else {
     fixedFields.style.display = '';
     varFields.style.display   = 'none';
@@ -8153,7 +8320,7 @@ function toggleDebtAdvice(id) {
 }
 
 function debtAdviceHtml(e) {
-  var remaining = parseFloat(e.remaining) || 0;
+  var remaining = _debtFigures(e).remaining;
   if (remaining <= 0) {
     return '<div class="goal-advice" style="border-color:rgba(244,114,182,0.2);background:rgba(244,114,182,0.06);">'
       + '<div class="goal-advice-done" style="color:#4ade80;">🎉 Debt cleared!</div>'
@@ -8182,13 +8349,28 @@ function debtAdviceHtml(e) {
   return h;
 }
 
+// Figures to DISPLAY for a debt — this never writes to storage. For a variable
+// (BNPL) debt whose balance was never stored (old data saved remaining as 0), it
+// falls back to the schedule so the card shows real numbers, without ever mutating
+// your saved data. A balance you actually typed is always respected as-is.
+function _debtFigures(e) {
+  var total     = parseFloat(e.total)     || 0;
+  var remaining = parseFloat(e.remaining) || 0;
+  if (e.variable) {
+    var all = _sumBills(e.bills, false), unpaid = _sumBills(e.bills, true);
+    if (remaining <= 0) remaining = unpaid;                 // the old "RM0 left" case
+    if (total < remaining) total = Math.max(all, remaining); // total must cover it
+  }
+  return { total: total, remaining: remaining };
+}
+
 function renderDebtPanel() {
   var el = document.getElementById('debtBody');
   if (!el) return;
   var list = loadDebts();
 
-  var totalOriginal  = list.reduce(function(s,e){ return s+(parseFloat(e.total)||parseFloat(e.remaining)||0); },0);
-  var totalRemaining = list.reduce(function(s,e){ return s+(parseFloat(e.remaining)||0); },0);
+  var totalOriginal  = list.reduce(function(s,e){ return s+_debtFigures(e).total; },0);
+  var totalRemaining = list.reduce(function(s,e){ return s+_debtFigures(e).remaining; },0);
   var totalMinPay    = list.reduce(function(s,e){ return s+(parseFloat(e.minPay)||0); },0);
   var totalPaid      = Math.max(0, totalOriginal - totalRemaining);
   var overallPct     = totalOriginal > 0 ? Math.max(0, Math.min(100, (totalPaid / totalOriginal) * 100)) : 0;
@@ -8235,9 +8417,10 @@ function renderDebtPanel() {
       html += '<div style="display:flex;flex-direction:column;gap:0.55rem;padding:0.25rem 0.75rem 0.75rem;">';
       list.forEach(function(e) {
         var color     = e.color || '#f472b6';
-        var total     = parseFloat(e.total) || parseFloat(e.remaining) || 1;
-        var remaining = parseFloat(e.remaining) || 0;
-        var paidPct   = Math.max(0, Math.min(100, ((total - remaining) / total) * 100));
+        var _f        = _debtFigures(e);
+        var total     = _f.total;
+        var remaining = _f.remaining;
+        var paidPct   = total > 0 ? Math.max(0, Math.min(100, ((total - remaining) / total) * 100)) : 0;
         html += '<div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:10px;padding:0.55rem 0.75rem;">';
         html += '<div style="display:flex;align-items:center;gap:0.45rem;margin-bottom:0.4rem;">';
         html += '<div style="width:9px;height:9px;border-radius:50%;background:' + color + ';flex-shrink:0;"></div>';
@@ -8299,9 +8482,10 @@ function renderDebtPanel() {
     } else {
       list.forEach(function(e) {
         var color     = e.color || '#f472b6';
-        var total     = parseFloat(e.total) || parseFloat(e.remaining) || 1;
-        var remaining = parseFloat(e.remaining) || 0;
-        var paidPct   = Math.max(0, Math.min(100, ((total - remaining) / total) * 100));
+        var _f        = _debtFigures(e);
+        var total     = _f.total;
+        var remaining = _f.remaining;
+        var paidPct   = total > 0 ? Math.max(0, Math.min(100, ((total - remaining) / total) * 100)) : 0;
 
         html += '<div class="debt-card">';
         html += '<div class="debt-card-header">';
@@ -8320,8 +8504,8 @@ function renderDebtPanel() {
         html += '<div class="debt-card-meta">';
         html += '<div>';
         html += '<div class="debt-card-remaining" style="color:' + color + ';">' + fmt(remaining) + ' left</div>';
-        if (parseFloat(e.total) > 0) {
-          html += '<div class="debt-card-pct">' + paidPct.toFixed(0) + '% paid off · of ' + fmt(e.total) + '</div>';
+        if (total > 0) {
+          html += '<div class="debt-card-pct">' + paidPct.toFixed(0) + '% paid off · of ' + fmt(total) + '</div>';
         }
         html += '</div>';
         html += '<div style="text-align:right;">';
