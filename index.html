@@ -428,6 +428,33 @@
       max-width: 100%; letter-spacing: 0.02em;
     }
     .cal-big-cell.cal-today .cal-close-tag { color: #fff !important; opacity: 0.9; }
+    /* Performance Bonus (PBI) day */
+    .cal-big-cell.cal-pbi-day {
+      background: linear-gradient(160deg, rgba(236,72,153,0.30) 0%, rgba(219,39,119,0.10) 100%);
+      outline: 1.5px solid rgba(236,72,153,0.55); outline-offset: -1.5px;
+      color: #f9a8d4 !important; font-weight: 800;
+      box-shadow: 0 0 16px rgba(236,72,153,0.2);
+      z-index: 2;
+    }
+    .cal-big-cell.cal-pbi-day::after {
+      content: '🎯'; position: absolute; top: -6px; right: -5px;
+      font-size: 0.62rem; line-height: 1; pointer-events: none;
+      filter: drop-shadow(0 1px 2px rgba(0,0,0,0.7));
+    }
+    /* Small (popup) calendar PBI dot */
+    .cal-cell.cal-pbi-sm::after {
+      content: ''; position: absolute; bottom: 2px; left: 50%; transform: translateX(-50%);
+      width: 4px; height: 4px; border-radius: 50%; background: #ec4899;
+    }
+    /* Pay day that ALSO carries a Performance Bonus (they always coincide). Keep the
+       green pay-day cell but show both coins, so it reads as salary AND bonus — not
+       just one. The extra class outweighs the plain .cal-salary coin rule. */
+    .cal-big-cell.cal-salary.cal-bonus-too::after {
+      content: '💰🎯'; right: -13px; font-size: 0.56rem; letter-spacing: -1px;
+    }
+    .cal-cell.cal-salary-sm.cal-bonus-too::after {
+      content: '💰🎯'; right: -8px; top: -4px; font-size: 0.44rem; letter-spacing: -1px; white-space: nowrap;
+    }
     /* Layer chips */
     .cal-layers { margin-top: 0.85rem; padding-top: 0.8rem; border-top: 1px solid rgba(255,255,255,0.07); }
     .cal-layers-lbl {
@@ -4545,7 +4572,7 @@
         <div class="dash-sub" id="dashIncomeSub">tap to configure</div>
         <div id="dashIncomeExtra" style="display:none;font-size:0.62rem;color:#94a3b8;margin-top:0.18rem;line-height:1.3;"></div>
       </div>
-      <div class="dash-card" id="dashEstIncomeCard" style="display:none;border-color:rgba(234,179,8,0.25);background:rgba(234,179,8,0.06);cursor:pointer;" onclick="openEstIncomeModal()" title="Click to set basic pay & deductions">
+      <div class="dash-card" id="dashEstIncomeCard" style="display:none;border-color:rgba(234,179,8,0.25);background:rgba(234,179,8,0.06);cursor:pointer;" onclick="openSalaryModal()" title="Based on your Nett Income + this month's OT — tap to edit your income">
         <div class="dash-label" id="dashProjectedLabel">Est. Income</div>
         <div class="dash-val" style="color:#eab308;" id="dashProjected">—</div>
         <div class="dash-sub" id="dashProjectedSub">tap to configure</div>
@@ -4979,15 +5006,15 @@
 
 <!-- Salary / Nett Income Modal -->
 <div class="modal-overlay" id="salaryModal">
-  <div class="modal" style="max-width:420px;">
+  <div class="modal" style="width:520px;max-width:95vw;">
     <button class="modal-close" onclick="closeSalaryModal()">✕</button>
     <div class="modal-icon">💼</div>
     <div class="modal-title">Monthly Income</div>
-    <div class="modal-sub">Enter your gross income, allowances and deductions to calculate your nett pay</div>
+    <div class="modal-sub">Deductions (EPF, SOCSO, EIS…) are worked out on <b style="color:#cbd5e1;">Basic + Allowances</b>. OT is separate — extra money, not deducted here.</div>
 
     <div class="form-group" style="margin-top:1rem;">
-      <label class="form-label">Gross Income <span style="font-weight:400;color:#475569;">(before allowances/deductions)</span></label>
-      <input class="form-input" id="salaryGrossInp" type="number" min="0" step="0.01" placeholder="e.g. 3000.00" oninput="_renderSalaryDeductions();_renderSalaryAllowances()" />
+      <label class="form-label">Basic Pay <span style="font-weight:400;color:#475569;">(before allowances/deductions)</span></label>
+      <input class="form-input" id="salaryGrossInp" type="number" min="0" step="0.01" placeholder="e.g. 2500.00" oninput="_renderSalaryDeductions();_renderSalaryAllowances()" />
     </div>
 
     <div style="margin-bottom:0.5rem;">
@@ -4995,7 +5022,7 @@
         <label class="form-label" style="margin:0;">Allowances <span style="font-weight:400;color:#475569;">(added to pay)</span></label>
         <button onclick="_addSalaryAllowance()" style="background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.25);border-radius:7px;color:#4ade80;font-size:0.72rem;font-weight:700;padding:3px 10px;cursor:pointer;">+ Add</button>
       </div>
-      <div id="salaryAllowancesList" style="display:flex;flex-direction:column;gap:0.3rem;max-height:160px;overflow-y:auto;"></div>
+      <div id="salaryAllowancesList" style="display:flex;flex-direction:column;gap:0.3rem;max-height:320px;overflow-y:auto;"></div>
     </div>
 
     <div style="margin-bottom:0.5rem;">
@@ -5003,7 +5030,7 @@
         <label class="form-label" style="margin:0;">Deductions</label>
         <button onclick="_addSalaryDeduction()" style="background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.25);border-radius:7px;color:#f87171;font-size:0.72rem;font-weight:700;padding:3px 10px;cursor:pointer;">+ Add</button>
       </div>
-      <div id="salaryDeductionsList" style="display:flex;flex-direction:column;gap:0.3rem;max-height:160px;overflow-y:auto;"></div>
+      <div id="salaryDeductionsList" style="display:flex;flex-direction:column;gap:0.3rem;max-height:320px;overflow-y:auto;"></div>
     </div>
 
     <div id="salaryBreakdown" style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:0.65rem 0.85rem;margin-bottom:0.75rem;font-size:0.78rem;"></div>
@@ -6614,6 +6641,11 @@ const OT_KEY               = profilePrefix + 'mft_ot_' + periodMonthLower + '_' 
 const OT_CONFIG_KEY        = profilePrefix + 'mft_ot_config';
 const OT_RATE_OVERRIDE_KEY = profilePrefix + 'mft_ot_rate_override';
 const OT_DAILY_RATE_KEY    = profilePrefix + 'mft_ot_daily_rate';
+// Named WITHOUT the "mft_ot_" substring on purpose: several loops scan localStorage
+// for that substring and treat every hit as a list of OT entries. "mft_otpay" /
+// "mft_otpbi" still start with mft_ (so they sync) but never match that scan.
+const OT_PAY_PARTS_KEY     = profilePrefix + 'mft_otpay_parts'; // { basic, allowance, days, hoursPerDay }
+const PBI_KEY              = profilePrefix + 'mft_otpbi';        // { startYm, day, every, amounts:{'Y-M':amt} }
 
 // Malaysian Public Holidays — source: publicholidays.com.my
 const MY_PH = {
@@ -7015,13 +7047,108 @@ var OT_TYPES = {
   ot3:    { label:'Holiday OT+',   sub:'Public holiday after hours',     mult:3.0, color:'#ef4444', useEndTime:true,  incentive:0, incentiveMinHours:0 }
 };
 
-function getHourlyRate() {
-  var rate = parseFloat(localStorage.getItem(OT_RATE_OVERRIDE_KEY));
-  return (rate && rate > 0) ? rate : 0;
+function _round2(n) { return Math.round((n + Number.EPSILON) * 100) / 100; }
+
+// ── Pay parts & PBI ────────────────────────────────────────
+// When the user sets up "pay parts" (basic + allowance ÷ days ÷ hours-per-day) the
+// daily & hourly rates are DERIVED from them, and a Performance-Based Income (PBI)
+// in a given month lifts that month's gross — so that month's OT pays more, then it
+// reverts. Without pay parts, the old flat hourly/daily rates are used unchanged.
+// Basic pay + allowances come from ONE place — the red Nett Income card — so they
+// never have to be typed twice. Falls back to anything an older setup stored in the
+// OT pay parts, so existing users don't lose their rate before setting the red card.
+function _salaryBasicAllowance() {
+  var sal = (typeof loadSalaryConfig === 'function') ? loadSalaryConfig() : {};
+  var basic = parseFloat(sal.gross) || 0;
+  var allowance = (sal.allowances || []).reduce(function(s, a) {
+    return s + (a.type === 'pct' ? (basic * a.value / 100) : a.value);
+  }, 0);
+  if ((basic + allowance) > 0) return { basic: basic, allowance: allowance };
+  try {
+    var p = JSON.parse(localStorage.getItem(OT_PAY_PARTS_KEY)) || {};
+    return { basic: parseFloat(p.basic) || 0, allowance: parseFloat(p.allowance) || 0 };
+  } catch (e) { return { basic: 0, allowance: 0 }; }
 }
+function _rateParts() {
+  var p;
+  try { p = JSON.parse(localStorage.getItem(OT_PAY_PARTS_KEY)); } catch (e) { p = null; }
+  if (!p) return null;
+  var days = parseFloat(p.days) || 0, hpd = parseFloat(p.hoursPerDay) || 0;
+  if (days <= 0) return null;                        // parts mode not set up
+  var ba = _salaryBasicAllowance();                  // basic + allowance from the red card
+  if ((ba.basic + ba.allowance) <= 0) return null;   // no income entered yet → flat rate
+  return { basic: ba.basic, allowance: ba.allowance, days: days, hoursPerDay: hpd };
+}
+function loadPbi() {
+  try {
+    var c = JSON.parse(localStorage.getItem(PBI_KEY)) || {};
+    return { startYm: c.startYm || '', day: parseInt(c.day, 10) || 0,
+             every: parseInt(c.every, 10) || 3, amounts: c.amounts || {} };
+  } catch (e) { return { startYm: '', day: 0, every: 3, amounts: {} }; }
+}
+function savePbi(c) { localStorage.setItem(PBI_KEY, JSON.stringify(c)); }
+function _pbiYmKey(year, monthIdx) { return year + '-' + monthIdx; }
+// The PBI amount ACTUALLY entered for a month (0 = none). This is what boosts the
+// rate — an upcoming month with no amount typed yet stays on the normal rate.
+function _pbiForMonth(year, monthIdx) {
+  var amt = loadPbi().amounts[_pbiYmKey(year, monthIdx)];
+  return (amt && parseFloat(amt) > 0) ? parseFloat(amt) : 0;
+}
+// Is this month a PBI month by the recurrence (start + every N months)? Used for the
+// calendar's estimated markers, independent of whether an amount was entered.
+function _isPbiMonth(year, monthIdx) {
+  var c = loadPbi();
+  if (!c.startYm) return false;
+  var p = c.startYm.split('-'); var sy = parseInt(p[0], 10), sm = parseInt(p[1], 10);
+  if (isNaN(sy) || isNaN(sm)) return false;
+  var diff = (year - sy) * 12 + (monthIdx - sm);
+  var step = c.every || 3;
+  return diff >= 0 && diff % step === 0;
+}
+function _pbiDay(year, monthIdx) {
+  if (!_isPbiMonth(year, monthIdx)) return 0;
+  // The bonus is paid together with the salary, in the same pay statement — so it
+  // lands on the pay day, which already handles weekends and short months.
+  return (typeof getSalaryDate === 'function') ? getSalaryDate(year, monthIdx) : 0;
+}
+function _pbiTip(year, monthIdx) {
+  var amt = _pbiForMonth(year, monthIdx);
+  return amt > 0
+    ? '🎯 Performance Bonus: ' + fmt(amt) + " — this month's OT is paid at a higher rate"
+    : '🎯 Performance Bonus expected — add the amount in OT settings to raise this month\'s OT rate';
+}
+
+// Ambient "which month am I pricing" — set while computing one entry's pay so the
+// rate functions can apply that month's PBI. null = no month context (base rate).
+var _otRateCtx = null;
+function _withRateMonth(year, monthIdx, fn) {
+  var prev = _otRateCtx;
+  _otRateCtx = { year: year, monthIdx: monthIdx };
+  try { return fn(); } finally { _otRateCtx = prev; }
+}
+
 function getDailyRate() {
-  var rate = parseFloat(localStorage.getItem(OT_DAILY_RATE_KEY));
-  return (rate && rate > 0) ? rate : 0;
+  var parts = _rateParts();
+  if (parts) {
+    var gross = parts.basic + parts.allowance;
+    if (_otRateCtx) gross += _pbiForMonth(_otRateCtx.year, _otRateCtx.monthIdx);
+    return _round2(gross / parts.days);
+  }
+  var flat = parseFloat(localStorage.getItem(OT_DAILY_RATE_KEY));
+  return (flat && flat > 0) ? flat : 0;
+}
+function getHourlyRate() {
+  var parts = _rateParts();
+  if (parts && parts.hoursPerDay > 0) {
+    var daily = getDailyRate();                 // respects the month context + rounding
+    return daily > 0 ? _round2(daily / parts.hoursPerDay) : 0;
+  }
+  var flat = parseFloat(localStorage.getItem(OT_RATE_OVERRIDE_KEY));
+  return (flat && flat > 0) ? flat : 0;
+}
+// Pay for an entry that belongs to a specific month (applies that month's PBI).
+function calcOtPayFor(type, hours, year, monthIdx) {
+  return _withRateMonth(year, monthIdx, function() { return calcOtPay(type, hours); });
 }
 // Public Holiday is paid as a flat daily rate × its multiplier (not hourly ×
 // multiplier) once a daily rate is set — e.g. RM100.38 daily × 2.0 = RM200.76.
@@ -7140,14 +7267,37 @@ function calcOtIncentive(type, hours) {
   return hours > getOtIncentiveMinHrs(type) ? amt : 0;
 }
 
-function loadOT() { try { return JSON.parse(localStorage.getItem(OT_KEY)) || []; } catch(e) { return []; } }
+// Every OT entry must have a UNIQUE id — edit (✎) and delete (✕) find an entry BY
+// its id. Legacy/imported entries occasionally have a missing or duplicated id, and
+// a repeat makes `find` always return the FIRST match, so editing any of them shows
+// the same one. Hand a fresh id to any that clash. This only touches ids — never the
+// date, hours or pay — and returns whether anything changed so we save just once.
+function _repairOtIds(list) {
+  if (!Array.isArray(list)) return false;
+  var seen = Object.create(null), changed = false;
+  list.forEach(function(e) {
+    if (!e) return;
+    if (e.id == null || e.id === '' || seen[e.id]) { e.id = uid(); changed = true; }
+    seen[e.id] = true;
+  });
+  return changed;
+}
+function loadOT() {
+  var list; try { list = JSON.parse(localStorage.getItem(OT_KEY)) || []; } catch(e) { return []; }
+  if (_repairOtIds(list)) { try { localStorage.setItem(OT_KEY, JSON.stringify(list)); } catch(e) {} }
+  return Array.isArray(list) ? list : [];
+}
 function saveOT(arr) { localStorage.setItem(OT_KEY, JSON.stringify(arr)); }
 
 var _otViewMonthIdx = currentMonthIdx;
 var _otViewYear     = currentYear;
 var _otRecoOpen     = false;
 function _otViewKey() { return profilePrefix + 'mft_ot_' + ALL_MONTHS[_otViewMonthIdx].toLowerCase() + '_' + _otViewYear; }
-function loadOTView() { try { return JSON.parse(localStorage.getItem(_otViewKey())) || []; } catch(e) { return []; } }
+function loadOTView() {
+  var list; try { list = JSON.parse(localStorage.getItem(_otViewKey())) || []; } catch(e) { return []; }
+  if (_repairOtIds(list)) { try { localStorage.setItem(_otViewKey(), JSON.stringify(list)); } catch(e) {} }
+  return Array.isArray(list) ? list : [];
+}
 function saveOTView(arr) { localStorage.setItem(_otViewKey(), JSON.stringify(arr)); }
 function closeOtReco() { document.getElementById("otRecoModal").classList.remove("open"); }
 function toggleOtReco() {
@@ -7244,15 +7394,14 @@ function openEditOT(id) {
   document.getElementById('otYear').value  = parts[2] || '';
   document.getElementById('otDesc').value  = entry.description || '';
   updateOtTypeUI();
-  var allTypes = getAllOtTypes();
-  var t = allTypes[entry.type];
-  if (t && t.useEndTime) {
-    var totalH = 18 + (parseFloat(entry.hours) || 0);
-    var hh = Math.floor(totalH), mm = Math.round((totalH - hh) * 60);
-    document.getElementById('otEndTime').value = String(hh).padStart(2,'0') + ':' + String(mm).padStart(2,'0');
-  } else {
-    document.getElementById('otHours').value = entry.hours || '';
-  }
+  // The modal reads the Hours field directly (calcOtHours), so ALWAYS fill it with
+  // the entry's hours. The old code only did this for non-useEndTime types; for a
+  // useEndTime type (e.g. Standard OT) it set a HIDDEN legacy end-time field and
+  // left the visible Hours box showing a stale value — that's why a 2-hour entry
+  // opened as "10". The hidden field is kept vaguely in sync but nothing reads it.
+  document.getElementById('otHours').value = entry.hours || '';
+  var _endH = 18 + (parseFloat(entry.hours) || 0);
+  document.getElementById('otEndTime').value = String(Math.floor(_endH)).padStart(2,'0') + ':' + String(Math.round((_endH - Math.floor(_endH)) * 60)).padStart(2,'0');
   document.getElementById('otModalTitle').textContent = 'Edit OT Entry';
   document.getElementById('otSaveBtn').textContent    = 'Save Changes';
   document.getElementById('otModalMonth').textContent = periodLabel;
@@ -7277,10 +7426,14 @@ function calcOtHours() {
 
 function updateOtPayPreview() {
   var hours     = calcOtHours();
-  var rate      = getHourlyRate();
   var type      = document.getElementById('otType').value;
   var preview   = document.getElementById('otPayPreview');
   if (!preview) return;
+  // Preview at the rate of the month the entry is dated in (PBI months pay more).
+  var fMonth = parseInt(document.getElementById('otMonth').value, 10);
+  var fYear  = parseInt(document.getElementById('otYear').value, 10);
+  _withRateMonth(fYear, fMonth - 1, function() {
+  var rate   = getHourlyRate();
   var phFlat = _isPhFlat(type);
   var pay    = calcOtPay(type, hours);
   if (hours > 0 && (rate > 0 || phFlat)) {
@@ -7300,6 +7453,7 @@ function updateOtPayPreview() {
   } else {
     preview.style.display = 'none';
   }
+  });
 }
 
 function saveOtEntry() {
@@ -7310,7 +7464,8 @@ function saveOtEntry() {
   var hours = calcOtHours();
   var rate  = getHourlyRate();
   var incentive = _isPhFlat(type) ? 0 : calcOtIncentive(type, hours);
-  var pay   = calcOtPay(type, hours);
+  // Price the entry at ITS month's rate — a PBI month pays more.
+  var pay   = calcOtPayFor(type, hours, year, month - 1);
 
   if (!day || !month || !year) { showToast('Please enter a valid date'); return; }
   if (hours <= 0) { showToast('Please enter a valid end time / hours'); return; }
@@ -7391,9 +7546,14 @@ function closeOtSettings() { document.getElementById('otSettingsModal').classLis
 function _otDraftInit() {
   var types = getAllOtTypes();
   var order = Object.keys(OT_TYPES).concat(Object.keys(types).filter(function(k) { return k.indexOf('custom_') === 0; }));
+  var savedParts = null;
+  try { savedParts = JSON.parse(localStorage.getItem(OT_PAY_PARTS_KEY)) || null; } catch (e) { savedParts = null; }
   var d = {
     hourly: parseFloat(localStorage.getItem(OT_RATE_OVERRIDE_KEY)) || '',
     daily:  parseFloat(localStorage.getItem(OT_DAILY_RATE_KEY))    || '',
+    parts:  savedParts || {},
+    rateMode: (savedParts && parseFloat(savedParts.days) > 0) ? 'parts' : 'simple',
+    pbi:    loadPbi(),
     order: order, types: {}
   };
   order.forEach(function(k) {
@@ -7514,28 +7674,182 @@ function _otSummary(k) {
   return s;
 }
 
+// Shared input styling for the pay-parts / PBI controls.
+var _OT_INP = 'border-radius:6px;border:1px solid #334155;background:#0f172a;color:#f1f5f9;box-sizing:border-box;padding:0.4rem 0.5rem;font-size:0.84rem;';
+
+function _otSetRateMode(mode) {
+  if (!_otDraft) return;
+  _otDraft.rateMode = mode;
+  if (mode === 'parts' && (!_otDraft.parts || _otDraft.parts.days == null)) {
+    _otDraft.parts = { days: (_otDraft.parts && _otDraft.parts.days) || 26, hoursPerDay: (_otDraft.parts && _otDraft.parts.hoursPerDay) || 7.5 };
+  }
+  _otRenderSettings();
+}
+function _otSetPart(field, val) {
+  if (!_otDraft) return;
+  if (!_otDraft.parts) _otDraft.parts = {};
+  _otDraft.parts[field] = val;
+  _otRenderPartsPreview();
+}
+function _otSetPbiCfg(field, val) { if (_otDraft) _otDraft.pbi[field] = val; }
+function _otSetPbiAmt(ym, val) {
+  if (!_otDraft) return;
+  if (!_otDraft.pbi.amounts) _otDraft.pbi.amounts = {};
+  if (val === '' || !(parseFloat(val) > 0)) delete _otDraft.pbi.amounts[ym];
+  else _otDraft.pbi.amounts[ym] = parseFloat(val);
+  // Update ONLY this row's boosted-rate preview. Do NOT rebuild the list — that
+  // destroys the input you're typing in and drops focus after one keystroke.
+  var el = document.getElementById('pbiBoost_' + ym);
+  if (el) el.innerHTML = _otPbiBoostText(val);
+}
+// The "→ 138.85/day · 18.51/hr" text a given bonus produces (blank if no amount).
+function _otPbiBoostText(amt) {
+  var p = (_otDraft && _otDraft.parts) || {};
+  var days = parseFloat(p.days) || 0, hpd = parseFloat(p.hoursPerDay) || 0;
+  var ba = _salaryBasicAllowance();
+  amt = parseFloat(amt) || 0;
+  if (!(amt > 0) || days <= 0) return '';
+  var bd = _round2((ba.basic + ba.allowance + amt) / days);
+  var bh = hpd > 0 ? _round2(bd / hpd) : 0;
+  return '&rarr; ' + fmt(bd) + '/day &middot; ' + fmt(bh) + '/hr';
+}
+function _otRenderPartsPreview() {
+  var el = document.getElementById('otPartsPreview'); if (el) el.innerHTML = _otPartsPreviewHtml();
+  var pl = document.getElementById('otPbiList');      if (pl) pl.innerHTML = _otPbiListHtml();
+}
+
+// The computed base rate from the draft's parts (no PBI) — the live preview.
+function _otPartsPreviewHtml() {
+  var p = (_otDraft && _otDraft.parts) || {};
+  var days = parseFloat(p.days) || 0, hpd = parseFloat(p.hoursPerDay) || 0;
+  var ba = _salaryBasicAllowance();
+  var basic = ba.basic, alw = ba.allowance;
+  if ((basic + alw) <= 0) return '<div style="color:#fbbf24;font-size:0.72rem;">⚠ Set your Basic Pay in the Nett Income (red) card first.</div>';
+  if (days <= 0) return '<div style="color:#64748b;font-size:0.72rem;">Enter days per month to see your rate.</div>';
+  var daily = _round2((basic + alw) / days);
+  var hourly = hpd > 0 ? _round2(daily / hpd) : 0;
+  return '<div style="display:flex;gap:0.6rem;">'
+    + '<div style="flex:1;background:rgba(249,115,22,0.1);border:1px solid rgba(249,115,22,0.25);border-radius:8px;padding:0.4rem 0.6rem;text-align:center;"><div style="color:#fb923c;font-weight:800;font-size:0.95rem;">' + fmt(daily) + '</div><div style="color:#64748b;font-size:0.66rem;">normal daily</div></div>'
+    + '<div style="flex:1;background:rgba(99,102,241,0.1);border:1px solid rgba(99,102,241,0.25);border-radius:8px;padding:0.4rem 0.6rem;text-align:center;"><div style="color:#a5b4fc;font-weight:800;font-size:0.95rem;">' + fmt(hourly) + '</div><div style="color:#64748b;font-size:0.66rem;">normal hourly</div></div>'
+    + '</div>';
+}
+
+function _otPbiMonthOptions(sel) {
+  var h = '<option value="">— pick —</option>';
+  for (var i = -6; i < 24; i++) {
+    var mm = currentMonthIdx + i, yy = currentYear;
+    yy += Math.floor(mm / 12); mm = ((mm % 12) + 12) % 12;
+    var ym = yy + '-' + mm;
+    h += '<option value="' + ym + '"' + (ym === sel ? ' selected' : '') + '>' + ALL_MONTHS[mm].slice(0,3) + ' ' + yy + '</option>';
+  }
+  return h;
+}
+
+// Upcoming PBI occurrences (start + every N months), each with its amount + the
+// boosted rate it produces, so the user sees exactly what that month will pay.
+function _otPbiListHtml() {
+  var c = (_otDraft && _otDraft.pbi) || {};
+  if (!c.startYm) return '<div style="color:#64748b;font-size:0.72rem;font-style:italic;">Pick a first bonus month above.</div>';
+  var sp = c.startYm.split('-'); var y = parseInt(sp[0],10), m = parseInt(sp[1],10);
+  if (isNaN(y) || isNaN(m)) return '';
+  var step = parseInt(c.every,10) || 3;
+  var h = '';
+  for (var i = 0; i < 6; i++) {
+    var mm = m + step * i, yy = y;
+    yy += Math.floor(mm / 12); mm = ((mm % 12) + 12) % 12;
+    var ym = yy + '-' + mm;
+    var amt = (c.amounts && c.amounts[ym] != null) ? c.amounts[ym] : '';
+    var label = ALL_MONTHS[mm].slice(0,3) + ' ' + yy;
+    h += '<div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.3rem;">'
+      + '<div style="width:64px;color:#f9a8d4;font-size:0.76rem;font-weight:600;flex-shrink:0;">' + label + '</div>'
+      + '<span style="color:#64748b;font-size:0.76rem;">' + escHtml(_currency) + '</span>'
+      + '<input type="number" step="0.01" min="0" value="' + amt + '" placeholder="e.g. 1000" oninput="_otSetPbiAmt(\'' + ym + '\', this.value)" style="' + _OT_INP + 'width:88px;text-align:center;" />'
+      + '<div id="pbiBoost_' + ym + '" style="flex:1;text-align:right;color:#f9a8d4;font-size:0.68rem;white-space:nowrap;">' + _otPbiBoostText(amt) + '</div></div>';
+  }
+  return h;
+}
+
+function _otPbiSectionHtml(d) {
+  var c = d.pbi || { startYm:'', day:0, every:3, amounts:{} };
+  var h = '<div style="padding:0.7rem 0.9rem;background:linear-gradient(135deg,rgba(236,72,153,0.08),rgba(219,39,119,0.04));border:1px solid rgba(236,72,153,0.22);border-radius:9px;margin-bottom:0.9rem;">';
+  h += '<div style="font-weight:700;color:#f1f5f9;font-size:0.85rem;margin-bottom:0.1rem;">2. Bonus months</div>';
+  h += '<div style="color:#64748b;font-size:0.72rem;margin-bottom:0.55rem;line-height:1.5;">Some months you get a bonus (PBI) on top of your salary. In those months your pay is higher — so your OT is worth more too. Tell us when it starts and how often, then fill in each amount.</div>';
+  h += '<div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.4rem;"><div style="flex:1;color:#cbd5e1;font-size:0.78rem;">First bonus is in</div>';
+  h += '<select onchange="_otSetPbiCfg(\'startYm\', this.value); _otRenderSettings();" style="' + _OT_INP + 'width:150px;cursor:pointer;">' + _otPbiMonthOptions(c.startYm) + '</select></div>';
+  h += '<div style="font-size:0.7rem;color:#64748b;margin-bottom:0.5rem;line-height:1.5;">📅 It shows on the calendar on your <b style="color:#22c55e;">pay day</b> — it comes with your salary in the same statement.</div>';
+  h += '<div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.55rem;"><div style="flex:1;color:#cbd5e1;font-size:0.78rem;">Then again every</div>';
+  h += '<input type="number" min="1" max="12" value="' + (c.every || 3) + '" oninput="_otSetPbiCfg(\'every\', this.value); _otRenderPartsPreview();" style="' + _OT_INP + 'width:70px;text-align:center;" /><span style="color:#64748b;font-size:0.78rem;">months</span></div>';
+  h += '<div style="color:#64748b;font-size:0.72rem;margin-bottom:0.35rem;">Type each bonus once you know it. Leave a month blank and it just stays on your normal rate:</div>';
+  h += '<div id="otPbiList">' + _otPbiListHtml() + '</div></div>';
+  return h;
+}
+
+// The whole rate section: a Simple/From-pay-parts toggle, then either the two flat
+// inputs (unchanged) or the pay-parts + PBI blocks.
+function _otRateSectionHtml(d, iBase) {
+  var mode = d.rateMode || 'simple';
+  var h = '<div style="font-weight:700;color:#f1f5f9;font-size:0.85rem;margin-bottom:0.3rem;">How should we work out your OT rate?</div>';
+  h += '<div style="display:flex;gap:0.4rem;margin-bottom:0.35rem;">';
+  h += '<button type="button" onclick="_otSetRateMode(\'simple\')" style="flex:1;padding:0.4rem;border-radius:8px;border:1px solid ' + (mode==='simple'?'rgba(99,102,241,0.5)':'rgba(255,255,255,0.08)') + ';background:' + (mode==='simple'?'rgba(99,102,241,0.14)':'transparent') + ';color:' + (mode==='simple'?'#a5b4fc':'#64748b') + ';font-size:0.75rem;font-weight:700;cursor:pointer;">I know my rate</button>';
+  h += '<button type="button" onclick="_otSetRateMode(\'parts\')" style="flex:1;padding:0.4rem;border-radius:8px;border:1px solid ' + (mode==='parts'?'rgba(34,197,94,0.5)':'rgba(255,255,255,0.08)') + ';background:' + (mode==='parts'?'rgba(34,197,94,0.12)':'transparent') + ';color:' + (mode==='parts'?'#4ade80':'#64748b') + ';font-size:0.75rem;font-weight:700;cursor:pointer;">Work it out for me</button></div>';
+  h += '<div style="color:#64748b;font-size:0.72rem;margin-bottom:0.6rem;line-height:1.5;">' + (mode === 'parts'
+      ? 'We use your salary from the Nett Income card, plus your days &amp; hours. Needed if you get a bonus.'
+      : 'Just type your hourly and daily rate — use this if you already know them.') + '</div>';
+  if (mode !== 'parts') {
+    h += '<div style="display:flex;align-items:center;gap:0.55rem;padding:0.7rem 0.9rem;background:linear-gradient(135deg,rgba(99,102,241,0.1),rgba(79,70,229,0.05));border:1px solid rgba(99,102,241,0.22);border-radius:9px;margin-bottom:0.6rem;">';
+    h += '<span style="font-size:1rem;">&#128181;</span>';
+    h += '<div style="flex:1;"><div style="font-weight:700;color:#f1f5f9;font-size:0.85rem;">1. Hourly Rate <span style="color:#64748b;font-weight:500;font-size:0.74rem;">(if known)</span></div>';
+    h += '<div style="color:#64748b;font-size:0.74rem;">Your pay for one hour. Used by any rule paid by the hour.</div></div>';
+    h += '<span style="color:#64748b;font-size:0.82rem;">' + escHtml(_currency) + '</span>';
+    h += '<input type="number" id="cfg_base_rate" step="0.01" min="0" value="' + (d.hourly || '') + '" placeholder="e.g. 15.00" oninput="_otSetRate(\'hourly\', this.value)" style="' + iBase + 'width:90px;text-align:center;" />';
+    h += '<span style="color:#64748b;font-size:0.82rem;">/hr</span></div>';
+    h += '<div style="display:flex;align-items:center;gap:0.55rem;padding:0.7rem 0.9rem;background:linear-gradient(135deg,rgba(249,115,22,0.1),rgba(234,88,12,0.05));border:1px solid rgba(249,115,22,0.22);border-radius:9px;margin-bottom:0.9rem;">';
+    h += '<span style="font-size:1rem;">&#128197;</span>';
+    h += '<div style="flex:1;"><div style="font-weight:700;color:#f1f5f9;font-size:0.85rem;">2. Daily Rate <span style="color:#64748b;font-weight:500;font-size:0.74rem;">(if known)</span></div>';
+    h += '<div style="color:#64748b;font-size:0.74rem;">Your pay for one full day. Used by Public Holiday, and by any rule set to <b style="color:#fb923c;">Daily Rate</b>.</div></div>';
+    h += '<span style="color:#64748b;font-size:0.82rem;">' + escHtml(_currency) + '</span>';
+    h += '<input type="number" id="cfg_daily_rate" step="0.01" min="0" value="' + (d.daily || '') + '" placeholder="e.g. 100.38" oninput="_otSetRate(\'daily\', this.value)" style="' + iBase + 'width:90px;text-align:center;" />';
+    h += '<span style="color:#64748b;font-size:0.82rem;">/day</span></div>';
+    return h;
+  }
+  var p = d.parts || {};
+  function prow(lbl, field, ph, unit) {
+    return '<div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.4rem;"><div style="flex:1;color:#cbd5e1;font-size:0.78rem;">' + lbl + '</div>'
+      + '<span style="color:#64748b;font-size:0.78rem;">' + unit + '</span>'
+      + '<input type="number" step="0.01" min="0" value="' + (p[field]!=null?p[field]:'') + '" placeholder="' + ph + '" oninput="_otSetPart(\'' + field + '\', this.value)" style="' + iBase + 'width:96px;text-align:center;" /></div>';
+  }
+  // Read-only row: figure pulled straight from the red Nett Income card.
+  function froRow(lbl, val, color) {
+    return '<div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.35rem;"><div style="flex:1;color:' + color + ';font-size:0.78rem;">' + lbl + '</div>'
+      + '<div style="color:#e2e8f0;font-size:0.8rem;font-weight:700;">' + escHtml(_currency) + ' ' + fmt(val) + '</div></div>';
+  }
+  var ba = _salaryBasicAllowance();
+  h += '<div style="padding:0.7rem 0.9rem;background:linear-gradient(135deg,rgba(34,197,94,0.08),rgba(16,185,129,0.04));border:1px solid rgba(34,197,94,0.22);border-radius:9px;margin-bottom:0.6rem;">';
+  h += '<div style="font-weight:700;color:#f1f5f9;font-size:0.85rem;margin-bottom:0.1rem;">1. Your normal rate</div>';
+  if ((ba.basic + ba.allowance) <= 0) {
+    h += '<div style="color:#fbbf24;font-size:0.75rem;line-height:1.5;margin-bottom:0.5rem;">⚠ First set your <b>Basic Pay</b> in the <b style="color:#f87171;">Nett Income</b> card, then come back here. '
+      + '<button type="button" onclick="closeOtSettings(); openSalaryModal();" style="background:rgba(239,68,68,0.14);border:1px solid rgba(239,68,68,0.35);border-radius:6px;color:#fca5a5;font-size:0.72rem;font-weight:700;padding:2px 9px;cursor:pointer;margin-left:2px;">Open Nett Income</button></div>';
+  } else {
+    h += '<div style="color:#64748b;font-size:0.72rem;margin-bottom:0.5rem;line-height:1.5;">Taken from your <b style="color:#f87171;">Nett Income</b> card — no need to type them again:</div>';
+    h += froRow('Basic Pay', ba.basic, '#cbd5e1');
+    h += froRow('Allowances', ba.allowance, '#cbd5e1');
+    h += '<div style="border-top:1px dashed rgba(255,255,255,0.1);margin:0.35rem 0 0.5rem;"></div>';
+    h += '<div style="color:#64748b;font-size:0.72rem;margin-bottom:0.4rem;line-height:1.5;">You only enter these two — how your rate is split:</div>';
+  }
+  h += prow('Days per month', 'days', '26', '&divide;');
+  h += prow('Hours per day', 'hoursPerDay', '7.5', '&divide;');
+  h += '<div id="otPartsPreview" style="margin-top:0.5rem;">' + _otPartsPreviewHtml() + '</div></div>';
+  h += _otPbiSectionHtml(d);
+  return h;
+}
+
 function _otRenderSettings() {
   var d = _otDraft; if (!d) return;
   var iBase = 'border-radius:6px;border:1px solid #334155;background:#0f172a;color:#f1f5f9;box-sizing:border-box;padding:0.4rem 0.5rem;font-size:0.84rem;';
   var html = '';
 
-  // ── 1) Hourly rate ────────────────────────────────────
-  html += '<div style="display:flex;align-items:center;gap:0.55rem;padding:0.7rem 0.9rem;background:linear-gradient(135deg,rgba(99,102,241,0.1),rgba(79,70,229,0.05));border:1px solid rgba(99,102,241,0.22);border-radius:9px;margin-bottom:0.6rem;">';
-  html += '<span style="font-size:1rem;">&#128181;</span>';
-  html += '<div style="flex:1;"><div style="font-weight:700;color:#f1f5f9;font-size:0.85rem;">1. Hourly Rate <span style="color:#64748b;font-weight:500;font-size:0.74rem;">(if known)</span></div>';
-  html += '<div style="color:#64748b;font-size:0.74rem;">Your pay for one hour. Used by any rule paid by the hour.</div></div>';
-  html += '<span style="color:#64748b;font-size:0.82rem;">' + escHtml(_currency) + '</span>';
-  html += '<input type="number" id="cfg_base_rate" step="0.01" min="0" value="' + (d.hourly || '') + '" placeholder="e.g. 15.00" oninput="_otSetRate(\'hourly\', this.value)" style="' + iBase + 'width:90px;text-align:center;" />';
-  html += '<span style="color:#64748b;font-size:0.82rem;">/hr</span></div>';
-
-  // ── 2) Daily rate ─────────────────────────────────────
-  html += '<div style="display:flex;align-items:center;gap:0.55rem;padding:0.7rem 0.9rem;background:linear-gradient(135deg,rgba(249,115,22,0.1),rgba(234,88,12,0.05));border:1px solid rgba(249,115,22,0.22);border-radius:9px;margin-bottom:0.9rem;">';
-  html += '<span style="font-size:1rem;">&#128197;</span>';
-  html += '<div style="flex:1;"><div style="font-weight:700;color:#f1f5f9;font-size:0.85rem;">2. Daily Rate <span style="color:#64748b;font-weight:500;font-size:0.74rem;">(if known)</span></div>';
-  html += '<div style="color:#64748b;font-size:0.74rem;">Your pay for one full day. Used by Public Holiday, and by any rule set to <b style="color:#fb923c;">Daily Rate</b>.</div></div>';
-  html += '<span style="color:#64748b;font-size:0.82rem;">' + escHtml(_currency) + '</span>';
-  html += '<input type="number" id="cfg_daily_rate" step="0.01" min="0" value="' + (d.daily || '') + '" placeholder="e.g. 100.38" oninput="_otSetRate(\'daily\', this.value)" style="' + iBase + 'width:90px;text-align:center;" />';
-  html += '<span style="color:#64748b;font-size:0.82rem;">/day</span></div>';
+  // ── 1) & 2) Rate: simple flat, or derived from pay parts (+ PBI) ──
+  html += _otRateSectionHtml(d, iBase);
 
   // ── 3) Types of OT ────────────────────────────────────
   html += '<div style="font-weight:700;color:#f1f5f9;font-size:0.85rem;margin-bottom:0.15rem;">3. Types of OT</div>';
@@ -7655,6 +7969,32 @@ function saveOtSettings() {
   localStorage.setItem(OT_RATE_OVERRIDE_KEY, d.hourly === '' || d.hourly == null ? '' : String(d.hourly));
   localStorage.setItem(OT_DAILY_RATE_KEY,    d.daily  === '' || d.daily  == null ? '' : String(d.daily));
 
+  // Pay-parts mode: store the parts (they drive the rate + PBI) and mirror the base
+  // rate into the flat keys so any code reading those directly still sees it. Simple
+  // mode: clear the parts so the flat rate above is authoritative.
+  if (d.rateMode === 'parts' && d.parts) {
+    var daysP = parseFloat(d.parts.days) || 0, hpdP = parseFloat(d.parts.hoursPerDay) || 0;
+    // Only days & hours live here now — Basic + Allowances come from the red Nett
+    // Income card via _salaryBasicAllowance().
+    localStorage.setItem(OT_PAY_PARTS_KEY, JSON.stringify({ days: daysP, hoursPerDay: hpdP }));
+    var _ba = _salaryBasicAllowance();
+    if (daysP > 0 && (_ba.basic + _ba.allowance) > 0) {
+      var baseD = _round2((_ba.basic + _ba.allowance) / daysP);
+      var baseH = hpdP > 0 ? _round2(baseD / hpdP) : 0;
+      localStorage.setItem(OT_DAILY_RATE_KEY,    String(baseD));
+      localStorage.setItem(OT_RATE_OVERRIDE_KEY, String(baseH));
+    }
+  } else {
+    localStorage.removeItem(OT_PAY_PARTS_KEY);
+  }
+  // PBI config (safe to store regardless of mode; it only bites when parts exist).
+  savePbi({
+    startYm: (d.pbi && d.pbi.startYm) || '',
+    day:     parseInt(d.pbi && d.pbi.day, 10) || 0,
+    every:   parseInt(d.pbi && d.pbi.every, 10) || 3,
+    amounts: (d.pbi && d.pbi.amounts) || {}
+  });
+
   // Recalculate existing entries with the new rules
   for (var i = 0; i < localStorage.length; i++) {
     var key = localStorage.key(i);
@@ -7664,8 +8004,13 @@ function saveOtSettings() {
       if (!Array.isArray(list)) continue;
       list.forEach(function(e) {
         if (!e.type || !e.hours) return;
-        e.incentive = _isPhFlat(e.type) ? 0 : calcOtIncentive(e.type, e.hours);
-        e.pay = calcOtPay(e.type, e.hours);
+        // Re-price each entry at its OWN month's rate (PBI months differ).
+        var dp = (e.date || '').split('/');
+        var ey = parseInt(dp[2], 10), em = parseInt(dp[1], 10) - 1;
+        _withRateMonth(ey, em, function() {
+          e.incentive = _isPhFlat(e.type) ? 0 : calcOtIncentive(e.type, e.hours);
+          e.pay = calcOtPay(e.type, e.hours);
+        });
       });
       localStorage.setItem(key, JSON.stringify(list));
     } catch(err) {}
@@ -8697,7 +9042,13 @@ function renderDashboard() {
   updateHeaderStats();
   renderHeaderChips();
   updateDueAlert();
-  const salary = parseFloat(localStorage.getItem(salaryKey)) || 0;
+  // Nett for the CURRENT period, computed live from the config so a Performance Bonus
+  // (and any config edit) is always reflected without needing a re-save. Falls back to
+  // the saved value only when no basic pay is configured.
+  var _salCfgLive = loadSalaryConfig();
+  const salary = ((parseFloat(_salCfgLive.gross) || 0) > 0)
+    ? _calcNett(_salCfgLive, _pbiForMonth(periodYear, periodMonthIdx))
+    : (parseFloat(localStorage.getItem(salaryKey)) || 0);
   const expenses = loadExpenses();
 
   const totalExp      = expenses.reduce(function(s, e) { return s + (parseFloat(e.amount) || 0); }, 0);
@@ -8714,10 +9065,13 @@ function renderDashboard() {
   var salCfg = loadSalaryConfig();
   if (salary > 0) {
     document.getElementById('dashIncome').textContent = fmt(salary);
-    var dedTotal = (salCfg.deductions || []).reduce(function(s,d){ return s + (d.type==='pct' ? salCfg.gross*d.value/100 : d.value); }, 0);
     var alwTotal = (salCfg.allowances || []).reduce(function(s,a){ return s + (a.type==='pct' ? salCfg.gross*a.value/100 : a.value); }, 0);
-    var _incSub = fmt(salCfg.gross) + ' gross';
+    var pbiNow   = _pbiForMonth(periodYear, periodMonthIdx);
+    var baseNow  = (parseFloat(salCfg.gross) || 0) + alwTotal + pbiNow;
+    var dedTotal = (salCfg.deductions || []).reduce(function(s,d){ return s + (d.type==='pct' ? baseNow*d.value/100 : d.value); }, 0);
+    var _incSub = fmt(salCfg.gross) + ' basic';
     if (alwTotal > 0) _incSub += ' + ' + fmt(alwTotal) + ' allow';
+    if (pbiNow > 0)   _incSub += ' + ' + fmt(pbiNow) + ' bonus';
     if (dedTotal > 0) _incSub += ' − ' + fmt(dedTotal) + ' deduct';
     document.getElementById('dashIncomeSub').textContent = salCfg.gross > 0 ? _incSub : 'click to update';
   } else {
@@ -8778,11 +9132,6 @@ function renderDashboard() {
   var estCard = document.getElementById('dashEstIncomeCard');
   if (estCard) estCard.style.display = _showEstIncome ? '' : 'none';
   if (_showEstIncome) {
-    var gross2    = parseFloat(localStorage.getItem(EST_GROSS_KEY)) || 0;
-    var salCfgEst = loadSalaryConfig();
-    var dedEst    = salCfgEst.gross > 0 ? salCfgEst.gross - _calcNett(salCfgEst) : 0;
-    var nettBase  = gross2 - dedEst;
-
     // On/before payday → this month's est income; after payday → next month's
     var payDay   = getSalaryCfg().day || 25;
     var todayDay = now.getDate();
@@ -8795,6 +9144,11 @@ function renderDashboard() {
       tgtYear     = currentMonthIdx === 11 ? currentYear + 1 : currentYear;
     }
     var tgtName = ALL_MONTHS[tgtMonthIdx];
+
+    // Straight off the red Nett Income card — one source of truth. The yellow card is
+    // that nett (Basic + Allowances + the target month's Bonus − deductions) plus the
+    // month's logged OT.
+    var nettBase  = _calcNett(loadSalaryConfig(), _pbiForMonth(tgtYear, tgtMonthIdx));
 
     // OT for target month comes from the month before it
     var otMonthIdx  = tgtMonthIdx === 0 ? 11 : tgtMonthIdx - 1;
@@ -8810,13 +9164,13 @@ function renderDashboard() {
     var labelEl = document.getElementById('dashProjectedLabel');
     if (labelEl) labelEl.innerHTML = 'Est. <span style="color:#eab308;font-weight:700;">' + tgtName + '</span> Income' + _helpDot('est');
     var valEl = document.getElementById('dashProjected');
-    if (valEl) valEl.textContent = gross2 > 0 ? fmt(projected) : '—';
+    if (valEl) valEl.textContent = nettBase > 0 ? fmt(projected) : '—';
     var subEl = document.getElementById('dashProjectedSub');
     if (subEl) {
-      if (gross2 <= 0) {
-        subEl.textContent = 'tap to set basic pay';
+      if (nettBase <= 0) {
+        subEl.textContent = 'tap to set your Nett Income';
       } else {
-        subEl.textContent = fmt(nettBase) + ' + OT ' + ALL_MONTHS[otMonthIdx] + ' (' + fmt(otPay) + ')';
+        subEl.textContent = fmt(nettBase) + ' nett + OT ' + ALL_MONTHS[otMonthIdx] + ' (' + fmt(otPay) + ')';
       }
     }
   }
@@ -12099,14 +12453,22 @@ function loadSalaryConfig() {
   try { return JSON.parse(localStorage.getItem(SALARY_CONFIG_KEY)) || { gross: 0, deductions: [], allowances: [] }; }
   catch(e) { return { gross: 0, deductions: [], allowances: [] }; }
 }
-function _calcNett(cfg) {
-  var deductTotal = (cfg.deductions || []).reduce(function(s, d) {
-    return s + (d.type === 'pct' ? (cfg.gross * d.value / 100) : d.value);
-  }, 0);
+function _calcNett(cfg, pbiAmt) {
+  var gross = parseFloat(cfg.gross) || 0;
+  // Allowances are added to basic. Basic + Allowances (+ a Performance Bonus that
+  // lands this month) is the base that statutory deductions (EPF, SOCSO, EIS, …) are
+  // worked out on. Percentage allowances still resolve against basic. A PBI counts as
+  // wages, so it lifts this base. OT is NEVER in it — OT is extra money handled
+  // separately (PCB only), so it never enters this figure.
   var allowTotal = (cfg.allowances || []).reduce(function(s, a) {
-    return s + (a.type === 'pct' ? (cfg.gross * a.value / 100) : a.value);
+    return s + (a.type === 'pct' ? (gross * a.value / 100) : a.value);
   }, 0);
-  return Math.max(0, cfg.gross + allowTotal - deductTotal);
+  var pbi = parseFloat(pbiAmt) || 0;
+  var base = gross + allowTotal + pbi;
+  var deductTotal = (cfg.deductions || []).reduce(function(s, d) {
+    return s + (d.type === 'pct' ? (base * d.value / 100) : d.value);
+  }, 0);
+  return Math.max(0, base - deductTotal);
 }
 
 var _salaryDeductions = [];
@@ -12188,7 +12550,6 @@ function _renderSalaryAllowances() {
   if (!listEl) return;
   var html = '';
   _salaryAllowances.forEach(function(a) {
-    var amt = a.type === 'pct' ? (gross * a.value / 100) : a.value;
     html += '<div style="display:grid;grid-template-columns:1fr 60px 80px auto;gap:0.3rem;align-items:center;">';
     html += '<input class="form-input alw-name-inp" style="padding:6px 10px;font-size:0.8rem;" placeholder="e.g. Travel, Meal…" value="' + escHtml(a.name) + '" oninput="_salaryAlwChange(\'' + a.id + '\',\'name\',this.value)" />';
     html += '<select class="form-input" style="padding:6px 6px;font-size:0.78rem;" onchange="_salaryAlwChange(\'' + a.id + '\',\'type\',this.value)">';
@@ -12198,9 +12559,6 @@ function _renderSalaryAllowances() {
     html += '<input class="form-input" style="padding:6px 8px;font-size:0.8rem;text-align:right;" type="number" min="0" step="0.01" value="' + (a.value || '') + '" placeholder="0" oninput="_salaryAlwChange(\'' + a.id + '\',\'value\',this.value)" />';
     html += '<button onclick="_removeSalaryAllowance(\'' + a.id + '\')" style="background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.2);border-radius:6px;color:#4ade80;width:28px;height:28px;cursor:pointer;font-size:0.9rem;flex-shrink:0;">✕</button>';
     html += '</div>';
-    if (a.type === 'pct' && a.value > 0 && gross > 0) {
-      html += '<div style="text-align:right;font-size:0.68rem;color:#64748b;padding-right:32px;">= ' + fmt(amt) + '</div>';
-    }
   });
   listEl.innerHTML = html;
   _updateSalaryBreakdown(gross);
@@ -12213,7 +12571,6 @@ function _renderSalaryDeductions() {
 
   var html = '';
   _salaryDeductions.forEach(function(d) {
-    var dedAmt = d.type === 'pct' ? (gross * d.value / 100) : d.value;
     html += '<div style="display:grid;grid-template-columns:1fr 60px 80px auto;gap:0.3rem;align-items:center;">';
     // Name
     html += '<input class="form-input ded-name-inp" style="padding:6px 10px;font-size:0.8rem;" placeholder="e.g. EPF, SOCSO…" value="' + escHtml(d.name) + '" oninput="_salaryDedChange(\'' + d.id + '\',\'name\',this.value)" />';
@@ -12227,9 +12584,6 @@ function _renderSalaryDeductions() {
     // Remove + computed
     html += '<button onclick="_removeSalaryDeduction(\'' + d.id + '\')" style="background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.2);border-radius:6px;color:#f87171;width:28px;height:28px;cursor:pointer;font-size:0.9rem;flex-shrink:0;">✕</button>';
     html += '</div>';
-    if (d.type === 'pct' && d.value > 0 && gross > 0) {
-      html += '<div style="text-align:right;font-size:0.68rem;color:#64748b;padding-right:32px;">= ' + fmt(dedAmt) + '</div>';
-    }
   });
   listEl.innerHTML = html;
 
@@ -12242,7 +12596,7 @@ function _updateSalaryBreakdown(gross) {
   var el = document.getElementById('salaryBreakdown');
   if (!el) return;
 
-  var html = '<div style="display:flex;justify-content:space-between;margin-bottom:0.3rem;"><span style="color:#94a3b8;">Gross Income</span><span style="font-weight:700;color:#f1f5f9;">' + fmt(gross) + '</span></div>';
+  var html = '<div style="display:flex;justify-content:space-between;margin-bottom:0.3rem;"><span style="color:#94a3b8;">Basic Pay</span><span style="font-weight:700;color:#f1f5f9;">' + fmt(gross) + '</span></div>';
   var totalAlw = 0;
   _salaryAllowances.forEach(function(a) {
     if (!a.name && !a.value) return;
@@ -12251,29 +12605,40 @@ function _updateSalaryBreakdown(gross) {
     var label = (a.name || 'Allowance') + (a.type === 'pct' ? ' (' + a.value + '%)' : '');
     html += '<div style="display:flex;justify-content:space-between;font-size:0.75rem;"><span style="color:#64748b;">' + escHtml(label) + '</span><span style="color:#4ade80;">+ ' + fmt(amt) + '</span></div>';
   });
+  // A Performance Bonus landing this month counts as wages and lifts the base.
+  var pbiNow = _pbiForMonth(periodYear, periodMonthIdx);
+  if (pbiNow > 0) {
+    html += '<div style="display:flex;justify-content:space-between;font-size:0.75rem;"><span style="color:#64748b;">🎯 Perf. Bonus (' + ALL_MONTHS[periodMonthIdx].slice(0,3) + ')</span><span style="color:#4ade80;">+ ' + fmt(pbiNow) + '</span></div>';
+  }
+  // Make the deduction base explicit — EPF/SOCSO/EIS come off Basic + Allowances (+ Bonus).
+  var base = gross + totalAlw + pbiNow;
+  if (totalAlw > 0 || pbiNow > 0) {
+    html += '<div style="display:flex;justify-content:space-between;font-size:0.74rem;border-top:1px dashed rgba(255,255,255,0.09);margin-top:0.3rem;padding-top:0.3rem;"><span style="color:#94a3b8;">Deduction base</span><span style="font-weight:700;color:#cbd5e1;">' + fmt(base) + '</span></div>';
+  }
   var totalDed = 0;
   _salaryDeductions.forEach(function(d) {
     if (!d.name && !d.value) return;
-    var amt = d.type === 'pct' ? (gross * d.value / 100) : d.value;
+    var amt = d.type === 'pct' ? (base * d.value / 100) : d.value;
     totalDed += amt;
-    var label = (d.name || 'Deduction') + (d.type === 'pct' ? ' (' + d.value + '%)' : '');
+    var label = (d.name || 'Deduction') + (d.type === 'pct' ? ' (' + d.value + '% of ' + fmt(base) + ')' : '');
     html += '<div style="display:flex;justify-content:space-between;font-size:0.75rem;"><span style="color:#64748b;">' + escHtml(label) + '</span><span style="color:#f87171;">− ' + fmt(amt) + '</span></div>';
   });
-  var nett = Math.max(0, gross + totalAlw - totalDed);
+  var nett = Math.max(0, base - totalDed);
   html += '<div style="border-top:1px solid rgba(255,255,255,0.08);margin-top:0.4rem;padding-top:0.4rem;display:flex;justify-content:space-between;"><span style="font-weight:700;color:#f1f5f9;">Monthly Nett Income</span><span style="font-weight:800;color:var(--th-accent);font-size:1rem;">' + fmt(nett) + '</span></div>';
   el.innerHTML = html;
 }
 
 function saveSalary() {
   var gross = parseFloat(document.getElementById('salaryGrossInp').value);
-  if (!gross || gross <= 0) { showToast('Please enter your gross income'); return; }
+  if (!gross || gross <= 0) { showToast('Please enter your basic pay'); return; }
 
   var cfg = {
     gross: gross,
     allowances: _salaryAllowances.filter(function(a){ return a.value > 0 || a.name; }),
     deductions: _salaryDeductions.filter(function(d){ return d.value > 0 || d.name; })
   };
-  var nett = _calcNett(cfg);
+  // Save this month's nett WITH any Performance Bonus that lands this month.
+  var nett = _calcNett(cfg, _pbiForMonth(periodYear, periodMonthIdx));
 
   localStorage.setItem(SALARY_CONFIG_KEY, JSON.stringify(cfg));
   localStorage.setItem(salaryKey, nett.toFixed(2));
@@ -16813,6 +17178,11 @@ function getTodayStatus() {
     badges.push({ label: '⏰ Last day to submit OT (' + _otCloseTimeLabel() + ')',
                   color: '#38bdf8', bg: 'rgba(56,189,248,0.12)' });
   }
+  if (calLayerOn('pbi') && _pbiDay(year, month) === day) {
+    var pbiAmt = _pbiForMonth(year, month);
+    badges.push({ label: pbiAmt > 0 ? '🎯 Performance Bonus: ' + fmt(pbiAmt) : '🎯 Performance Bonus expected',
+                  color: '#ec4899', bg: 'rgba(236,72,153,0.12)' });
+  }
   return badges;
 }
 
@@ -16824,6 +17194,7 @@ var CAL_LAYERS_KEY = profilePrefix + 'mft_cal_layers';
 var CAL_LAYERS = [
   { id:'salary',  label:'Pay Day',        icon:'💰', color:'#22c55e' },
   { id:'close',   label:'OT Closing',     icon:'⏰', color:'#38bdf8' },
+  { id:'pbi',     label:'Perf. Bonus',    icon:'🎯', color:'#ec4899' },
   { id:'ot',      label:'OT Logged',      icon:'🕒', color:'#3b82f6' },
   { id:'ph',      label:'Public Holiday', icon:'🎉', color:'#fb923c' },
   { id:'offday',  label:'Off Day',        icon:'🌴', color:'#06b6d4' },
@@ -17040,6 +17411,7 @@ function renderCalendarPopup() {
   html += '</div>';
   const otDays  = _otByDay(year, month);
   const closeD  = (calLayerOn('close') && otCloseEnabled()) ? _otCloseDay(year, month) : 0;
+  const pbiD    = calLayerOn('pbi') ? _pbiDay(year, month) : 0;
   html += '<div class="cal-grid">';
   DAY_LABELS.forEach(function(l) { html += '<div class="cal-hdr">' + l + '</div>'; });
   for (var i = 0; i < firstDay; i++) html += '<div class="cal-cell"></div>';
@@ -17055,11 +17427,16 @@ function renderCalendarPopup() {
     }
     if (phName)         cls += ' cal-ph-sm';
     if (n === closeD)   cls += ' cal-close-sm';
-    if (n === salDay && calLayerOn('salary')) cls += ' cal-salary-sm';
+    // Pay day + bonus coincide — keep the green pay-day cell and show both coins.
+    var _smSal = (n === salDay && calLayerOn('salary'));
+    if (n === pbiD && _smSal)  cls += ' cal-salary-sm cal-bonus-too';
+    else if (n === pbiD)       cls += ' cal-pbi-sm';
+    else if (_smSal)           cls += ' cal-salary-sm';
     if (n === today)    cls += ' cal-today';
     // Too small for a text tag — a dot in the type's colour, details on hover.
     var otDot = otDays[n] ? '<span class="cal-ot-dot" style="background:' + otDays[n][0].color + ';"></span>' : '';
     var tip   = [phName || '', (n === closeD ? 'Last day to submit your OT — by ' + _otCloseTimeLabel() : ''),
+                 (n === pbiD ? _pbiTip(year, month) : ''),
                  _otDayTitle(otDays[n])].filter(Boolean).join('\n');
     html += '<div class="' + cls + '" title="' + escHtml(tip) + '">' + n + otDot + '</div>';
   }
@@ -17068,6 +17445,7 @@ function renderCalendarPopup() {
   html += '<div class="cal-legend-item"><div class="cal-legend-dot" style="background:#ef4444;"></div>Today</div>';
   if (calLayerOn('salary')) html += '<div class="cal-legend-item"><div class="cal-legend-dot" style="background:linear-gradient(160deg,#22c55e,#10b981);box-shadow:0 0 6px rgba(34,197,94,0.55);"></div>💰 Salary Day</div>';
   if (closeD)               html += '<div class="cal-legend-item"><div class="cal-legend-dot" style="background:#38bdf8;"></div>⏰ OT Closing</div>';
+  if (pbiD)                 html += '<div class="cal-legend-item"><div class="cal-legend-dot" style="background:#ec4899;"></div>🎯 Perf. Bonus</div>';
   if (calLayerOn('ph'))     html += '<div class="cal-legend-item"><div class="cal-legend-dot" style="background:#fb923c;"></div>Holiday</div>';
   if (localStorage.getItem(ROSTER_START_KEY)) {
     if (calLayerOn('offday'))  html += '<div class="cal-legend-item"><div class="cal-legend-dot" style="background:#06b6d4;"></div>Off/Leave</div>';
@@ -17120,6 +17498,7 @@ function renderExpandedCal() {
 
   const otDays = _otByDay(year, month);
   const closeD = (calLayerOn('close') && otCloseEnabled()) ? _otCloseDay(year, month) : 0;
+  const pbiD   = calLayerOn('pbi') ? _pbiDay(year, month) : 0;
   let grid = '';
   DAY_LABELS.forEach(function(l) { grid += '<div class="cal-big-hdr">' + l + '</div>'; });
   for (var i = 0; i < firstDay; i++) grid += '<div class="cal-big-cell"></div>';
@@ -17132,7 +17511,12 @@ function renderExpandedCal() {
     if (rt === 'restday' && calLayerOn('restday')) cls += ' cal-restday-day';
     if (phName)       cls += ' cal-ph-day';
     if (n === closeD) cls += ' cal-close-day';
-    if (n === salDay && calLayerOn('salary')) cls += ' cal-salary';
+    // PBI always lands on the pay day — render it as a pay day (green) that also
+    // shows the bonus, rather than letting the pink bonus cell hide the salary.
+    var _bigSal = (n === salDay && calLayerOn('salary'));
+    if (n === pbiD && _bigSal)  cls += ' cal-salary cal-bonus-too';
+    else if (n === pbiD)        cls += ' cal-pbi-day';
+    else if (_bigSal)           cls += ' cal-salary';
     if (isCurrentMonth && n === todayD) cls += ' cal-today';
     // The cell fits one line under the number, so the tags compete. Order of
     // usefulness: what you did (OT) > what you must do (closing) > what the day
@@ -17141,10 +17525,13 @@ function renderExpandedCal() {
     var ot  = otDays[n];
     var tip = '';
     if (ot)                 tip = '<span class="cal-ot-tag" style="color:' + ot[0].color + ';">' + escHtml(_otDayTag(ot)) + '</span>';
-    else if (n === closeD)  tip = '<span class="cal-close-tag">OT CUT-OFF</span>';
+    else if (n === closeD)  tip = '<span class="cal-close-tag">SUBMIT OT</span>';
+    else if (n === pbiD && _bigSal) tip = '<span class="cal-close-tag" style="color:#86efac;">PAY+BONUS</span>';
+    else if (n === pbiD)    tip = '<span class="cal-close-tag" style="color:#f9a8d4;">BONUS</span>';
     else if (phName)        tip = '<span class="cal-ph-tip">' + escHtml(phName) + '</span>';
     var titleTxt = [phName || '',
                     (n === closeD ? 'Last day to submit your OT — by ' + _otCloseTimeLabel() : ''),
+                    (n === pbiD ? _pbiTip(year, month) : ''),
                     _otDayTitle(ot)].filter(Boolean).join('\n');
     grid += '<div class="' + cls + '"' + (titleTxt ? ' title="' + escHtml(titleTxt) + '"' : '') + '>' + n + tip + '</div>';
   }
@@ -17158,6 +17545,7 @@ function renderExpandedCal() {
   let leg = '<div class="cal-legend-item"><div class="cal-legend-dot" style="background:#ef4444;"></div>Today</div>';
   if (calLayerOn('salary')) leg += '<div class="cal-legend-item"><div class="cal-legend-dot" style="background:linear-gradient(160deg,#22c55e,#10b981);box-shadow:0 0 6px rgba(34,197,94,0.55);"></div>💰 Salary Day</div>';
   if (closeD)               leg += '<div class="cal-legend-item"><div class="cal-legend-dot" style="background:#38bdf8;box-shadow:0 0 6px rgba(56,189,248,0.55);"></div>⏰ OT Closing</div>';
+  if (pbiD)                 leg += '<div class="cal-legend-item"><div class="cal-legend-dot" style="background:#ec4899;box-shadow:0 0 6px rgba(236,72,153,0.55);"></div>🎯 Perf. Bonus</div>';
   if (calLayerOn('ph'))     leg += '<div class="cal-legend-item"><div class="cal-legend-dot" style="background:#fb923c;"></div>Public Holiday</div>';
   if (rs) {
     if (calLayerOn('offday'))  leg += '<div class="cal-legend-item"><div class="cal-legend-dot" style="background:#06b6d4;"></div>Off Day</div>';
